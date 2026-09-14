@@ -1,0 +1,233 @@
+firedrake:WARNING OMP_NUM_THREADS is not set or is set to a value greater than 1, we suggest setting OMP_NUM_THREADS=1 to improve performance
+=== MISMIP+ OSSE reference (SSA spin-up 200yr → Hybrid bootstrap) ===
+Mesh2d: 20451 verts (400x50)
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/interpolation.py:391: FutureWarning: The use of `interpolate` to perform the numerical interpolation is deprecated.
+This feature will be removed very shortly.
+
+Instead, import `interpolate` from the `firedrake.__future__` module to update
+the interpolation's behaviour to return the symbolic `ufl.Interpolate` object associated
+with this interpolation.
+
+You can then assemble the resulting object to get the interpolated quantity
+of interest. For example,
+
+```
+from firedrake.__future__ import interpolate
+...
+
+assemble(interpolate(expr, V))
+```
+
+Alternatively, you can also perform other symbolic operations on the interpolation operator, such as taking
+the derivative, and then assemble the resulting form.
+
+  warnings.warn("""The use of `interpolate` to perform the numerical interpolation is deprecated.
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/interpolation.py:391: FutureWarning: The use of `interpolate` to perform the numerical interpolation is deprecated.
+This feature will be removed very shortly.
+
+Instead, import `interpolate` from the `firedrake.__future__` module to update
+the interpolation's behaviour to return the symbolic `ufl.Interpolate` object associated
+with this interpolation.
+
+You can then assemble the resulting object to get the interpolated quantity
+of interest. For example,
+
+```
+from firedrake.__future__ import interpolate
+...
+
+assemble(interpolate(expr, V))
+```
+
+Alternatively, you can also perform other symbolic operations on the interpolation operator, such as taking
+the derivative, and then assemble the resulting form.
+
+  warnings.warn("""The use of `interpolate` to perform the numerical interpolation is deprecated.
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/interpolation.py:391: FutureWarning: The use of `interpolate` to perform the numerical interpolation is deprecated.
+This feature will be removed very shortly.
+
+Instead, import `interpolate` from the `firedrake.__future__` module to update
+the interpolation's behaviour to return the symbolic `ufl.Interpolate` object associated
+with this interpolation.
+
+You can then assemble the resulting object to get the interpolated quantity
+of interest. For example,
+
+```
+from firedrake.__future__ import interpolate
+...
+
+assemble(interpolate(expr, V))
+```
+
+Alternatively, you can also perform other symbolic operations on the interpolation operator, such as taking
+the derivative, and then assemble the resulting form.
+
+  warnings.warn("""The use of `interpolate` to perform the numerical interpolation is deprecated.
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/interpolation.py:391: FutureWarning: The use of `interpolate` to perform the numerical interpolation is deprecated.
+This feature will be removed very shortly.
+
+Instead, import `interpolate` from the `firedrake.__future__` module to update
+the interpolation's behaviour to return the symbolic `ufl.Interpolate` object associated
+with this interpolation.
+
+You can then assemble the resulting object to get the interpolated quantity
+of interest. For example,
+
+```
+from firedrake.__future__ import interpolate
+...
+
+assemble(interpolate(expr, V))
+```
+
+Alternatively, you can also perform other symbolic operations on the interpolation operator, such as taking
+the derivative, and then assemble the resulting form.
+
+  warnings.warn("""The use of `interpolate` to perform the numerical interpolation is deprecated.
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/interpolation.py:391: FutureWarning: The use of `interpolate` to perform the numerical interpolation is deprecated.
+This feature will be removed very shortly.
+
+Instead, import `interpolate` from the `firedrake.__future__` module to update
+the interpolation's behaviour to return the symbolic `ufl.Interpolate` object associated
+with this interpolation.
+
+You can then assemble the resulting object to get the interpolated quantity
+of interest. For example,
+
+```
+from firedrake.__future__ import interpolate
+...
+
+assemble(interpolate(expr, V))
+```
+
+Alternatively, you can also perform other symbolic operations on the interpolation operator, such as taking
+the derivative, and then assemble the resulting form.
+
+  warnings.warn("""The use of `interpolate` to perform the numerical interpolation is deprecated.
+  bed=[-720,465] m; θA_true=[-0.29,0.89]
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/interpolation.py:391: FutureWarning: The use of `interpolate` to perform the numerical interpolation is deprecated.
+This feature will be removed very shortly.
+
+Instead, import `interpolate` from the `firedrake.__future__` module to update
+the interpolation's behaviour to return the symbolic `ufl.Interpolate` object associated
+with this interpolation.
+
+You can then assemble the resulting object to get the interpolated quantity
+of interest. For example,
+
+```
+from firedrake.__future__ import interpolate
+...
+
+assemble(interpolate(expr, V))
+```
+
+Alternatively, you can also perform other symbolic operations on the interpolation operator, such as taking
+the derivative, and then assemble the resulting form.
+
+  warnings.warn("""The use of `interpolate` to perform the numerical interpolation is deprecated.
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/interpolation.py:391: FutureWarning: The use of `interpolate` to perform the numerical interpolation is deprecated.
+This feature will be removed very shortly.
+
+Instead, import `interpolate` from the `firedrake.__future__` module to update
+the interpolation's behaviour to return the symbolic `ufl.Interpolate` object associated
+with this interpolation.
+
+You can then assemble the resulting object to get the interpolated quantity
+of interest. For example,
+
+```
+from firedrake.__future__ import interpolate
+...
+
+assemble(interpolate(expr, V))
+```
+
+Alternatively, you can also perform other symbolic operations on the interpolation operator, such as taking
+the derivative, and then assemble the resulting form.
+
+  warnings.warn("""The use of `interpolate` to perform the numerical interpolation is deprecated.
+  SSA primed: speed max 3809 m/yr
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/interpolation.py:391: FutureWarning: The use of `interpolate` to perform the numerical interpolation is deprecated.
+This feature will be removed very shortly.
+
+Instead, import `interpolate` from the `firedrake.__future__` module to update
+the interpolation's behaviour to return the symbolic `ufl.Interpolate` object associated
+with this interpolation.
+
+You can then assemble the resulting object to get the interpolated quantity
+of interest. For example,
+
+```
+from firedrake.__future__ import interpolate
+...
+
+assemble(interpolate(expr, V))
+```
+
+Alternatively, you can also perform other symbolic operations on the interpolation operator, such as taking
+the derivative, and then assemble the resulting form.
+
+  warnings.warn("""The use of `interpolate` to perform the numerical interpolation is deprecated.
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/interpolation.py:391: FutureWarning: The use of `interpolate` to perform the numerical interpolation is deprecated.
+This feature will be removed very shortly.
+
+Instead, import `interpolate` from the `firedrake.__future__` module to update
+the interpolation's behaviour to return the symbolic `ufl.Interpolate` object associated
+with this interpolation.
+
+You can then assemble the resulting object to get the interpolated quantity
+of interest. For example,
+
+```
+from firedrake.__future__ import interpolate
+...
+
+assemble(interpolate(expr, V))
+```
+
+Alternatively, you can also perform other symbolic operations on the interpolation operator, such as taking
+the derivative, and then assemble the resulting form.
+
+  warnings.warn("""The use of `interpolate` to perform the numerical interpolation is deprecated.
+  SSA spin t=     0: vol=5141.10 km³, hmax=149
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/interpolation.py:391: FutureWarning: The use of `interpolate` to perform the numerical interpolation is deprecated.
+This feature will be removed very shortly.
+
+Instead, import `interpolate` from the `firedrake.__future__` module to update
+the interpolation's behaviour to return the symbolic `ufl.Interpolate` object associated
+with this interpolation.
+
+You can then assemble the resulting object to get the interpolated quantity
+of interest. For example,
+
+```
+from firedrake.__future__ import interpolate
+...
+
+assemble(interpolate(expr, V))
+```
+
+Alternatively, you can also perform other symbolic operations on the interpolation operator, such as taking
+the derivative, and then assemble the resulting form.
+
+  warnings.warn("""The use of `interpolate` to perform the numerical interpolation is deprecated.
+  SSA spin t=    20: vol=5398.07 km³, hmax=208
+  SSA spin t=    40: vol=5659.16 km³, hmax=240
+  SSA spin t=    60: vol=5916.01 km³, hmax=268
+  SSA spin t=    80: vol=6167.99 km³, hmax=292
+  SSA spin t=   100: vol=6415.32 km³, hmax=314
+  SSA spin t=   120: vol=6658.43 km³, hmax=333
+  SSA spin t=   140: vol=6898.01 km³, hmax=350
+  SSA spin t=   160: vol=7134.18 km³, hmax=367
+  SSA spin t=   180: vol=7366.73 km³, hmax=382
+Bootstrapping to HybridModel (same forcing)...
+  Hybrid solved: surface speed max 367 m/yr
+Saved mesh/mismip_truth.h5 (+ _3d). Done!
+WARNING! There are options you set that were not used!
+WARNING! could be spelling mistake, etc!
+There are 2 unused database options. They are:
+Option left: name:--T_spin value: 200 source: command line
+Option left: name:-T_spin value: 200 source: code

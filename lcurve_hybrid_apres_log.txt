@@ -1,0 +1,23 @@
+firedrake:WARNING OMP_NUM_THREADS is not set or is set to a value greater than 1, we suggest setting OMP_NUM_THREADS=1 to improve performance
+============================================================
+L-curve: Hybrid + ApRES (coarse mesh, vdeg=1)
+L values: [1, 2, 5, 10, 20, 50] km
+============================================================
+Mesh: 1354 verts
+Primed OK
+ApRES: 479 VOM points
+
+========================================
+L = 1 km
+  iter  10: E=1.097e+07 R=3.830e-04
+  iter  20: E=2.256e+04 R=2.551e-03
+  CONVERGED: E_vel=2.233e+04, E_apr=2.327e+02, R=2.551e-03 (22 iters)
+
+========================================
+L = 2 km
+  iter  10: E=1.097e+07 R=1.532e-03
+  iter  20: E=2.256e+04 R=1.020e-02
+  CONVERGED: E_vel=2.233e+04, E_apr=2.327e+02, R=1.020e-02 (22 iters)
+
+========================================
+L = 5 km

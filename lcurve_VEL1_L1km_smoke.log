@@ -1,0 +1,31 @@
+============================================================
+L-curve: Hybrid + ApRES, ELL = 1.0 km (1000 m) (hires, vdeg=1, 500 iters)
+  Recinos prior: δ=1.000e-05, γ=1.000e+01  (no 1/N normalization)
+  Warm-start from inversion_hires_apres_vd1.h5
+============================================================
+Mesh: 67600 verts
+  Sparse velocity: 330889 points (VOM after extrusion)
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/mesh.py:3387: UserWarning: 26417 vertices are outside the mesh and have been removed from the VertexOnlyMesh.
+  warn(str(error))
+  Velocity VOM: 304472 points at ζ=1
+Warm start from inversion_hires_apres_vd1.h5: θ_A=[-3.43, 2.25], θ_C=[-1.68, 9.75]
+Primed OK
+ApRES: 479 VOM points (N_apr=479)
+
+L-BFGS-B (135200 DOFs, 500 iters)...
+/home/andrew/projects/vertical_velocity/scripts/lcurve_hybrid_apres.py:316: OptimizeWarning: Unknown solver options: pgtol
+  result = scipy_minimize(
+  iter  20: Jv=2.763e+06 Ja=7.846e+03 R=4.393e+05 |g|=1.899e+05
+  iter  40: Jv=1.785e+06 Ja=8.834e+03 R=4.914e+05 |g|=5.664e+04
+  iter  60: Jv=1.391e+06 Ja=8.485e+03 R=5.320e+05 |g|=1.203e+05
+  iter  80: ADJ FAILED (ConvergenceError: Nonlinear solve failed to conv...) — penalty + last-good gradient
+  iter  82: ADJ FAILED (ConvergenceError: Nonlinear solve failed to conv...) — penalty + last-good gradient
+  iter  83: ADJ FAILED (ConvergenceError: Nonlinear solve failed to conv...) — penalty + last-good gradient
+  iter  87: FWD FAILED (Nonlinear solve failed to converge after...) — penalty + last-good gradient
+  iter  88: ADJ FAILED (ConvergenceError: Nonlinear solve failed to conv...) — penalty + last-good gradient
+Result: CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH (91 evals)
+
+Final: E_vel=1.1721e+06, E_apr=8.4675e+03, R=5.5704e+05
+Saved lcurve_hybrid_apres_L1km.h5
+Saved lcurve_hybrid_apres_L1km.json
+Done!

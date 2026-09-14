@@ -1,0 +1,49 @@
+firedrake:WARNING OMP_NUM_THREADS is not set or is set to a value greater than 1, we suggest setting OMP_NUM_THREADS=1 to improve performance
+============================================================
+Taped prognostic forward — VAF gradient
+  T=50.0 yr, 600 steps (dt=0.0833 yr)
+  Output: /home/andrew/projects/vertical_velocity/results/forward_vaf_50yr.h5
+============================================================
+Mesh: 67600 verts
+Loading RACMO SMB...
+  SMB: [0.000, 2.051] m/yr
+Primed (initial speed max: 4130 m/yr)
+
+Time-stepping (taped, 600 steps)...
+  t=0: VAF=46836.1 Gt
+  t= 2.50: VAF=46681.0 Gt (ΔVAF=-155.14)
+  t= 5.00: VAF=46520.0 Gt (ΔVAF=-316.15)
+  t= 7.50: VAF=46368.7 Gt (ΔVAF=-467.42)
+  t=10.00: VAF=46210.4 Gt (ΔVAF=-625.71)
+  t=12.50: VAF=46050.3 Gt (ΔVAF=-785.79)
+  t=15.00: VAF=45889.3 Gt (ΔVAF=-946.79)
+  t=17.50: VAF=45725.6 Gt (ΔVAF=-1110.51)
+  t=20.00: VAF=45557.4 Gt (ΔVAF=-1278.73)
+  t=22.50: VAF=45389.2 Gt (ΔVAF=-1446.96)
+  t=25.00: VAF=45219.8 Gt (ΔVAF=-1616.31)
+  t=27.50: VAF=45051.5 Gt (ΔVAF=-1784.63)
+  t=30.00: VAF=44882.9 Gt (ΔVAF=-1953.24)
+  t=32.50: VAF=44713.8 Gt (ΔVAF=-2122.26)
+  t=35.00: VAF=44545.3 Gt (ΔVAF=-2290.82)
+  t=37.50: VAF=44377.3 Gt (ΔVAF=-2458.84)
+  t=40.00: VAF=44209.3 Gt (ΔVAF=-2626.83)
+  t=42.50: VAF=44041.5 Gt (ΔVAF=-2794.62)
+  t=45.00: VAF=43875.4 Gt (ΔVAF=-2960.70)
+  t=47.50: VAF=43710.1 Gt (ΔVAF=-3125.96)
+  t=50.00: VAF=43545.6 Gt (ΔVAF=-3290.53)
+
+Assembling final VAF as Functional...
+  J(VAF_T, raw m^3) = 4.748700e+13
+Computing adjoint gradient ∂VAF/∂(θ_A, θ_C)...
+tsfc:WARNING Estimated quadrature degree 13 more than tenfold greater than any argument/coefficient degree (max (1, 1))
+tsfc:WARNING Estimated quadrature degree 13 more than tenfold greater than any argument/coefficient degree (max (1, 1))
+tsfc:WARNING Estimated quadrature degree 13 more than tenfold greater than any argument/coefficient degree (max (1, 1))
+  ||∂VAF/∂θ_A|| = 2.7123e+11
+  ||∂VAF/∂θ_C|| = 5.3195e+11
+Saved /home/andrew/projects/vertical_velocity/results/forward_vaf_50yr.h5
+Done!
+WARNING! There are options you set that were not used!
+WARNING! could be spelling mistake, etc!
+There are 2 unused database options. They are:
+Option left: name:--T value: 50.0 source: command line
+Option left: name:-T value: 50.0 source: code

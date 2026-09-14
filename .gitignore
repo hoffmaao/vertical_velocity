@@ -1,0 +1,29 @@
+# Large regenerable outputs (57G of the 58G working tree)
+results/
+simulations/results/
+
+# Input data, downloaded separately
+data/
+
+# Meshes, rebuilt by scripts/build_mesh*.py
+mesh/
+
+# Checkpoints and array archives
+*.h5
+*.npz
+*.npy
+
+# Archive extraction artifacts
+*.zip
+__MACOSX/
+
+# Python
+*.pyc
+__pycache__/
+*.egg-info/
+.ipynb_checkpoints/
+
+# Editor / OS
+*.sw?
+*.un~
+.DS_Store

@@ -1,0 +1,46 @@
+firedrake:WARNING OMP_NUM_THREADS is not set or is set to a value greater than 1, we suggest setting OMP_NUM_THREADS=1 to improve performance
+============================================================
+Taped prognostic forward — VAF gradient
+  T=50.0 yr, 600 steps (dt=0.0833 yr)
+  Output: /home/andrew/projects/vertical_velocity/results/forward_vaf_50yr.h5
+============================================================
+Mesh: 67600 verts
+Loading RACMO SMB...
+  SMB: [0.000, 2.051] m/yr
+Primed (initial speed max: 4130 m/yr)
+
+Time-stepping (taped, 600 steps)...
+  t=0: VAF=46836.1 Gt
+  t= 2.50: VAF=46679.7 Gt (ΔVAF=-156.41), melt=24.4 Gt/yr
+  t= 5.00: VAF=46516.0 Gt (ΔVAF=-320.09), melt=25.6 Gt/yr
+  t= 7.50: VAF=46356.9 Gt (ΔVAF=-479.20), melt=26.6 Gt/yr
+  t=10.00: VAF=46187.9 Gt (ΔVAF=-648.17), melt=27.9 Gt/yr
+  t=12.50: VAF=46013.6 Gt (ΔVAF=-822.50), melt=29.0 Gt/yr
+  t=15.00: VAF=45833.1 Gt (ΔVAF=-1003.01), melt=30.6 Gt/yr
+  t=17.50: VAF=45644.8 Gt (ΔVAF=-1191.31), melt=32.2 Gt/yr
+  t=20.00: VAF=45453.9 Gt (ΔVAF=-1382.21), melt=33.2 Gt/yr
+  t=22.50: VAF=45260.2 Gt (ΔVAF=-1575.93), melt=34.1 Gt/yr
+  t=25.00: VAF=45063.4 Gt (ΔVAF=-1772.69), melt=34.8 Gt/yr
+  t=27.50: VAF=44867.2 Gt (ΔVAF=-1968.88), melt=35.4 Gt/yr
+  t=30.00: VAF=44660.5 Gt (ΔVAF=-2175.65), melt=36.5 Gt/yr
+  t=32.50: VAF=44443.0 Gt (ΔVAF=-2393.13), melt=37.7 Gt/yr
+  t=35.00: VAF=44224.0 Gt (ΔVAF=-2612.15), melt=39.0 Gt/yr
+  t=37.50: VAF=43997.6 Gt (ΔVAF=-2838.52), melt=40.3 Gt/yr
+  t=40.00: VAF=43765.2 Gt (ΔVAF=-3070.92), melt=41.2 Gt/yr
+  t=42.50: VAF=43530.2 Gt (ΔVAF=-3305.95), melt=42.0 Gt/yr
+  t=45.00: VAF=43293.7 Gt (ΔVAF=-3542.42), melt=42.5 Gt/yr
+  t=47.50: VAF=43055.1 Gt (ΔVAF=-3781.01), melt=43.3 Gt/yr
+  t=50.00: VAF=42813.4 Gt (ΔVAF=-4022.70), melt=43.9 Gt/yr
+
+Assembling final VAF as Functional...
+  J(VAF_T, raw m^3) = 4.668856e+13
+Computing adjoint gradient ∂VAF/∂(θ_A, θ_C)...
+  ||∂VAF/∂θ_A|| = 1.4167e+11
+  ||∂VAF/∂θ_C|| = 7.8979e+11
+Saved /home/andrew/projects/vertical_velocity/results/forward_vaf_50yr.h5
+Done!
+WARNING! There are options you set that were not used!
+WARNING! could be spelling mistake, etc!
+There are 2 unused database options. They are:
+Option left: name:--T value: 50.0 source: command line
+Option left: name:-T value: 50.0 source: code

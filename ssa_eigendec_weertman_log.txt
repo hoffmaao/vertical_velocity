@@ -1,0 +1,150 @@
+firedrake:WARNING OMP_NUM_THREADS is not set or is set to a value greater than 1, we suggest setting OMP_NUM_THREADS=1 to improve performance
+============================================================
+SSA Hessian eigendecomposition (velocity-only GN, weertman)
+  K=1500, ELL=2000 m, δ=1.0e-05
+============================================================
+Mesh: 67600 verts, ndof=67600
+Sparse velocity: 330889 points
+MAP: θ_A=[-7.94,8.00], θ_C=[-5.82,7.92]
+Primed at MAP
+Building TapedForward at MAP...
+  tape blocks: 13
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/mesh.py:3387: UserWarning: 26417 vertices are outside the mesh and have been removed from the VertexOnlyMesh.
+  warn(str(error))
+Prior: δ=1.00e-05, γ_A=40.0, γ_C=40.0, ELL=2000
+A_block (135200, 135200), nnz=942692; factorizing...
+Matvec cache: 0 computed → matvecs_ssa_9d393ef4cf2a.h5
+ARPACK for 1500 modes...
+  matvec 25
+  matvec 50
+  matvec 75
+  matvec 100
+  matvec 125
+  matvec 150
+  matvec 175
+  matvec 200
+  matvec 225
+  matvec 250
+  matvec 275
+  matvec 300
+  matvec 325
+  matvec 350
+  matvec 375
+  matvec 400
+  matvec 425
+  matvec 450
+  matvec 475
+  matvec 500
+  matvec 525
+  matvec 550
+  matvec 575
+  matvec 600
+  matvec 625
+  matvec 650
+  matvec 675
+  matvec 700
+  matvec 725
+  matvec 750
+  matvec 775
+  matvec 800
+  matvec 825
+  matvec 850
+  matvec 875
+  matvec 900
+  matvec 925
+  matvec 950
+  matvec 975
+  matvec 1000
+  matvec 1025
+  matvec 1050
+  matvec 1075
+  matvec 1100
+  matvec 1125
+  matvec 1150
+  matvec 1175
+  matvec 1200
+  matvec 1225
+  matvec 1250
+  matvec 1275
+  matvec 1300
+  matvec 1325
+  matvec 1350
+  matvec 1375
+  matvec 1400
+  matvec 1425
+  matvec 1450
+  matvec 1475
+  matvec 1500
+  matvec 1525
+  matvec 1550
+  matvec 1575
+  matvec 1600
+  matvec 1625
+  matvec 1650
+  matvec 1675
+  matvec 1700
+  matvec 1725
+  matvec 1750
+  matvec 1775
+  matvec 1800
+  matvec 1825
+  matvec 1850
+  matvec 1875
+  matvec 1900
+  matvec 1925
+  matvec 1950
+  matvec 1975
+  matvec 2000
+  matvec 2025
+  matvec 2050
+  matvec 2075
+  matvec 2100
+  matvec 2125
+  matvec 2150
+  matvec 2175
+  matvec 2200
+  matvec 2225
+  matvec 2250
+  matvec 2275
+  matvec 2300
+  matvec 2325
+  matvec 2350
+  matvec 2375
+  matvec 2400
+  matvec 2425
+  matvec 2450
+  matvec 2475
+  matvec 2500
+  matvec 2525
+  matvec 2550
+  matvec 2575
+  matvec 2600
+  matvec 2625
+  matvec 2650
+  matvec 2675
+  matvec 2700
+  matvec 2725
+  matvec 2750
+  matvec 2775
+  matvec 2800
+  matvec 2825
+  matvec 2850
+  matvec 2875
+  matvec 2900
+  matvec 2925
+  matvec 2950
+  matvec 2975
+  matvec 3000
+
+Leading eigenvalues: [385313.5187908  209456.81620359  16263.71731958  14805.34025063
+  10225.77106002   9327.20374933   7141.87290831   6562.11421275]
+Positive: 1500/1500, n_eff=1248.0
+Saved results/eigenvectors_ssaw.npz, eigenvalues_ssaw.txt, prior_params_ssaw.json, mesh/eigendec_ssaw.h5
+Done!
+WARNING! There are options you set that were not used!
+WARNING! could be spelling mistake, etc!
+There are 4 unused database options. They are:
+Option left: name:--friction value: weertman source: command line
+Option left: name:--K value: 1500 source: command line
+Option left: name:-friction value: weertman source: code
+Option left: name:-K value: 1500 source: code

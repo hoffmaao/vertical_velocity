@@ -1,0 +1,48 @@
+============================================================
+L-curve: Hybrid + ApRES, ELL = 3.0 km (3000 m) (hires, vdeg=1, 500 iters)
+  Recinos prior: δ=1.000e-05, γ=9.000e+01  (no 1/N normalization)
+  Warm-start from inversion_hires_apres_vd1.h5
+============================================================
+Mesh: 67600 verts
+  Sparse velocity: 3309 points (VOM after extrusion)
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/mesh.py:3387: UserWarning: 272 vertices are outside the mesh and have been removed from the VertexOnlyMesh.
+  warn(str(error))
+  Velocity VOM: 3037 points at ζ=1
+Warm start from inversion_hires_apres_vd1.h5: θ_A=[-0.85, -0.55], θ_C=[1.07, 2.12]
+Primed OK
+ApRES: 479 VOM points (N_apr=479)
+
+L-BFGS-B (135200 DOFs, 500 iters)...
+/home/andrew/projects/vertical_velocity/scripts/lcurve_hybrid_apres.py:316: OptimizeWarning: Unknown solver options: pgtol
+  result = scipy_minimize(
+  iter  20: Jv=9.370e+04 Ja=1.039e+04 R=4.578e+05 |g|=3.273e+03
+  iter  40: Jv=5.344e+04 Ja=8.698e+03 R=4.051e+05 |g|=9.300e+02
+  iter  60: Jv=5.364e+04 Ja=8.603e+03 R=3.927e+05 |g|=5.377e+02
+  iter  80: Jv=5.263e+04 Ja=8.625e+03 R=3.923e+05 |g|=1.317e+02
+  iter 100: Jv=5.273e+04 Ja=8.627e+03 R=3.920e+05 |g|=5.990e+01
+  iter 120: Jv=5.271e+04 Ja=8.625e+03 R=3.920e+05 |g|=2.242e+01
+  iter 140: Jv=5.271e+04 Ja=8.624e+03 R=3.920e+05 |g|=1.394e+01
+  iter 160: Jv=5.269e+04 Ja=8.624e+03 R=3.920e+05 |g|=5.217e+00
+  iter 180: Jv=5.269e+04 Ja=8.624e+03 R=3.920e+05 |g|=6.052e+00
+  iter 200: Jv=5.269e+04 Ja=8.624e+03 R=3.920e+05 |g|=3.081e+00
+  iter 220: Jv=5.266e+04 Ja=8.623e+03 R=3.921e+05 |g|=6.766e+00
+  iter 240: Jv=5.256e+04 Ja=8.624e+03 R=3.922e+05 |g|=1.155e+01
+  iter 260: Jv=5.251e+04 Ja=8.624e+03 R=3.922e+05 |g|=6.859e+00
+  iter 280: Jv=5.250e+04 Ja=8.624e+03 R=3.922e+05 |g|=7.262e+00
+  iter 300: Jv=5.250e+04 Ja=8.624e+03 R=3.922e+05 |g|=3.305e+00
+  iter 320: Jv=5.250e+04 Ja=8.624e+03 R=3.922e+05 |g|=1.001e+00
+  iter 340: Jv=5.250e+04 Ja=8.624e+03 R=3.922e+05 |g|=3.742e-01
+  iter 360: Jv=5.250e+04 Ja=8.624e+03 R=3.922e+05 |g|=3.264e-01
+  iter 380: Jv=5.250e+04 Ja=8.624e+03 R=3.922e+05 |g|=3.849e-01
+  iter 400: Jv=5.250e+04 Ja=8.624e+03 R=3.922e+05 |g|=6.962e-02
+  iter 420: Jv=5.250e+04 Ja=8.624e+03 R=3.922e+05 |g|=3.440e-02
+  iter 440: Jv=5.250e+04 Ja=8.624e+03 R=3.922e+05 |g|=2.607e-02
+  iter 460: Jv=5.250e+04 Ja=8.624e+03 R=3.922e+05 |g|=1.753e-02
+  iter 480: Jv=5.250e+04 Ja=8.624e+03 R=3.922e+05 |g|=7.706e-03
+  iter 500: Jv=5.250e+04 Ja=8.624e+03 R=3.922e+05 |g|=3.385e-03
+Result: CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH (515 evals)
+
+Final: E_vel=5.2499e+04, E_apr=8.6240e+03, R=3.9221e+05
+Saved lcurve_hybrid_apres_L3km.h5
+Saved lcurve_hybrid_apres_L3km.json
+Done!

@@ -1,0 +1,205 @@
+firedrake:WARNING OMP_NUM_THREADS is not set or is set to a value greater than 1, we suggest setting OMP_NUM_THREADS=1 to improve performance
+==================================================================
+MISMIP OSSE joint inversion: hybrid_surf_d20km  (δ=1e-05, ELL=20.0km)
+==================================================================
+obs: 93 surface-vel pts; 75 w pts (ignored); σv=5.0, σw=5e-04
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/interpolation.py:391: FutureWarning: The use of `interpolate` to perform the numerical interpolation is deprecated.
+This feature will be removed very shortly.
+
+Instead, import `interpolate` from the `firedrake.__future__` module to update
+the interpolation's behaviour to return the symbolic `ufl.Interpolate` object associated
+with this interpolation.
+
+You can then assemble the resulting object to get the interpolated quantity
+of interest. For example,
+
+```
+from firedrake.__future__ import interpolate
+...
+
+assemble(interpolate(expr, V))
+```
+
+Alternatively, you can also perform other symbolic operations on the interpolation operator, such as taking
+the derivative, and then assemble the resulting form.
+
+  warnings.warn("""The use of `interpolate` to perform the numerical interpolation is deprecated.
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/interpolation.py:391: FutureWarning: The use of `interpolate` to perform the numerical interpolation is deprecated.
+This feature will be removed very shortly.
+
+Instead, import `interpolate` from the `firedrake.__future__` module to update
+the interpolation's behaviour to return the symbolic `ufl.Interpolate` object associated
+with this interpolation.
+
+You can then assemble the resulting object to get the interpolated quantity
+of interest. For example,
+
+```
+from firedrake.__future__ import interpolate
+...
+
+assemble(interpolate(expr, V))
+```
+
+Alternatively, you can also perform other symbolic operations on the interpolation operator, such as taking
+the derivative, and then assemble the resulting form.
+
+  warnings.warn("""The use of `interpolate` to perform the numerical interpolation is deprecated.
+primed forward OK (control DOFs=20451 per field)
+
+L-BFGS-B (40902 DOFs, max 90)...
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/interpolation.py:391: FutureWarning: The use of `interpolate` to perform the numerical interpolation is deprecated.
+This feature will be removed very shortly.
+
+Instead, import `interpolate` from the `firedrake.__future__` module to update
+the interpolation's behaviour to return the symbolic `ufl.Interpolate` object associated
+with this interpolation.
+
+You can then assemble the resulting object to get the interpolated quantity
+of interest. For example,
+
+```
+from firedrake.__future__ import interpolate
+...
+
+assemble(interpolate(expr, V))
+```
+
+Alternatively, you can also perform other symbolic operations on the interpolation operator, such as taking
+the derivative, and then assemble the resulting form.
+
+  warnings.warn("""The use of `interpolate` to perform the numerical interpolation is deprecated.
+  iter   1: Jobs=4.615e+05 reg=0.000e+00 |g|=2.429e+03
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/interpolation.py:391: FutureWarning: The use of `interpolate` to perform the numerical interpolation is deprecated.
+This feature will be removed very shortly.
+
+Instead, import `interpolate` from the `firedrake.__future__` module to update
+the interpolation's behaviour to return the symbolic `ufl.Interpolate` object associated
+with this interpolation.
+
+You can then assemble the resulting object to get the interpolated quantity
+of interest. For example,
+
+```
+from firedrake.__future__ import interpolate
+...
+
+assemble(interpolate(expr, V))
+```
+
+Alternatively, you can also perform other symbolic operations on the interpolation operator, such as taking
+the derivative, and then assemble the resulting form.
+
+  warnings.warn("""The use of `interpolate` to perform the numerical interpolation is deprecated.
+  iter   2: Jobs=4.559e+09 reg=4.738e+07 |g|=1.700e+08
+  iter   3: Jobs=1.287e+05 reg=4.248e+06 |g|=2.158e+05
+  iter   4: Jobs=4.495e+05 reg=6.787e+03 |g|=8.787e+03
+  iter   5: Jobs=4.383e+05 reg=1.247e+04 |g|=9.276e+03
+  iter   6: Jobs=4.329e+05 reg=1.380e+04 |g|=6.894e+03
+  iter   7: Jobs=4.211e+05 reg=2.013e+04 |g|=7.384e+03
+  iter   8: Jobs=3.992e+05 reg=3.486e+04 |g|=1.114e+04
+  iter   9: Jobs=3.657e+05 reg=6.033e+04 |g|=1.183e+04
+  iter  10: Jobs=3.484e+05 reg=6.996e+04 |g|=8.779e+03
+  iter  11: Jobs=3.179e+05 reg=8.904e+04 |g|=1.002e+04
+  iter  12: Jobs=2.855e+05 reg=1.122e+05 |g|=1.496e+04
+  iter  13: Jobs=2.557e+05 reg=1.305e+05 |g|=1.056e+04
+  iter  14: Jobs=2.390e+05 reg=1.367e+05 |g|=1.055e+04
+  iter  15: Jobs=2.289e+05 reg=1.389e+05 |g|=1.052e+04
+  iter  16: Jobs=2.177e+05 reg=1.432e+05 |g|=8.722e+03
+  iter  17: Jobs=2.055e+05 reg=1.480e+05 |g|=1.051e+04
+  iter  18: Jobs=2.026e+05 reg=1.459e+05 |g|=8.247e+03
+  iter  19: Jobs=1.972e+05 reg=1.479e+05 |g|=6.540e+03
+  iter  20: Jobs=1.949e+05 reg=1.448e+05 |g|=7.649e+03
+  iter  21: Jobs=1.917e+05 reg=1.455e+05 |g|=1.128e+04
+  iter  22: Jobs=1.873e+05 reg=1.468e+05 |g|=5.836e+03
+  iter  23: Jobs=1.865e+05 reg=1.447e+05 |g|=4.447e+03
+  iter  24: Jobs=1.848e+05 reg=1.441e+05 |g|=5.160e+03
+  iter  25: Jobs=1.790e+05 reg=1.468e+05 |g|=1.030e+04
+  iter  26: Jobs=1.763e+05 reg=1.464e+05 |g|=5.045e+03
+  iter  27: Jobs=1.764e+05 reg=1.449e+05 |g|=3.533e+03
+  iter  28: Jobs=1.758e+05 reg=1.435e+05 |g|=4.452e+03
+  iter  29: Jobs=1.744e+05 reg=1.437e+05 |g|=7.520e+03
+  iter  30: Jobs=1.736e+05 reg=1.430e+05 |g|=4.325e+03
+  iter  31: Jobs=1.720e+05 reg=1.430e+05 |g|=3.279e+03
+  iter  32: Jobs=1.713e+05 reg=1.428e+05 |g|=3.708e+03
+  iter  33: Jobs=1.694e+05 reg=1.433e+05 |g|=8.401e+03
+  iter  34: Jobs=1.689e+05 reg=1.421e+05 |g|=3.595e+03
+  iter  35: Jobs=1.690e+05 reg=1.412e+05 |g|=2.998e+03
+  iter  36: Jobs=1.684e+05 reg=1.403e+05 |g|=3.751e+03
+  iter  37: Jobs=1.665e+05 reg=1.415e+05 |g|=7.689e+03
+  iter  38: Jobs=1.660e+05 reg=1.408e+05 |g|=3.531e+03
+  iter  39: Jobs=1.647e+05 reg=1.412e+05 |g|=2.777e+03
+  iter  40: Jobs=1.633e+05 reg=1.418e+05 |g|=3.408e+03
+  iter  41: Jobs=1.609e+05 reg=1.426e+05 |g|=3.783e+03
+  iter  42: Jobs=1.562e+05 reg=1.504e+05 |g|=1.674e+04
+  iter  43: Jobs=1.596e+05 reg=1.433e+05 |g|=4.797e+03
+  iter  44: Jobs=1.583e+05 reg=1.437e+05 |g|=2.317e+03
+  iter  45: Jobs=1.580e+05 reg=1.435e+05 |g|=1.783e+03
+  iter  46: Jobs=1.576e+05 reg=1.434e+05 |g|=2.436e+03
+  iter  47: Jobs=1.572e+05 reg=1.436e+05 |g|=3.861e+03
+  iter  48: Jobs=1.571e+05 reg=1.433e+05 |g|=1.928e+03
+  iter  49: Jobs=1.568e+05 reg=1.432e+05 |g|=2.005e+03
+  iter  50: Jobs=1.563e+05 reg=1.432e+05 |g|=2.610e+03
+  iter  51: Jobs=1.555e+05 reg=1.432e+05 |g|=2.877e+03
+  iter  52: Jobs=1.536e+05 reg=1.465e+05 |g|=1.111e+04
+  iter  53: Jobs=1.549e+05 reg=1.435e+05 |g|=3.607e+03
+  iter  54: Jobs=1.546e+05 reg=1.434e+05 |g|=1.901e+03
+  iter  55: Jobs=1.544e+05 reg=1.431e+05 |g|=1.793e+03
+  iter  56: Jobs=1.543e+05 reg=1.429e+05 |g|=2.465e+03
+  iter  57: Jobs=1.540e+05 reg=1.428e+05 |g|=4.008e+03
+  iter  58: Jobs=1.538e+05 reg=1.425e+05 |g|=2.056e+03
+  iter  59: Jobs=1.536e+05 reg=1.424e+05 |g|=1.591e+03
+  iter  60: Jobs=1.534e+05 reg=1.423e+05 |g|=1.997e+03
+  iter  61: Jobs=1.532e+05 reg=1.422e+05 |g|=2.708e+03
+  iter  62: Jobs=1.529e+05 reg=1.421e+05 |g|=2.114e+03
+  iter  63: Jobs=1.529e+05 reg=1.419e+05 |g|=1.539e+03
+  iter  64: Jobs=1.529e+05 reg=1.416e+05 |g|=1.875e+03
+  iter  65: Jobs=1.529e+05 reg=1.414e+05 |g|=1.549e+03
+  iter  66: Jobs=1.528e+05 reg=1.412e+05 |g|=1.468e+03
+  iter  67: Jobs=1.527e+05 reg=1.412e+05 |g|=2.906e+03
+  iter  68: Jobs=1.526e+05 reg=1.411e+05 |g|=1.337e+03
+  iter  69: Jobs=1.525e+05 reg=1.411e+05 |g|=1.199e+03
+  iter  70: Jobs=1.524e+05 reg=1.410e+05 |g|=1.411e+03
+  iter  71: Jobs=1.522e+05 reg=1.410e+05 |g|=1.942e+03
+  iter  72: Jobs=1.519e+05 reg=1.412e+05 |g|=1.377e+03
+  iter  73: Jobs=1.518e+05 reg=1.411e+05 |g|=1.029e+03
+  iter  74: Jobs=1.516e+05 reg=1.412e+05 |g|=1.314e+03
+  iter  75: Jobs=1.514e+05 reg=1.413e+05 |g|=1.534e+03
+  iter  76: Jobs=1.511e+05 reg=1.414e+05 |g|=1.188e+03
+  iter  77: Jobs=1.505e+05 reg=1.418e+05 |g|=2.097e+03
+  iter  78: Jobs=1.503e+05 reg=1.420e+05 |g|=1.294e+03
+  iter  79: Jobs=1.502e+05 reg=1.419e+05 |g|=1.007e+03
+  iter  80: Jobs=1.499e+05 reg=1.422e+05 |g|=9.543e+02
+  iter  81: Jobs=1.493e+05 reg=1.427e+05 |g|=2.722e+03
+  iter  82: Jobs=1.492e+05 reg=1.427e+05 |g|=1.195e+03
+  iter  83: Jobs=1.489e+05 reg=1.428e+05 |g|=6.916e+02
+  iter  84: Jobs=1.486e+05 reg=1.431e+05 |g|=9.167e+02
+  iter  85: Jobs=1.481e+05 reg=1.435e+05 |g|=9.916e+02
+  iter  86: Jobs=1.471e+05 reg=1.447e+05 |g|=4.659e+03
+  iter  87: Jobs=1.478e+05 reg=1.437e+05 |g|=1.619e+03
+  iter  88: Jobs=1.473e+05 reg=1.442e+05 |g|=8.184e+02
+  iter  89: Jobs=1.470e+05 reg=1.444e+05 |g|=5.840e+02
+  iter  90: Jobs=1.468e+05 reg=1.445e+05 |g|=9.298e+02
+  iter  91: Jobs=1.466e+05 reg=1.447e+05 |g|=1.431e+03
+  iter  92: Jobs=1.465e+05 reg=1.447e+05 |g|=9.039e+02
+  iter  93: Jobs=1.462e+05 reg=1.449e+05 |g|=7.726e+02
+  iter  94: Jobs=1.459e+05 reg=1.452e+05 |g|=8.937e+02
+  iter  95: Jobs=1.450e+05 reg=1.461e+05 |g|=2.766e+03
+  iter  96: Jobs=1.449e+05 reg=1.461e+05 |g|=7.562e+02
+Result: STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+recovery vs analytic truth:
+  θ_A (fluidity): RMSE=0.4261  truth-rms=0.3694  explained=-15%
+  θ_C (friction) : RMSE=2.5222  truth-rms=2.6778  explained=6%
+Saved /home/andrew/projects/vertical_velocity/results/mismip_inv_hybrid_surf_d20km.h5
+Done!
+WARNING! There are options you set that were not used!
+WARNING! could be spelling mistake, etc!
+There are 8 unused database options. They are:
+Option left: name:--maxiter value: 90 source: command line
+Option left: name:--model value: hybrid source: command line
+Option left: name:--obs value: surf source: command line
+Option left: name:--spacing value: 20 source: command line
+Option left: name:-maxiter value: 90 source: code
+Option left: name:-model value: hybrid source: code
+Option left: name:-obs value: surf source: code
+Option left: name:-spacing value: 20 source: code

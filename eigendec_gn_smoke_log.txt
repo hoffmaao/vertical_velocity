@@ -1,0 +1,49 @@
+firedrake:WARNING OMP_NUM_THREADS is not set or is set to a value greater than 1, we suggest setting OMP_NUM_THREADS=1 to improve performance
+============================================================
+Hessian eigendecomposition: Hybrid + ApRES (method=gn)
+  K=5 modes, ELL=0 m, eps_fd=1e-05
+============================================================
+Mesh: 67600 verts, ndof=67600, area=6.096e+10 m²
+Sparse velocity: 3309 points
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/mesh.py:3387: UserWarning: 272 vertices are outside the mesh and have been removed from the VertexOnlyMesh.
+  warn(str(error))
+Velocity VOM: 3037 points at ζ=1
+ApRES VOM: 479 points
+MAP: θ_A=[-6.35, 6.20], θ_C=[-2.16, 8.27]
+Primed at MAP
+Building TapedForward (pyadjoint) at MAP...
+  tape blocks: 13
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/mesh.py:3387: UserWarning: 272 vertices are outside the mesh and have been removed from the VertexOnlyMesh.
+  warn(str(error))
+Prior (1/N norm): delta=3.292723e-04, gamma_A=8.231808e-05, gamma_C=8.231808e-05
+
+ARPACK eigensolve for 5 modes...
+Generated v0 (seed=42) → v0_b1c27405799b.npy
+Matvec cache: 0 previously computed → matvecs_b1c27405799b.h5
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/interpolation.py:846: FutureWarning: 'transpose' argument is deprecated, use 'adjoint' instead
+  warnings.warn("'transpose' argument is deprecated, use 'adjoint' instead", FutureWarning)
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/interpolation.py:846: FutureWarning: 'transpose' argument is deprecated, use 'adjoint' instead
+  warnings.warn("'transpose' argument is deprecated, use 'adjoint' instead", FutureWarning)
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/interpolation.py:846: FutureWarning: 'transpose' argument is deprecated, use 'adjoint' instead
+  warnings.warn("'transpose' argument is deprecated, use 'adjoint' instead", FutureWarning)
+  matvec 5
+  matvec 10
+  matvec 15
+  matvec 20
+
+Leading eigenvalues: [113362.81330934  58715.86205307  49143.68317392  37945.51392579
+  37422.23843975]
+Positive modes: 5 / 5
+Effective constrained parameters: 5.0
+Saved /home/andrew/projects/vertical_velocity/results/eigenvalues.txt
+Saved /home/andrew/projects/vertical_velocity/results/eigenvectors.npz (5 positive modes)
+Saved /home/andrew/projects/vertical_velocity/mesh/eigendec.h5 (5 modes as MixedFunctions)
+Saved /home/andrew/projects/vertical_velocity/results/prior_params.json
+Done!
+WARNING! There are options you set that were not used!
+WARNING! could be spelling mistake, etc!
+There are 4 unused database options. They are:
+Option left: name:--K value: 5 source: command line
+Option left: name:--method value: gn source: command line
+Option left: name:-K value: 5 source: code
+Option left: name:-method value: gn source: code

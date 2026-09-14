@@ -1,0 +1,228 @@
+firedrake:WARNING OMP_NUM_THREADS is not set or is set to a value greater than 1, we suggest setting OMP_NUM_THREADS=1 to improve performance
+============================================================
+Hessian eigendecomposition: Hybrid + ApRES
+  K=500 modes, ELL=0 m, eps_fd=1e-05
+============================================================
+Mesh: 67600 verts, ndof=67600, area=6.096e+10 m²
+Sparse velocity: 3309 points
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/mesh.py:3387: UserWarning: 272 vertices are outside the mesh and have been removed from the VertexOnlyMesh.
+  warn(str(error))
+Velocity VOM: 3037 points at ζ=1
+ApRES VOM: 479 points
+MAP: θ_A=[-6.35, 6.20], θ_C=[-2.16, 8.27]
+Primed at MAP
+Computing gradient at MAP...
+  |grad| at MAP = 5.1830e-02
+Prior (1/N norm): delta=3.292723e-04, gamma_A=8.231808e-05, gamma_C=8.231808e-05
+
+ARPACK eigensolve for 500 modes...
+  matvec 5
+  matvec 10
+  matvec 15
+  matvec 20
+  matvec 25
+  matvec 30
+  matvec 35
+  matvec 40
+  matvec 45
+  matvec 50
+  matvec 55
+  matvec 60
+  matvec 65
+  matvec 70
+  matvec 75
+  matvec 80
+  matvec 85
+  matvec 90
+  matvec 95
+  matvec 100
+  matvec 105
+  matvec 110
+  matvec 115
+  matvec 120
+  matvec 125
+  matvec 130
+  matvec 135
+  matvec 140
+  matvec 145
+  matvec 150
+  matvec 155
+  matvec 160
+  matvec 165
+  matvec 170
+  matvec 175
+  matvec 180
+  matvec 185
+  matvec 190
+  matvec 195
+  matvec 200
+  matvec 205
+  matvec 210
+  matvec 215
+  matvec 220
+  matvec 225
+  matvec 230
+  matvec 235
+  matvec 240
+  matvec 245
+  matvec 250
+  matvec 255
+  matvec 260
+  matvec 265
+  matvec 270
+  matvec 275
+  matvec 280
+  matvec 285
+  matvec 290
+  matvec 295
+  matvec 300
+  matvec 305
+  matvec 310
+  matvec 315
+  matvec 320
+  matvec 325
+  matvec 330
+  matvec 335
+  matvec 340
+  matvec 345
+  matvec 350
+  matvec 355
+  matvec 360
+  matvec 365
+  matvec 370
+  matvec 375
+  matvec 380
+  matvec 385
+  matvec 390
+  matvec 395
+  matvec 400
+  matvec 405
+  matvec 410
+  matvec 415
+  matvec 420
+  matvec 425
+  matvec 430
+  matvec 435
+  matvec 440
+  matvec 445
+  matvec 450
+  matvec 455
+  matvec 460
+  matvec 465
+  matvec 470
+  matvec 475
+  matvec 480
+  matvec 485
+  matvec 490
+  matvec 495
+  matvec 500
+  matvec 505
+  matvec 510
+  matvec 515
+  matvec 520
+  matvec 525
+  matvec 530
+  matvec 535
+  matvec 540
+  matvec 545
+  matvec 550
+  matvec 555
+  matvec 560
+  matvec 565
+  matvec 570
+  matvec 575
+  matvec 580
+  matvec 585
+  matvec 590
+  matvec 595
+  matvec 600
+  matvec 605
+  matvec 610
+  matvec 615
+  matvec 620
+  matvec 625
+  matvec 630
+  matvec 635
+  matvec 640
+  matvec 645
+  matvec 650
+  matvec 655
+  matvec 660
+  matvec 665
+  matvec 670
+  matvec 675
+  matvec 680
+  matvec 685
+  matvec 690
+  matvec 695
+  matvec 700
+  matvec 705
+  matvec 710
+  matvec 715
+  matvec 720
+  matvec 725
+  matvec 730
+  matvec 735
+  matvec 740
+  matvec 745
+  matvec 750
+  matvec 755
+  matvec 760
+  matvec 765
+  matvec 770
+  matvec 775
+  matvec 780
+  matvec 785
+  matvec 790
+  matvec 795
+  matvec 800
+  matvec 805
+  matvec 810
+  matvec 815
+  matvec 820
+  matvec 825
+  matvec 830
+  matvec 835
+  matvec 840
+  matvec 845
+  matvec 850
+  matvec 855
+  matvec 860
+  matvec 865
+  matvec 870
+  matvec 875
+  matvec 880
+  matvec 885
+  matvec 890
+  matvec 895
+  matvec 900
+  matvec 905
+  matvec 910
+  matvec 915
+  matvec 920
+  matvec 925
+  matvec 930
+  matvec 935
+  matvec 940
+  matvec 945
+  matvec 950
+  matvec 955
+  matvec 960
+  matvec 965
+  matvec 970
+  matvec 975
+  matvec 980
+  matvec 985
+  matvec 990
+  matvec 995
+  matvec 1000
+
+Leading eigenvalues: [113342.82910653  58701.34293015  49137.16645648  37954.68773027
+  37452.27084522  29354.96004222  19056.90218093  18827.10869767
+  18182.02443659  15253.74265785]
+Effective constrained parameters: 475.3
+Saved /home/andrew/projects/vertical_velocity/results/eigenvalues.txt
+Saved /home/andrew/projects/vertical_velocity/results/eigenvectors.npz (486 positive modes)
+Saved /home/andrew/projects/vertical_velocity/mesh/eigendec.h5 (100 modes as MixedFunctions)
+Saved /home/andrew/projects/vertical_velocity/results/prior_params.json
+Done!

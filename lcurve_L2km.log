@@ -1,0 +1,47 @@
+============================================================
+L-curve: Hybrid + ApRES, L = 2.0 km (2000 m) (hires, vdeg=1, 500 iters)
+  per-observation normalization, warm-start from inversion_hires_apres_vd1.h5
+============================================================
+Mesh: 67600 verts
+  Sparse velocity: 3309 points (VOM after extrusion)
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/mesh.py:3387: UserWarning: 272 vertices are outside the mesh and have been removed from the VertexOnlyMesh.
+  warn(str(error))
+  Velocity VOM: 3037 points at ζ=1
+Warm start from inversion_hires_apres_vd1.h5: θ_A=[-6.35, 6.20], θ_C=[-2.16, 8.27]
+Primed OK
+ApRES: 479 VOM points (N_apr=479)
+
+L-BFGS-B (135200 DOFs, 500 iters)...
+/home/andrew/projects/vertical_velocity/scripts/lcurve_hybrid_apres.py:314: OptimizeWarning: Unknown solver options: pgtol
+  result = scipy_minimize(
+  iter  20: Jv=5.825e+02 Ja=1.092e+02 R=1.549e+05 |g|=5.626e+03
+  iter  40: Jv=9.314e+02 Ja=2.625e+02 R=3.886e+04 |g|=2.161e+03
+  iter  60: Jv=1.039e+03 Ja=5.251e+02 R=1.757e+04 |g|=3.543e+03
+  iter  80: Jv=1.109e+03 Ja=7.555e+02 R=9.637e+03 |g|=9.560e+02
+  iter 100: Jv=1.165e+03 Ja=7.201e+02 R=6.294e+03 |g|=6.671e+02
+  iter 120: Jv=1.138e+03 Ja=5.660e+02 R=4.499e+03 |g|=4.400e+02
+  iter 140: Jv=1.098e+03 Ja=4.556e+02 R=3.420e+03 |g|=3.563e+02
+  iter 160: Jv=1.069e+03 Ja=4.116e+02 R=2.663e+03 |g|=2.227e+02
+  iter 180: Jv=1.092e+03 Ja=3.824e+02 R=2.073e+03 |g|=3.938e+02
+  iter 200: Jv=1.160e+03 Ja=3.324e+02 R=1.582e+03 |g|=3.890e+02
+  iter 220: Jv=1.203e+03 Ja=2.821e+02 R=1.286e+03 |g|=1.974e+02
+  iter 240: Jv=1.225e+03 Ja=2.406e+02 R=1.053e+03 |g|=1.716e+02
+  iter 260: Jv=1.236e+03 Ja=2.038e+02 R=8.213e+02 |g|=1.741e+02
+  iter 280: Jv=1.229e+03 Ja=1.790e+02 R=6.458e+02 |g|=2.009e+02
+  iter 300: Jv=1.212e+03 Ja=1.513e+02 R=5.191e+02 |g|=1.360e+02
+  iter 320: Jv=1.185e+03 Ja=1.249e+02 R=4.195e+02 |g|=2.173e+02
+  iter 340: Jv=1.150e+03 Ja=1.005e+02 R=3.478e+02 |g|=9.935e+01
+  iter 360: Jv=1.121e+03 Ja=8.833e+01 R=2.967e+02 |g|=1.190e+02
+  iter 380: Jv=1.086e+03 Ja=7.735e+01 R=2.747e+02 |g|=3.286e+02
+  iter 400: Jv=1.072e+03 Ja=7.094e+01 R=2.362e+02 |g|=7.659e+01
+  iter 420: Jv=1.063e+03 Ja=6.300e+01 R=2.035e+02 |g|=7.170e+01
+  iter 440: Jv=1.062e+03 Ja=5.828e+01 R=1.734e+02 |g|=1.073e+02
+  iter 460: Jv=1.064e+03 Ja=5.451e+01 R=1.492e+02 |g|=4.832e+01
+  iter 480: Jv=1.065e+03 Ja=5.089e+01 R=1.296e+02 |g|=5.570e+01
+  iter 500: Jv=1.066e+03 Ja=4.763e+01 R=1.155e+02 |g|=3.829e+01
+Result: STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT (512 evals)
+
+Final: E_vel=1.0664e+03, E_apr=4.6135e+01, R=1.0842e+02
+Saved lcurve_hybrid_apres_L2km.h5
+Saved lcurve_hybrid_apres_L2km.json
+Done!

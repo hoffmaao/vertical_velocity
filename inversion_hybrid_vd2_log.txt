@@ -1,0 +1,32 @@
+firedrake:WARNING OMP_NUM_THREADS is not set or is set to a value greater than 1, we suggest setting OMP_NUM_THREADS=1 to improve performance
+============================================================
+Hybrid inversion (vdegree=1)
+============================================================
+
+1. Loading mesh...
+   2D mesh: 67600 verts
+
+2. Extruding mesh...
+   V dofs: 270400
+
+3. Setting up controls...
+   Grounded: 59514/67600
+   Warm start from vdeg=1: θ_A=[-0.24, 0.05], θ_C=[0.18, 1.43]
+
+4. Building sparse observations...
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/mesh.py:3387: UserWarning: 272 vertices are outside the mesh and have been removed from the VertexOnlyMesh.
+  warn(str(error))
+   3037 sparse observation points
+
+5. Creating HybridModel...
+   Forward solve...
+   Speed: [1, 45134] m/yr
+
+6. Loading ApRES strain rate observations...
+   88 ApRES sites
+   w_obs (ε*H): [-34.90, 13.86] m/yr
+   σ_w: [1.00, 1.00] m/yr
+
+7. Defining objective...
+
+8. Solving (max 500 iterations)...

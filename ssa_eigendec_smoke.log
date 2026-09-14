@@ -1,0 +1,30 @@
+firedrake:WARNING OMP_NUM_THREADS is not set or is set to a value greater than 1, we suggest setting OMP_NUM_THREADS=1 to improve performance
+============================================================
+SSA Hessian eigendecomposition (velocity-only GN)
+  K=20, ELL=2000 m, δ=1.0e-05
+============================================================
+Mesh: 67600 verts, ndof=67600
+Sparse velocity: 330889 points
+MAP: θ_A=[-8.00,6.99], θ_C=[-7.97,6.53]
+Primed at MAP
+Building TapedForward at MAP...
+  tape blocks: 13
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/mesh.py:3387: UserWarning: 26417 vertices are outside the mesh and have been removed from the VertexOnlyMesh.
+  warn(str(error))
+Prior: δ=1.00e-05, γ_A=40.0, γ_C=40.0, ELL=2000
+A_block (135200, 135200), nnz=942692; factorizing...
+Matvec cache: 0 computed → matvecs_ssa_8ad35c8d4e46.h5
+ARPACK for 20 modes...
+  matvec 25
+  matvec 50
+
+Leading eigenvalues: [963866.28739742 257937.11328208  77980.41524128  65977.14844499
+  34317.07739066  25956.6409053   19708.11007394  16615.19735774]
+Positive: 20/20, n_eff=20.0
+Saved results/eigenvectors_ssa.npz, eigenvalues_ssa.txt, prior_params_ssa.json, mesh/eigendec_ssa.h5
+Done!
+WARNING! There are options you set that were not used!
+WARNING! could be spelling mistake, etc!
+There are 2 unused database options. They are:
+Option left: name:--K value: 20 source: command line
+Option left: name:-K value: 20 source: code

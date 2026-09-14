@@ -1,0 +1,116 @@
+firedrake:WARNING OMP_NUM_THREADS is not set or is set to a value greater than 1, we suggest setting OMP_NUM_THREADS=1 to improve performance
+==================================================================
+MISMIP OSSE joint inversion: hybrid_vert_d20km  (δ=1e-05, ELL=20.0km)
+==================================================================
+obs: 93 surface-vel pts; 75 w pts (USED); σv=5.0, σw=5e-04
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/interpolation.py:391: FutureWarning: The use of `interpolate` to perform the numerical interpolation is deprecated.
+This feature will be removed very shortly.
+
+Instead, import `interpolate` from the `firedrake.__future__` module to update
+the interpolation's behaviour to return the symbolic `ufl.Interpolate` object associated
+with this interpolation.
+
+You can then assemble the resulting object to get the interpolated quantity
+of interest. For example,
+
+```
+from firedrake.__future__ import interpolate
+...
+
+assemble(interpolate(expr, V))
+```
+
+Alternatively, you can also perform other symbolic operations on the interpolation operator, such as taking
+the derivative, and then assemble the resulting form.
+
+  warnings.warn("""The use of `interpolate` to perform the numerical interpolation is deprecated.
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/interpolation.py:391: FutureWarning: The use of `interpolate` to perform the numerical interpolation is deprecated.
+This feature will be removed very shortly.
+
+Instead, import `interpolate` from the `firedrake.__future__` module to update
+the interpolation's behaviour to return the symbolic `ufl.Interpolate` object associated
+with this interpolation.
+
+You can then assemble the resulting object to get the interpolated quantity
+of interest. For example,
+
+```
+from firedrake.__future__ import interpolate
+...
+
+assemble(interpolate(expr, V))
+```
+
+Alternatively, you can also perform other symbolic operations on the interpolation operator, such as taking
+the derivative, and then assemble the resulting form.
+
+  warnings.warn("""The use of `interpolate` to perform the numerical interpolation is deprecated.
+primed forward OK (control DOFs=20451 per field)
+
+L-BFGS-B (40902 DOFs, max 4)...
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/interpolation.py:391: FutureWarning: The use of `interpolate` to perform the numerical interpolation is deprecated.
+This feature will be removed very shortly.
+
+Instead, import `interpolate` from the `firedrake.__future__` module to update
+the interpolation's behaviour to return the symbolic `ufl.Interpolate` object associated
+with this interpolation.
+
+You can then assemble the resulting object to get the interpolated quantity
+of interest. For example,
+
+```
+from firedrake.__future__ import interpolate
+...
+
+assemble(interpolate(expr, V))
+```
+
+Alternatively, you can also perform other symbolic operations on the interpolation operator, such as taking
+the derivative, and then assemble the resulting form.
+
+  warnings.warn("""The use of `interpolate` to perform the numerical interpolation is deprecated.
+  iter   1: Jobs=4.618e+05 reg=0.000e+00 |g|=2.429e+03
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/interpolation.py:391: FutureWarning: The use of `interpolate` to perform the numerical interpolation is deprecated.
+This feature will be removed very shortly.
+
+Instead, import `interpolate` from the `firedrake.__future__` module to update
+the interpolation's behaviour to return the symbolic `ufl.Interpolate` object associated
+with this interpolation.
+
+You can then assemble the resulting object to get the interpolated quantity
+of interest. For example,
+
+```
+from firedrake.__future__ import interpolate
+...
+
+assemble(interpolate(expr, V))
+```
+
+Alternatively, you can also perform other symbolic operations on the interpolation operator, such as taking
+the derivative, and then assemble the resulting form.
+
+  warnings.warn("""The use of `interpolate` to perform the numerical interpolation is deprecated.
+  iter   2: Jobs=4.567e+09 reg=4.738e+07 |g|=1.700e+08
+  iter   3: Jobs=1.292e+05 reg=4.246e+06 |g|=2.158e+05
+  iter   4: Jobs=4.498e+05 reg=6.782e+03 |g|=8.784e+03
+  iter   5: Jobs=4.386e+05 reg=1.247e+04 |g|=9.276e+03
+  iter   6: Jobs=4.332e+05 reg=1.381e+04 |g|=6.895e+03
+  iter   7: Jobs=4.214e+05 reg=2.014e+04 |g|=7.384e+03
+Result: STOP: TOTAL NO. OF ITERATIONS REACHED LIMIT
+recovery vs analytic truth:
+  θ_A (fluidity): RMSE=0.2855  truth-rms=0.3694  explained=23%
+  θ_C (friction) : RMSE=nan  truth-rms=nan  explained=nan%
+Saved /home/andrew/projects/vertical_velocity/results/mismip_inv_hybrid_vert_d20km.h5
+Done!
+WARNING! There are options you set that were not used!
+WARNING! could be spelling mistake, etc!
+There are 8 unused database options. They are:
+Option left: name:--maxiter value: 4 source: command line
+Option left: name:--model value: hybrid source: command line
+Option left: name:--obs value: vert source: command line
+Option left: name:--spacing value: 20 source: command line
+Option left: name:-maxiter value: 4 source: code
+Option left: name:-model value: hybrid source: code
+Option left: name:-obs value: vert source: code
+Option left: name:-spacing value: 20 source: code
