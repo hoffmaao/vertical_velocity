@@ -1,4 +1,4 @@
-# Large regenerable outputs (57G of the 58G working tree)
+# Large regenerable outputs (49G, mostly the eigendecomposition matvec cache)
 results/
 simulations/results/
 
