@@ -1,0 +1,5 @@
+firedrake:WARNING OMP_NUM_THREADS is not set or is set to a value greater than 1, we suggest setting OMP_NUM_THREADS=1 to improve performance
+============================================================
+Hybrid inversion (manual L-BFGS, vdeg=1)
+============================================================
+Warm start: θ_A=[-0.24, 0.05], θ_C=[0.18, 1.43]

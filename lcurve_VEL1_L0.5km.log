@@ -1,0 +1,40 @@
+============================================================
+L-curve: Hybrid + ApRES, ELL = 0.5 km (500 m) (hires, vdeg=1, 500 iters)
+  Recinos prior: δ=1.000e-05, γ=2.500e+00  (no 1/N normalization)
+  Warm-start from inversion_hires_apres_vd1.h5
+============================================================
+Mesh: 67600 verts
+  Sparse velocity: 330889 points (VOM after extrusion)
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/mesh.py:3387: UserWarning: 26417 vertices are outside the mesh and have been removed from the VertexOnlyMesh.
+  warn(str(error))
+  Velocity VOM: 304472 points at ζ=1
+Warm start from inversion_hires_apres_vd1.h5: θ_A=[-3.43, 2.25], θ_C=[-1.68, 9.75]
+Primed OK
+ApRES: 479 VOM points (N_apr=479)
+
+L-BFGS-B (135200 DOFs, 500 iters)...
+/home/andrew/projects/vertical_velocity/scripts/lcurve_hybrid_apres.py:316: OptimizeWarning: Unknown solver options: pgtol
+  result = scipy_minimize(
+  iter  20: Jv=2.764e+06 Ja=7.846e+03 R=3.818e+05 |g|=1.895e+05
+  iter  40: Jv=1.831e+06 Ja=8.754e+03 R=4.192e+05 |g|=8.249e+04
+  iter  60: Jv=1.500e+06 Ja=8.633e+03 R=4.525e+05 |g|=5.546e+04
+  iter  67: ADJ FAILED (ConvergenceError: Nonlinear solve failed to conv...) — penalty + last-good gradient
+  iter  73: ADJ FAILED (ConvergenceError: Nonlinear solve failed to conv...) — penalty + last-good gradient
+  iter  74: ADJ FAILED (ConvergenceError: Nonlinear solve failed to conv...) — penalty + last-good gradient
+  iter  75: ADJ FAILED (ConvergenceError: Nonlinear solve failed to conv...) — penalty + last-good gradient
+  iter  77: ADJ FAILED (ConvergenceError: Nonlinear solve failed to conv...) — penalty + last-good gradient
+  iter  80: Jv=1.365e+06 Ja=8.589e+03 R=4.709e+05 |g|=8.172e+04
+  iter  87: ADJ FAILED (ConvergenceError: Nonlinear solve failed to conv...) — penalty + last-good gradient
+  iter  89: ADJ FAILED (ConvergenceError: Nonlinear solve failed to conv...) — penalty + last-good gradient
+  iter  90: ADJ FAILED (ConvergenceError: Nonlinear solve failed to conv...) — penalty + last-good gradient
+  iter  93: ADJ FAILED (ConvergenceError: Nonlinear solve failed to conv...) — penalty + last-good gradient
+  iter  95: ADJ FAILED (ConvergenceError: Nonlinear solve failed to conv...) — penalty + last-good gradient
+  iter  97: ADJ FAILED (ConvergenceError: Nonlinear solve failed to conv...) — penalty + last-good gradient
+  iter 100: Jv=1.365e+06 Ja=8.589e+03 R=4.709e+05 |g|=8.172e+04
+  iter 101: ADJ FAILED (ConvergenceError: Nonlinear solve failed to conv...) — penalty + last-good gradient
+Result: CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH (102 evals)
+
+Final: E_vel=1.3647e+06, E_apr=8.5890e+03, R=4.7089e+05
+Saved lcurve_hybrid_apres_L0.5km.h5
+Saved lcurve_hybrid_apres_L0.5km.json
+Done!

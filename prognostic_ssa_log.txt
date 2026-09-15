@@ -1,0 +1,129 @@
+firedrake:WARNING OMP_NUM_THREADS is not set or is set to a value greater than 1, we suggest setting OMP_NUM_THREADS=1 to improve performance
+============================================================
+Prognostic: ssa (SSA / IceStream)
+  100 yr, dt=0.0833 yr (1.0 mo), melt=40.0 Gt/yr
+============================================================
+Mesh: 67600 verts
+Loaded inversion_ssa.h5: θ_A=[-16.08, 7.50], θ_C=[-44.18, 62.32]
+Loading RACMO SMB...
+  SMB: [0.000, 2.051] m/yr ice eq
+Initial diagnostic solve...
+  initial speed max: 6030 m/yr
+  t=0: VAF=46833.0 Gt, Vol=114943.0 Gt
+
+Time-stepping: 1200 steps, dt=0.0833 yr...
+  t=  1.0: VAF=46766.8 Gt (ΔVAF=-66.2 Gt), Vol=114868.2 Gt, melt=12.2 m/yr
+  t=  2.0: VAF=46736.1 Gt (ΔVAF=-97.0 Gt), Vol=114813.5 Gt, melt=11.8 m/yr
+  t=  3.0: VAF=46707.6 Gt (ΔVAF=-125.5 Gt), Vol=114766.1 Gt, melt=11.5 m/yr
+  t=  4.0: VAF=46678.7 Gt (ΔVAF=-154.3 Gt), Vol=114721.6 Gt, melt=11.3 m/yr
+  t=5.00: FAILED (8 total)
+  t=  5.0: VAF=46650.1 Gt (ΔVAF=-183.0 Gt), Vol=114679.5 Gt, melt=11.2 m/yr
+  t=  6.0: VAF=46622.1 Gt (ΔVAF=-211.0 Gt), Vol=114639.5 Gt, melt=11.2 m/yr
+  t=  7.0: VAF=46593.7 Gt (ΔVAF=-239.3 Gt), Vol=114599.4 Gt, melt=11.1 m/yr
+  t=  8.0: VAF=46564.9 Gt (ΔVAF=-268.2 Gt), Vol=114558.4 Gt, melt=11.0 m/yr
+  t=  9.0: VAF=46535.9 Gt (ΔVAF=-297.2 Gt), Vol=114516.1 Gt, melt=10.9 m/yr
+  t= 10.0: VAF=46507.2 Gt (ΔVAF=-325.8 Gt), Vol=114473.8 Gt, melt=10.9 m/yr
+  t= 11.0: VAF=46479.0 Gt (ΔVAF=-354.0 Gt), Vol=114432.2 Gt, melt=10.9 m/yr
+  t=12.00: FAILED (11 total)
+  t= 12.0: VAF=46451.5 Gt (ΔVAF=-381.6 Gt), Vol=114391.9 Gt, melt=10.8 m/yr
+  t= 13.0: VAF=46424.6 Gt (ΔVAF=-408.4 Gt), Vol=114353.2 Gt, melt=10.8 m/yr
+  t= 14.0: VAF=46397.4 Gt (ΔVAF=-435.6 Gt), Vol=114314.6 Gt, melt=10.8 m/yr
+  t= 15.0: VAF=46370.1 Gt (ΔVAF=-462.9 Gt), Vol=114276.3 Gt, melt=10.8 m/yr
+  t= 16.0: VAF=46342.9 Gt (ΔVAF=-490.2 Gt), Vol=114238.4 Gt, melt=10.8 m/yr
+  t= 17.0: VAF=46315.7 Gt (ΔVAF=-517.3 Gt), Vol=114200.8 Gt, melt=10.8 m/yr
+  t= 18.0: VAF=46288.6 Gt (ΔVAF=-544.4 Gt), Vol=114163.4 Gt, melt=10.7 m/yr
+  t= 19.0: VAF=46261.6 Gt (ΔVAF=-571.4 Gt), Vol=114126.2 Gt, melt=10.7 m/yr
+  t= 20.0: VAF=46234.5 Gt (ΔVAF=-598.5 Gt), Vol=114089.4 Gt, melt=10.7 m/yr
+  t= 21.0: VAF=46207.4 Gt (ΔVAF=-625.7 Gt), Vol=114053.2 Gt, melt=10.7 m/yr
+  t= 22.0: VAF=46180.0 Gt (ΔVAF=-653.1 Gt), Vol=114017.6 Gt, melt=10.7 m/yr
+  t= 23.0: VAF=46152.6 Gt (ΔVAF=-680.5 Gt), Vol=113982.6 Gt, melt=10.7 m/yr
+  t= 24.0: VAF=46125.2 Gt (ΔVAF=-707.8 Gt), Vol=113948.4 Gt, melt=10.7 m/yr
+  t= 25.0: VAF=46098.0 Gt (ΔVAF=-735.0 Gt), Vol=113914.8 Gt, melt=10.6 m/yr
+  t= 26.0: VAF=46070.9 Gt (ΔVAF=-762.2 Gt), Vol=113881.9 Gt, melt=10.6 m/yr
+  t= 27.0: VAF=46043.9 Gt (ΔVAF=-789.2 Gt), Vol=113849.6 Gt, melt=10.6 m/yr
+  t= 28.0: VAF=46016.9 Gt (ΔVAF=-816.1 Gt), Vol=113817.7 Gt, melt=10.6 m/yr
+  t= 29.0: VAF=45990.0 Gt (ΔVAF=-843.0 Gt), Vol=113786.4 Gt, melt=10.6 m/yr
+  t= 30.0: VAF=45963.3 Gt (ΔVAF=-869.7 Gt), Vol=113755.4 Gt, melt=10.6 m/yr
+  t= 31.0: VAF=45936.7 Gt (ΔVAF=-896.3 Gt), Vol=113724.9 Gt, melt=10.6 m/yr
+  t= 32.0: VAF=45910.3 Gt (ΔVAF=-922.8 Gt), Vol=113694.7 Gt, melt=10.6 m/yr
+  t= 33.0: VAF=45884.0 Gt (ΔVAF=-949.1 Gt), Vol=113665.0 Gt, melt=10.6 m/yr
+  t= 34.0: VAF=45857.8 Gt (ΔVAF=-975.2 Gt), Vol=113635.5 Gt, melt=10.6 m/yr
+  t= 35.0: VAF=45831.8 Gt (ΔVAF=-1001.2 Gt), Vol=113606.4 Gt, melt=10.6 m/yr
+  t= 36.0: VAF=45806.0 Gt (ΔVAF=-1027.0 Gt), Vol=113577.6 Gt, melt=10.5 m/yr
+  t= 37.0: VAF=45780.4 Gt (ΔVAF=-1052.7 Gt), Vol=113549.0 Gt, melt=10.5 m/yr
+  t= 38.0: VAF=45754.9 Gt (ΔVAF=-1078.2 Gt), Vol=113520.7 Gt, melt=10.5 m/yr
+  t= 39.0: VAF=45729.5 Gt (ΔVAF=-1103.5 Gt), Vol=113492.6 Gt, melt=10.5 m/yr
+  t= 40.0: VAF=45704.3 Gt (ΔVAF=-1128.7 Gt), Vol=113464.8 Gt, melt=10.5 m/yr
+  t= 41.0: VAF=45679.3 Gt (ΔVAF=-1153.8 Gt), Vol=113437.2 Gt, melt=10.5 m/yr
+  t= 42.0: VAF=45654.3 Gt (ΔVAF=-1178.7 Gt), Vol=113409.8 Gt, melt=10.5 m/yr
+  t= 43.0: VAF=45629.5 Gt (ΔVAF=-1203.5 Gt), Vol=113382.6 Gt, melt=10.5 m/yr
+  t= 44.0: VAF=45604.8 Gt (ΔVAF=-1228.2 Gt), Vol=113355.6 Gt, melt=10.5 m/yr
+  t= 45.0: VAF=45580.3 Gt (ΔVAF=-1252.8 Gt), Vol=113328.8 Gt, melt=10.5 m/yr
+  t= 46.0: VAF=45555.8 Gt (ΔVAF=-1277.2 Gt), Vol=113302.1 Gt, melt=10.5 m/yr
+  t= 47.0: VAF=45531.5 Gt (ΔVAF=-1301.6 Gt), Vol=113275.7 Gt, melt=10.5 m/yr
+  t= 48.0: VAF=45507.3 Gt (ΔVAF=-1325.8 Gt), Vol=113249.4 Gt, melt=10.5 m/yr
+  t= 49.0: VAF=45483.1 Gt (ΔVAF=-1349.9 Gt), Vol=113223.3 Gt, melt=10.5 m/yr
+  t= 50.0: VAF=45459.1 Gt (ΔVAF=-1373.9 Gt), Vol=113197.3 Gt, melt=10.5 m/yr
+  t= 51.0: VAF=45435.2 Gt (ΔVAF=-1397.8 Gt), Vol=113171.5 Gt, melt=10.5 m/yr
+  t= 52.0: VAF=45411.4 Gt (ΔVAF=-1421.7 Gt), Vol=113145.8 Gt, melt=10.5 m/yr
+  t= 53.0: VAF=45387.6 Gt (ΔVAF=-1445.4 Gt), Vol=113120.3 Gt, melt=10.5 m/yr
+  t= 54.0: VAF=45364.0 Gt (ΔVAF=-1469.1 Gt), Vol=113094.9 Gt, melt=10.5 m/yr
+  t= 55.0: VAF=45340.4 Gt (ΔVAF=-1492.6 Gt), Vol=113069.7 Gt, melt=10.5 m/yr
+  t= 56.0: VAF=45317.0 Gt (ΔVAF=-1516.1 Gt), Vol=113044.6 Gt, melt=10.5 m/yr
+  t= 57.0: VAF=45293.6 Gt (ΔVAF=-1539.4 Gt), Vol=113019.7 Gt, melt=10.4 m/yr
+  t=58.00: FAILED (39 total)
+  t= 58.0: VAF=45270.4 Gt (ΔVAF=-1562.7 Gt), Vol=112994.9 Gt, melt=10.4 m/yr
+  t= 59.0: VAF=45247.2 Gt (ΔVAF=-1585.8 Gt), Vol=112970.3 Gt, melt=10.4 m/yr
+  t= 60.0: VAF=45224.2 Gt (ΔVAF=-1608.9 Gt), Vol=112945.8 Gt, melt=10.4 m/yr
+  t= 61.0: VAF=45201.2 Gt (ΔVAF=-1631.8 Gt), Vol=112921.5 Gt, melt=10.4 m/yr
+  t= 62.0: VAF=45178.4 Gt (ΔVAF=-1654.6 Gt), Vol=112897.4 Gt, melt=10.4 m/yr
+  t= 63.0: VAF=45155.7 Gt (ΔVAF=-1677.3 Gt), Vol=112873.4 Gt, melt=10.4 m/yr
+  t= 64.0: VAF=45133.1 Gt (ΔVAF=-1700.0 Gt), Vol=112849.5 Gt, melt=10.4 m/yr
+  t= 65.0: VAF=45110.6 Gt (ΔVAF=-1722.5 Gt), Vol=112825.9 Gt, melt=10.4 m/yr
+  t= 66.0: VAF=45088.1 Gt (ΔVAF=-1744.9 Gt), Vol=112802.3 Gt, melt=10.4 m/yr
+  t= 67.0: VAF=45065.8 Gt (ΔVAF=-1767.2 Gt), Vol=112778.9 Gt, melt=10.4 m/yr
+  t= 68.0: VAF=45043.6 Gt (ΔVAF=-1789.5 Gt), Vol=112755.6 Gt, melt=10.4 m/yr
+  t=69.00: FAILED (50 total)
+  t= 69.0: VAF=45021.5 Gt (ΔVAF=-1811.6 Gt), Vol=112732.5 Gt, melt=10.4 m/yr
+  t= 70.0: VAF=44999.4 Gt (ΔVAF=-1833.6 Gt), Vol=112709.5 Gt, melt=10.4 m/yr
+  t= 71.0: VAF=44977.5 Gt (ΔVAF=-1855.6 Gt), Vol=112686.6 Gt, melt=10.4 m/yr
+  t= 72.0: VAF=44955.6 Gt (ΔVAF=-1877.4 Gt), Vol=112663.8 Gt, melt=10.4 m/yr
+  t= 73.0: VAF=44933.9 Gt (ΔVAF=-1899.1 Gt), Vol=112641.2 Gt, melt=10.4 m/yr
+  t= 74.0: VAF=44912.3 Gt (ΔVAF=-1920.8 Gt), Vol=112618.7 Gt, melt=10.4 m/yr
+  t=75.00: FAILED (59 total)
+  t= 75.0: VAF=44890.7 Gt (ΔVAF=-1942.3 Gt), Vol=112596.3 Gt, melt=10.4 m/yr
+  t= 76.0: VAF=44869.2 Gt (ΔVAF=-1963.8 Gt), Vol=112574.0 Gt, melt=10.4 m/yr
+  t= 77.0: VAF=44847.8 Gt (ΔVAF=-1985.2 Gt), Vol=112551.8 Gt, melt=10.4 m/yr
+  t=78.00: FAILED (61 total)
+  t= 78.0: VAF=44826.5 Gt (ΔVAF=-2006.5 Gt), Vol=112529.7 Gt, melt=10.4 m/yr
+  t= 79.0: VAF=44805.3 Gt (ΔVAF=-2027.7 Gt), Vol=112507.6 Gt, melt=10.4 m/yr
+  t= 80.0: VAF=44784.2 Gt (ΔVAF=-2048.9 Gt), Vol=112485.7 Gt, melt=10.4 m/yr
+  t= 81.0: VAF=44763.1 Gt (ΔVAF=-2070.0 Gt), Vol=112463.9 Gt, melt=10.4 m/yr
+  t= 82.0: VAF=44742.1 Gt (ΔVAF=-2090.9 Gt), Vol=112442.2 Gt, melt=10.4 m/yr
+  t= 83.0: VAF=44721.2 Gt (ΔVAF=-2111.9 Gt), Vol=112420.5 Gt, melt=10.4 m/yr
+  t= 84.0: VAF=44700.3 Gt (ΔVAF=-2132.7 Gt), Vol=112399.0 Gt, melt=10.4 m/yr
+  t= 85.0: VAF=44679.6 Gt (ΔVAF=-2153.4 Gt), Vol=112377.5 Gt, melt=10.4 m/yr
+  t= 86.0: VAF=44659.0 Gt (ΔVAF=-2174.1 Gt), Vol=112356.1 Gt, melt=10.4 m/yr
+  t= 87.0: VAF=44638.4 Gt (ΔVAF=-2194.7 Gt), Vol=112334.8 Gt, melt=10.4 m/yr
+  t=88.00: FAILED (73 total)
+  t= 88.0: VAF=44617.9 Gt (ΔVAF=-2215.2 Gt), Vol=112313.6 Gt, melt=10.4 m/yr
+  t= 89.0: VAF=44597.5 Gt (ΔVAF=-2235.5 Gt), Vol=112292.5 Gt, melt=10.4 m/yr
+  t= 90.0: VAF=44577.2 Gt (ΔVAF=-2255.9 Gt), Vol=112271.5 Gt, melt=10.4 m/yr
+  t= 91.0: VAF=44557.0 Gt (ΔVAF=-2276.1 Gt), Vol=112250.6 Gt, melt=10.3 m/yr
+  t=92.00: FAILED (76 total)
+  t= 92.0: VAF=44536.8 Gt (ΔVAF=-2296.2 Gt), Vol=112229.8 Gt, melt=10.3 m/yr
+  t= 93.0: VAF=44516.8 Gt (ΔVAF=-2316.3 Gt), Vol=112209.1 Gt, melt=10.3 m/yr
+  t=94.00: FAILED (80 total)
+  t= 94.0: VAF=44496.8 Gt (ΔVAF=-2336.3 Gt), Vol=112188.5 Gt, melt=10.3 m/yr
+  t=95.00: FAILED (81 total)
+  t= 95.0: VAF=44476.9 Gt (ΔVAF=-2356.1 Gt), Vol=112168.0 Gt, melt=10.3 m/yr
+  t= 96.0: VAF=44457.1 Gt (ΔVAF=-2376.0 Gt), Vol=112147.6 Gt, melt=10.3 m/yr
+  t= 97.0: VAF=44437.4 Gt (ΔVAF=-2395.7 Gt), Vol=112127.2 Gt, melt=10.3 m/yr
+  t= 98.0: VAF=44417.7 Gt (ΔVAF=-2415.3 Gt), Vol=112107.0 Gt, melt=10.3 m/yr
+  t= 99.0: VAF=44398.1 Gt (ΔVAF=-2434.9 Gt), Vol=112086.8 Gt, melt=10.3 m/yr
+  t=100.0: VAF=44378.6 Gt (ΔVAF=-2454.4 Gt), Vol=112066.7 Gt, melt=10.3 m/yr
+
+82 diagnostic failures in 1200 steps
+Saved /home/andrew/projects/vertical_velocity/mesh/prognostic_ssa_40Gt.h5
+Saved timeseries (1201 steps)
+Done!

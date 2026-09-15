@@ -1,0 +1,21 @@
+firedrake:WARNING OMP_NUM_THREADS is not set or is set to a value greater than 1, we suggest setting OMP_NUM_THREADS=1 to improve performance
+=== SSA sample ssa0: T=2.0 yr, 24 steps ===
+  sample 0: VAF(0)=46837.0, θ_A∈[-8.03,7.15], θ_C∈[-8.08,6.61]
+    t=  0.2: VAF=46828.8 (ΔVAF=-8.2), 0 fail
+    t=  0.3: VAF=46812.4 (ΔVAF=-24.7), 0 fail
+    t=  0.5: VAF=46797.8 (ΔVAF=-39.2), 0 fail
+    t=  0.7: VAF=46783.7 (ΔVAF=-53.3), 0 fail
+    t=  0.8: VAF=46769.7 (ΔVAF=-67.3), 0 fail
+    t=  1.0: VAF=46755.7 (ΔVAF=-81.3), 0 fail
+    t=  1.2: VAF=46741.5 (ΔVAF=-95.5), 0 fail
+    t=  1.3: VAF=46727.2 (ΔVAF=-109.8), 0 fail
+    t=  1.5: VAF=46712.9 (ΔVAF=-124.1), 0 fail
+    t=  1.7: VAF=46698.5 (ΔVAF=-138.5), 0 fail
+    t=  1.8: VAF=46684.1 (ΔVAF=-153.0), 0 fail
+    t=  2.0: VAF=46669.5 (ΔVAF=-167.5), 0 fail
+  DONE sample ssa0: VAF(T)=46669.5, ΔVAF=-167.48 Gt, 0 fails
+WARNING! There are options you set that were not used!
+WARNING! could be spelling mistake, etc!
+There are 2 unused database options. They are:
+Option left: name:--idx value: 0 source: command line
+Option left: name:--T value: 2 source: command line

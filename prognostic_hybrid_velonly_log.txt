@@ -1,0 +1,16 @@
+firedrake:WARNING OMP_NUM_THREADS is not set or is set to a value greater than 1, we suggest setting OMP_NUM_THREADS=1 to improve performance
+============================================================
+Prognostic: hybrid_velonly
+  100 yr, dt=0.0833 yr (1.0 mo), melt=40.0 Gt/yr
+============================================================
+Mesh: 67600 verts
+Loaded inversion_hybrid.h5: θ_A=[-0.24, 0.05], θ_C=[0.18, 1.43]
+Loading RACMO SMB...
+  SMB: [0.000, 2.051] m/yr ice eq
+Initial diagnostic solve...
+  initial speed max: 45134 m/yr
+  t=0: VAF=46833.0 Gt, Vol=114943.0 Gt
+
+Time-stepping: 1200 steps, dt=0.0833 yr...
+  t=1.00: diagnostic FAILED (11 total), using previous u
+  t=  1.0: VAF=10755156.8 Gt (ΔVAF=+10708323.7 Gt), Vol=10823304.1 Gt, melt=9.0 m/yr

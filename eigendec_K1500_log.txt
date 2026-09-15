@@ -1,0 +1,271 @@
+firedrake:WARNING OMP_NUM_THREADS is not set or is set to a value greater than 1, we suggest setting OMP_NUM_THREADS=1 to improve performance
+============================================================
+Hessian eigendecomposition: Hybrid + ApRES
+  K=1500 modes, ELL=0 m, eps_fd=1e-05
+============================================================
+Mesh: 67600 verts, ndof=67600, area=6.096e+10 m²
+Sparse velocity: 3309 points
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/mesh.py:3387: UserWarning: 272 vertices are outside the mesh and have been removed from the VertexOnlyMesh.
+  warn(str(error))
+Velocity VOM: 3037 points at ζ=1
+ApRES VOM: 479 points
+MAP: θ_A=[-6.35, 6.20], θ_C=[-2.16, 8.27]
+Primed at MAP
+Computing gradient at MAP...
+  |grad| at MAP = 5.1830e-02
+Prior (1/N norm): delta=3.292723e-04, gamma_A=8.231808e-05, gamma_C=8.231808e-05
+
+ARPACK eigensolve for 1500 modes...
+Loaded v0 from v0_220c7d20eff6.npy
+Matvec cache: 2002 previously computed → matvecs_220c7d20eff6.h5
+  matvec 50 (replayed from cache)
+  matvec 100 (replayed from cache)
+  matvec 150 (replayed from cache)
+  matvec 200 (replayed from cache)
+  matvec 250 (replayed from cache)
+  matvec 300 (replayed from cache)
+  matvec 350 (replayed from cache)
+  matvec 400 (replayed from cache)
+  matvec 450 (replayed from cache)
+  matvec 500 (replayed from cache)
+  matvec 550 (replayed from cache)
+  matvec 600 (replayed from cache)
+  matvec 650 (replayed from cache)
+  matvec 700 (replayed from cache)
+  matvec 750 (replayed from cache)
+  matvec 800 (replayed from cache)
+  matvec 850 (replayed from cache)
+  matvec 900 (replayed from cache)
+  matvec 950 (replayed from cache)
+  matvec 1000 (replayed from cache)
+  matvec 1050 (replayed from cache)
+  matvec 1100 (replayed from cache)
+  matvec 1150 (replayed from cache)
+  matvec 1200 (replayed from cache)
+  matvec 1250 (replayed from cache)
+  matvec 1300 (replayed from cache)
+  matvec 1350 (replayed from cache)
+  matvec 1400 (replayed from cache)
+  matvec 1450 (replayed from cache)
+  matvec 1500 (replayed from cache)
+  matvec 1550 (replayed from cache)
+  matvec 1600 (replayed from cache)
+  matvec 1650 (replayed from cache)
+  matvec 1700 (replayed from cache)
+  matvec 1750 (replayed from cache)
+  matvec 1800 (replayed from cache)
+  matvec 1850 (replayed from cache)
+  matvec 1900 (replayed from cache)
+  matvec 1950 (replayed from cache)
+  matvec 2000 (replayed from cache)
+  matvec 2002 (replayed from cache)
+  matvec 2005
+  matvec 2010
+  matvec 2015
+  matvec 2020
+  matvec 2025
+  matvec 2030
+  matvec 2035
+  matvec 2040
+  matvec 2045
+  matvec 2050
+  matvec 2055
+  matvec 2060
+  matvec 2065
+  matvec 2070
+  matvec 2075
+  matvec 2080
+  matvec 2085
+  matvec 2090
+  matvec 2095
+  matvec 2100
+  matvec 2105
+  matvec 2110
+  matvec 2115
+  matvec 2120
+  matvec 2125
+  matvec 2130
+  matvec 2135
+  matvec 2140
+  matvec 2145
+  matvec 2150
+  matvec 2155
+  matvec 2160
+  matvec 2165
+  matvec 2170
+  matvec 2175
+  matvec 2180
+  matvec 2185
+  matvec 2190
+  matvec 2195
+  matvec 2200
+  matvec 2205
+  matvec 2210
+  matvec 2215
+  matvec 2220
+  matvec 2225
+  matvec 2230
+  matvec 2235
+  matvec 2240
+  matvec 2245
+  matvec 2250
+  matvec 2255
+  matvec 2260
+  matvec 2265
+  matvec 2270
+  matvec 2275
+  matvec 2280
+  matvec 2285
+  matvec 2290
+  matvec 2295
+  matvec 2300
+  matvec 2305
+  matvec 2310
+  matvec 2315
+  matvec 2320
+  matvec 2325
+  matvec 2330
+  matvec 2335
+  matvec 2340
+  matvec 2345
+  matvec 2350
+  matvec 2355
+  matvec 2360
+  matvec 2365
+  matvec 2370
+  matvec 2375
+  matvec 2380
+  matvec 2385
+  matvec 2390
+  matvec 2395
+  matvec 2400
+  matvec 2405
+  matvec 2410
+  matvec 2415
+  matvec 2420
+  matvec 2425
+  matvec 2430
+  matvec 2435
+  matvec 2440
+  matvec 2445
+  matvec 2450
+  matvec 2455
+  matvec 2460
+  matvec 2465
+  matvec 2470
+  matvec 2475
+  matvec 2480
+  matvec 2485
+  matvec 2490
+  matvec 2495
+  matvec 2500
+  matvec 2505
+  matvec 2510
+  matvec 2515
+  matvec 2520
+  matvec 2525
+  matvec 2530
+  matvec 2535
+  matvec 2540
+  matvec 2545
+  matvec 2550
+  matvec 2555
+  matvec 2560
+  matvec 2565
+  matvec 2570
+  matvec 2575
+  matvec 2580
+  matvec 2585
+  matvec 2590
+  matvec 2595
+  matvec 2600
+  matvec 2605
+  matvec 2610
+  matvec 2615
+  matvec 2620
+  matvec 2625
+  matvec 2630
+  matvec 2635
+  matvec 2640
+  matvec 2645
+  matvec 2650
+  matvec 2655
+  matvec 2660
+  matvec 2665
+  matvec 2670
+  matvec 2675
+  matvec 2680
+  matvec 2685
+  matvec 2690
+  matvec 2695
+  matvec 2700
+  matvec 2705
+  matvec 2710
+  matvec 2715
+  matvec 2720
+  matvec 2725
+  matvec 2730
+  matvec 2735
+  matvec 2740
+  matvec 2745
+  matvec 2750
+  matvec 2755
+  matvec 2760
+  matvec 2765
+  matvec 2770
+  matvec 2775
+  matvec 2780
+  matvec 2785
+  matvec 2790
+  matvec 2795
+  matvec 2800
+  matvec 2805
+  matvec 2810
+  matvec 2815
+  matvec 2820
+  matvec 2825
+  matvec 2830
+  matvec 2835
+  matvec 2840
+  matvec 2845
+  matvec 2850
+  matvec 2855
+  matvec 2860
+  matvec 2865
+  matvec 2870
+  matvec 2875
+  matvec 2880
+  matvec 2885
+  matvec 2890
+  matvec 2895
+  matvec 2900
+  matvec 2905
+  matvec 2910
+  matvec 2915
+  matvec 2920
+  matvec 2925
+  matvec 2930
+  matvec 2935
+  matvec 2940
+  matvec 2945
+  matvec 2950
+  matvec 2955
+  matvec 2960
+  matvec 2965
+  matvec 2970
+  matvec 2975
+  matvec 2980
+  matvec 2985
+  matvec 2990
+  matvec 2995
+  matvec 3000
+
+Leading eigenvalues: [113342.61614173  58700.91780648  49137.2296595   37954.45662601
+  37452.56615785  29355.01011397  19056.95661407  18827.1500424
+  18182.05446686  15253.71347663]
+Effective constrained parameters: 2456.2
+Saved /home/andrew/projects/vertical_velocity/results/eigenvalues.txt
+Saved /home/andrew/projects/vertical_velocity/results/eigenvectors.npz (1298 positive modes)
+Saved /home/andrew/projects/vertical_velocity/mesh/eigendec.h5 (100 modes as MixedFunctions)
+Saved /home/andrew/projects/vertical_velocity/results/prior_params.json
+Done!

@@ -1,0 +1,38 @@
+firedrake:WARNING OMP_NUM_THREADS is not set or is set to a value greater than 1, we suggest setting OMP_NUM_THREADS=1 to improve performance
+============================================================
+Hires hybrid inversion: sparse vel + ApRES (vdeg=1)
+  ApRES depth window: 100-800 m
+  Velocity subsample step: 10 (~4.5 km)
+============================================================
+Hires mesh: 67600 verts, 134274 cells
+Loading sparse velocity observations...
+  Sparse velocity: 3309 points (VOM created after extrusion)
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/mesh.py:3387: UserWarning: 272 vertices are outside the mesh and have been removed from the VertexOnlyMesh.
+  warn(str(error))
+  Velocity VOM: 3037 points at ζ=1
+Warm start from lcurve_hybrid_apres_L2km.h5 (clipped to ±10)
+Primed forward solve OK
+ApRES: 479 top-of-column points (91 sites)
+  inside coarse mesh bbox: 479
+  VOM: 479 vertices (input ordering has 479)
+  DOFs: 67600 per control field (67600 local on rank 0, 1 ranks)
+
+L-BFGS-B (135200 DOFs, max 200 iter, 1 MPI ranks)...
+  iter   1: Jv=1.328e+00 Ja=1.055e+01 reg=4.427e-01 |g|=2.445e-01
+  iter   2: Jv=3.869e+00 Ja=1.103e+01 reg=4.431e-01 |g|=7.348e+00
+  iter   3: FWD FAILED (Nonlinear solve failed to converge after...) — penalty + last-good gradient
+  iter   4: FWD FAILED (Nonlinear solve failed to converge after...) — penalty + last-good gradient
+  iter   5: FWD FAILED (Nonlinear solve failed to converge after...) — penalty + last-good gradient
+
+Result: CONVERGENCE: RELATIVE REDUCTION OF F <= FACTR*EPSMCH
+θ_A: [-7.47, 5.84]
+θ_C: [-4.18, 8.18]
+Saved controls to /home/andrew/projects/vertical_velocity/mesh/inversion_hires_apres_vd1.h5
+Final forward solve failed — using last-good velocity
+Saved /home/andrew/projects/vertical_velocity/mesh/inversion_hires_apres_vd1.h5
+
+ApRES diagnostics:
+  obs mean=-2.125e-03  std=5.053e-03
+  mod mean=-2.115e-03  std=4.701e-03
+  reduced chi^2 = 22.07
+Done!

@@ -1,0 +1,115 @@
+============================================================
+Hessian eigendecomposition: Hybrid + ApRES (method=gn)
+  K=1500 modes, ELL=1000 m, eps_fd=1e-05
+============================================================
+Mesh: 67600 verts, ndof=67600, area=6.096e+10 m²
+Sparse velocity: 3309 points
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/mesh.py:3387: UserWarning: 272 vertices are outside the mesh and have been removed from the VertexOnlyMesh.
+  warn(str(error))
+Velocity VOM: 3037 points at ζ=1
+ApRES VOM: 479 points
+MAP: θ_A=[-0.85, -0.55], θ_C=[1.07, 2.12]
+Primed at MAP
+Building TapedForward (pyadjoint) at MAP...
+  tape blocks: 13
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/mesh.py:3387: UserWarning: 272 vertices are outside the mesh and have been removed from the VertexOnlyMesh.
+  warn(str(error))
+Prior (1/N norm): delta=3.292723e-04, gamma_A=3.292723e+02, gamma_C=3.292723e+02
+
+ARPACK eigensolve for 1500 modes...
+Generated v0 (seed=42) → v0_39ffefb79307.npy
+Matvec cache: 0 previously computed → matvecs_39ffefb79307.h5
+  matvec 5
+  matvec 10
+  matvec 15
+  matvec 20
+  matvec 25
+  matvec 30
+  matvec 35
+  matvec 40
+  matvec 45
+  matvec 50
+  matvec 55
+  matvec 60
+  matvec 65
+  matvec 70
+  matvec 75
+  matvec 80
+  matvec 85
+  matvec 90
+  matvec 95
+  matvec 100
+  matvec 105
+  matvec 110
+  matvec 115
+  matvec 120
+  matvec 125
+  matvec 130
+  matvec 135
+  matvec 140
+  matvec 145
+  matvec 150
+  matvec 155
+  matvec 160
+  matvec 165
+  matvec 170
+  matvec 175
+  matvec 180
+  matvec 185
+  matvec 190
+  matvec 195
+  matvec 200
+  matvec 205
+  matvec 210
+  matvec 215
+  matvec 220
+  matvec 225
+  matvec 230
+  matvec 235
+  matvec 240
+  matvec 245
+  matvec 250
+  matvec 255
+  matvec 260
+  matvec 265
+  matvec 270
+  matvec 275
+  matvec 280
+  matvec 285
+  matvec 290
+  matvec 295
+  matvec 300
+  matvec 305
+  matvec 310
+  matvec 315
+  matvec 320
+  matvec 325
+  matvec 330
+  matvec 335
+  matvec 340
+  matvec 345
+  matvec 350
+  matvec 355
+  matvec 360
+  matvec 365
+  matvec 370
+  matvec 375
+  matvec 380
+  matvec 385
+  matvec 390
+  matvec 395
+  matvec 400
+  matvec 405
+  matvec 410
+  matvec 415
+  matvec 420
+  matvec 425
+  matvec 430
+  matvec 435
+  matvec 440
+  matvec 445
+  matvec 450
+  matvec 455
+  matvec 460
+  matvec 465
+  matvec 470

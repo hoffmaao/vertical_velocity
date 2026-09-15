@@ -1,0 +1,46 @@
+firedrake:WARNING OMP_NUM_THREADS is not set or is set to a value greater than 1, we suggest setting OMP_NUM_THREADS=1 to improve performance
+============================================================
+Taped prognostic forward — VAF gradient
+  T=50.0 yr, 600 steps (dt=0.0833 yr)
+  Output: /home/andrew/projects/vertical_velocity/results/forward_vaf_50yr.h5
+============================================================
+Mesh: 67600 verts
+Loading RACMO SMB...
+  SMB: [0.000, 2.051] m/yr
+Primed (initial speed max: 6377 m/yr)
+
+Time-stepping (taped, 600 steps)...
+  t=0: VAF=46836.1 Gt
+  t= 2.50: VAF=46558.2 Gt (ΔVAF=-277.90)
+  t= 5.00: VAF=46267.8 Gt (ΔVAF=-568.33)
+  t= 7.50: VAF=45999.9 Gt (ΔVAF=-836.18)
+  t=10.00: VAF=45732.0 Gt (ΔVAF=-1104.15)
+  t=12.50: VAF=45454.5 Gt (ΔVAF=-1381.60)
+  t=15.00: VAF=45172.3 Gt (ΔVAF=-1663.83)
+  t=17.50: VAF=44891.2 Gt (ΔVAF=-1944.94)
+  t=20.00: VAF=44609.7 Gt (ΔVAF=-2226.46)
+  t=22.50: VAF=44330.7 Gt (ΔVAF=-2505.39)
+  t=25.00: VAF=44056.3 Gt (ΔVAF=-2779.84)
+  t=27.50: VAF=43782.4 Gt (ΔVAF=-3053.76)
+  t=30.00: VAF=43508.0 Gt (ΔVAF=-3328.09)
+  t=32.50: VAF=43233.0 Gt (ΔVAF=-3603.09)
+  t=35.00: VAF=42957.8 Gt (ΔVAF=-3878.32)
+  t=37.50: VAF=42682.3 Gt (ΔVAF=-4153.84)
+  t=40.00: VAF=42407.0 Gt (ΔVAF=-4429.13)
+  t=42.50: VAF=42131.8 Gt (ΔVAF=-4704.31)
+  t=45.00: VAF=41856.6 Gt (ΔVAF=-4979.54)
+  t=47.50: VAF=41581.0 Gt (ΔVAF=-5255.14)
+  t=50.00: VAF=41304.8 Gt (ΔVAF=-5531.29)
+
+Assembling final VAF as Functional...
+  J(VAF_T, raw m^3) = 4.504342e+13
+Computing adjoint gradient ∂VAF/∂(θ_A, θ_C)...
+  ||∂VAF/∂θ_A|| = 3.2371e+13
+  ||∂VAF/∂θ_C|| = 5.1711e+13
+Saved /home/andrew/projects/vertical_velocity/results/forward_vaf_50yr.h5
+Done!
+WARNING! There are options you set that were not used!
+WARNING! could be spelling mistake, etc!
+There are 2 unused database options. They are:
+Option left: name:--T value: 50.0 source: command line
+Option left: name:-T value: 50.0 source: code

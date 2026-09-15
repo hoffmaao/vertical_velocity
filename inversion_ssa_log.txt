@@ -1,0 +1,67 @@
+firedrake:WARNING OMP_NUM_THREADS is not set or is set to a value greater than 1, we suggest setting OMP_NUM_THREADS=1 to improve performance
+============================================================
+SSA Inversion with sparse velocity + uncertainties
+============================================================
+
+1. Loading mesh...
+   Mesh: 67600 verts, 134274 cells
+
+2. Building sparse velocity observations with uncertainties...
+   Sparse observations: 3309 points (~4.5km spacing)
+   σ range: x=[1.1, 42.2], y=[1.0, 42.5] m/yr
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/mesh.py:3387: UserWarning: 272 vertices are outside the mesh and have been removed from the VertexOnlyMesh.
+  warn(str(error))
+   Points on VertexOnlyMesh: 3037
+
+3. Creating IceStream model...
+
+4. Setting up controls...
+   Grounded: 59514/67600
+   Warm start: θ_A=[-4.32, 6.37], θ_C=[-28.43, 68.99]
+
+5. Testing forward solve...
+   Speed: [0, 21676] m/yr
+   Initial χ²/N: 24098.54
+
+6. Defining objective...
+
+7. Solving (max 500 iterations)...
+
+8. Results...
+   Model speed: [0, 6030] m/yr
+   Obs speed:   [0, 4106] m/yr
+   θ_A range: [-16.08, 7.50]
+   θ_C range: [-44.18, 62.32]
+   Final χ²/N: 668.23 (initial: 24098.54)
+   Saved /home/andrew/projects/vertical_velocity/mesh/inversion_ssa.h5
+
+9. Plotting...
+   Saved figures/inversion_ssa.png
+
+Done!
+
+Quasi-Newton Method with Limited-Memory BFGS
+Line Search: Cubic Interpolation satisfying Strong Wolfe Conditions
+-------------------------------------------------------------------------------------------------------------
+Quasi-Newton Method status output definitions
+
+  iter     - Number of iterates (steps taken) 
+  value    - Objective function value 
+  gnorm    - Norm of the gradient
+  snorm    - Norm of the step (update to optimization vector)
+  #fval    - Cumulative number of times the objective function was evaluated
+  #grad    - Number of times the gradient was computed
+-------------------------------------------------------------------------------------------------------------
+  iter  value          gnorm          snorm          #fval     #grad     ls_#fval  ls_#grad  
+  0     2.415922e+04   8.239356e-01   
+  1     2.415854e+04   8.239123e-01   8.239356e-01   2         2         1         0         
+  2     6.291225e+03   1.813601e-01   4.770900e+04   3         3         1         0         
+  3     4.207136e+03   1.204322e-01   1.467725e+04   4         4         1         0         
+  4     1.867269e+03   3.798159e-02   3.841070e+04   5         5         1         0         
+  5     1.366492e+03   2.119368e-02   1.873828e+04   6         6         1         0         
+  6     1.007629e+03   1.014251e-02   2.656846e+04   7         7         1         0         
+  7     8.323436e+02   7.408957e-03   2.840051e+04   8         8         1         0         
+  8     7.514934e+02   1.310753e-02   3.983709e+04   9         9         1         0         
+  9     7.339443e+02   1.723693e-02   2.992156e+03   11        10        2         0         
+  10    7.339443e+02   1.723693e-02   0.000000e+00   31        11        20        0         
+Optimization Terminated with Status: Step Tolerance Met

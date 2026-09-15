@@ -1,0 +1,43 @@
+firedrake:WARNING OMP_NUM_THREADS is not set or is set to a value greater than 1, we suggest setting OMP_NUM_THREADS=1 to improve performance
+============================================================
+Taped prognostic forward — VAF gradient
+  T=1.0 yr, 12 steps (dt=0.0833 yr)
+  Output: /home/andrew/projects/vertical_velocity/results/forward_vaf_1yr.h5
+============================================================
+Mesh: 67600 verts
+Loading RACMO SMB...
+  SMB: [0.000, 2.051] m/yr
+Primed (initial speed max: 6377 m/yr)
+
+Time-stepping (taped, 12 steps)...
+  t=0: VAF=46836.1 Gt
+tsfc:WARNING Estimated quadrature degree 13 more than tenfold greater than any argument/coefficient degree (max (1, 1))
+tsfc:WARNING Estimated quadrature degree 13 more than tenfold greater than any argument/coefficient degree (max (1, 1))
+  t= 0.08: VAF=46838.0 Gt (ΔVAF=+1.85)
+  t= 0.17: VAF=46827.5 Gt (ΔVAF=-8.59)
+  t= 0.25: VAF=46819.0 Gt (ΔVAF=-17.12)
+  t= 0.33: VAF=46811.6 Gt (ΔVAF=-24.48)
+  t= 0.42: VAF=46802.3 Gt (ΔVAF=-33.82)
+  t= 0.50: VAF=46793.9 Gt (ΔVAF=-42.24)
+  t= 0.58: VAF=46785.5 Gt (ΔVAF=-50.64)
+  t= 0.67: VAF=46777.0 Gt (ΔVAF=-59.16)
+  t= 0.75: VAF=46768.7 Gt (ΔVAF=-67.41)
+  t= 0.83: VAF=46759.8 Gt (ΔVAF=-76.31)
+  t= 0.92: VAF=46750.9 Gt (ΔVAF=-85.17)
+  t= 1.00: VAF=46742.2 Gt (ΔVAF=-93.87)
+
+Assembling final VAF as Functional...
+  J(VAF_T, raw m^3) = 5.097300e+13
+Computing adjoint gradient ∂VAF/∂(θ_A, θ_C)...
+tsfc:WARNING Estimated quadrature degree 13 more than tenfold greater than any argument/coefficient degree (max (1, 1))
+tsfc:WARNING Estimated quadrature degree 13 more than tenfold greater than any argument/coefficient degree (max (1, 1))
+tsfc:WARNING Estimated quadrature degree 13 more than tenfold greater than any argument/coefficient degree (max (1, 1))
+  ||∂VAF/∂θ_A|| = 1.0229e+11
+  ||∂VAF/∂θ_C|| = 1.4445e+11
+Saved /home/andrew/projects/vertical_velocity/results/forward_vaf_1yr.h5
+Done!
+WARNING! There are options you set that were not used!
+WARNING! could be spelling mistake, etc!
+There are 2 unused database options. They are:
+Option left: name:--T value: 1.0 source: command line
+Option left: name:-T value: 1.0 source: code

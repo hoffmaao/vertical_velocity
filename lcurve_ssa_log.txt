@@ -1,0 +1,12 @@
+firedrake:WARNING OMP_NUM_THREADS is not set or is set to a value greater than 1, we suggest setting OMP_NUM_THREADS=1 to improve performance
+============================================================
+L-curve analysis: SSA Weertman
+L values: [1, 2, 5, 10, 20, 50] km
+============================================================
+/home/andrew/venv-firedrake/lib/python3.10/site-packages/firedrake/mesh.py:3387: UserWarning: 272 vertices are outside the mesh and have been removed from the VertexOnlyMesh.
+  warn(str(error))
+Warm start from /home/andrew/projects/vertical_velocity/mesh/inversion_ssa.h5
+
+========================================
+L = 1 km
+========================================
