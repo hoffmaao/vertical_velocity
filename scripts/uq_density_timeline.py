@@ -19,7 +19,7 @@ ROW_YEARS = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
 
 def main():
     trajs = []
-    for f in sorted(glob.glob(str(DATA / "results" / "sample_vaf_[0-9b-i]*.npz"))  # hybrid only; SSA runs are sample_vaf_ssa*/ssaw*):
+    for f in sorted(glob.glob(str(DATA / "results" / "sample_vaf_[0-9b-i]*.npz"))):  # hybrid only; SSA runs are sample_vaf_ssa*/ssaw*
         d = np.load(f)
         if bool(d["failed"]):
             continue

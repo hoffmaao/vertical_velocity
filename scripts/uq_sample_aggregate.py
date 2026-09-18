@@ -18,7 +18,7 @@ DATA = Path(__file__).resolve().parent.parent
 
 def main():
     vafT, dVAF, trajs, times, nfail = [], [], [], None, []
-    for f in sorted(glob.glob(str(DATA / "results" / "sample_vaf_[0-9b-i]*.npz"))  # hybrid only; SSA runs are sample_vaf_ssa*/ssaw*):
+    for f in sorted(glob.glob(str(DATA / "results" / "sample_vaf_[0-9b-i]*.npz"))):  # hybrid only; SSA runs are sample_vaf_ssa*/ssaw*
         d = np.load(f)
         if bool(d["failed"]):
             continue

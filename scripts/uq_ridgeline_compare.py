@@ -1,6 +1,6 @@
 r"""SSA vs Hybrid retreat-distribution ridgeline (IPCC multi-method style).
 
-Two model ensembles (Hybrid: sample_vaf_{'',b..i}*.npz; SSA: sample_vaf_ssa*.npz),
+Two model ensembles (Hybrid: sample_vaf_{'',b..i}*.npz; SSA: sample_vaf_ssa[0-9]*.npz),
 each a 50-yr VAF trajectory from a posterior θ-draw. Stacks the across-ensemble
 Thwaites sea-level-contribution distribution by horizon year, with Hybrid and SSA
 overlaid per row (à la the IPCC SLR ridge with multiple methods). Shared x-axis:
