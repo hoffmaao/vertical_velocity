@@ -35,8 +35,8 @@ def sle_rows(trajs):
 
 
 def main():
-    hyb = load(["sample_vaf_[0-9]*.npz", "sample_vaf_[b-i]*.npz"])
-    ssa = load(["sample_vaf_ssa*.npz"])
+    hyb = load(["sample_vaf_[0-9b-i]*.npz"])
+    ssa = load(["sample_vaf_ssa[0-9]*.npz"])  # Coulomb only; excludes sample_vaf_ssaw*
     print(f"Hybrid: {len(hyb)} realizations | SSA: {len(ssa)}")
     rows_h, rows_s = sle_rows(hyb), sle_rows(ssa)
     allv = np.concatenate([np.concatenate(list(rows_h.values())), np.concatenate(list(rows_s.values()))])
