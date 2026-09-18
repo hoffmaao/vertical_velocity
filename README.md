@@ -27,8 +27,9 @@ source ~/venv-firedrake/bin/activate && export OMP_NUM_THREADS=1
 
 scripts/prepare_apres.py                      ApRES -> Legendre-fit eps_zz (data/apres_legendre_fits.h5)
 scripts/lcurve_hybrid_apres.py <L_km>         prior correlation-length L-curve
-scripts/inversion_hires_apres.py              hybrid MAP (velocity + ApRES)
-scripts/inversion_ssa_recinos.py              SSA MAP (velocity only; Coulomb or Weertman)
+scripts/physical_prior.py                     prior means: balance friction C_w0, thermo fluidity A_prior
+scripts/invert.py --model {ssa,hybrid} --friction {weertman,rc} [--no-apres]
+                                              MAP (prior-whitened L-BFGS from the prior mean)
 scripts/run_eigendec.py --method gn           Gauss-Newton prior-preconditioned Hessian (hybrid)
 scripts/run_eigendec_ssa.py                   same for SSA
 scripts/uq_sample_posterior.py                Laplace posterior samples
