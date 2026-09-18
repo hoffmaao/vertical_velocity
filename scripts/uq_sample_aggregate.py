@@ -1,6 +1,6 @@
 r"""Aggregate the posterior-sample forward ensemble → non-Gaussian VAF uncertainty.
 
-Reads results/sample_vaf_*.npz (from uq_sample_forward.py) and reports the true
+Reads the hybrid results/sample_vaf_[0-9b-i]*.npz (from uq_sample_forward.py) and reports the true
 posterior distribution of VAF(T): mean, std, skew, percentiles, and a histogram +
 trajectory fan. Compares against the (invalid) linearized σ_post and the MAP run,
 so we can see how far the real, threshold-affected distribution departs from the
@@ -18,7 +18,7 @@ DATA = Path(__file__).resolve().parent.parent
 
 def main():
     vafT, dVAF, trajs, times, nfail = [], [], [], None, []
-    for f in sorted(glob.glob(str(DATA / "results" / "sample_vaf_*.npz"))):
+    for f in sorted(glob.glob(str(DATA / "results" / "sample_vaf_[0-9b-i]*.npz"))):  # hybrid only; SSA runs are sample_vaf_ssa*/ssaw*
         d = np.load(f)
         if bool(d["failed"]):
             continue

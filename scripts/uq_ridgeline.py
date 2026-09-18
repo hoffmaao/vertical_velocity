@@ -1,6 +1,6 @@
 r"""Ridgeline (joyplot) of the Thwaites retreat distribution over time.
 
-Uses ALL posterior forward realizations (sample_vaf_*.npz, each storing a full VAF(t)
+Uses ALL posterior forward realizations (hybrid sample_vaf_[0-9b-i]*.npz, each storing a full VAF(t)
 trajectory from a distinct θ-initialization). At a set of horizon years it builds the
 across-ensemble distribution of the Thwaites sea-level contribution
     SLE(t) = (VAF(0) − VAF(t)) / 361.8   [mm]
@@ -22,7 +22,7 @@ ROW_YEARS = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50]
 
 def main():
     trajs = []
-    for f in sorted(glob.glob(str(DATA / "results" / "sample_vaf_*.npz"))):
+    for f in sorted(glob.glob(str(DATA / "results" / "sample_vaf_[0-9b-i]*.npz"))):  # hybrid only; SSA runs are sample_vaf_ssa*/ssaw*
         d = np.load(f)
         if bool(d["failed"]):
             continue

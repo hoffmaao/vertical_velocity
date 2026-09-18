@@ -1,6 +1,5 @@
 # Large regenerable outputs (49G, mostly the eigendecomposition matvec cache)
 results/
-simulations/results/
 
 # Input data, downloaded separately
 data/
