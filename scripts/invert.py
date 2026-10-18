@@ -315,6 +315,9 @@ def main():
 
     # ── Final state and diagnostics at the last accepted iterate ──
     ξ = state["xbest"]
+    # Solve again rather than take the cached value: after a failed trial evaluation
+    # theta and u hold that trial point, not the cached iterate.
+    state["cache"] = {}
     f, g = evaluate(ξ)
     J_vel, J_apr, R, gn = state["last"]
     R_A, R_C = state["R_split"]
