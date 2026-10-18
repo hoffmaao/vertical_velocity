@@ -1,189 +1,220 @@
-r"""Posterior variance for VAF(T) using Isaac et al. (2015, Eq. 20).
+r"""Posterior variance of VAF(T) from a MAP's eigendecomposition and forward gradient.
 
-σ²_Q = ∇Q · Γ_prior ∇Q  -  Σ_i (λ_i / (λ_i + 1)) (∇Q · w_i)²
+Isaac et al. (2015, Eq. 20) in the fenics_ice / Recinos et al. (2023) convention:
 
-where (fenics_ice / Recinos et al. 2023 convention)
-  Γ_prior = A⁻¹           (prior covariance, A = δM + γK)
-  w_i, λ_i                eigenpairs of GHEP H w = λ A w
-                          (A-orthonormal: w_i^T A w_j = δ_ij)
-  ∇Q                       VAF(T) gradient w.r.t. (θ_A, θ_C)
-                          (from results/forward_vaf_<T>yr.h5)
+    sigma^2_post = g . Gamma g  -  sum_i  lambda_i / (lambda_i + 1)  (w_i . g)^2
 
-The regularization R(θ) = ½ θᵀA θ = ½ ∫(δθ² + γ|∇θ|²)dx corresponds to
-prior θ ~ N(0, A⁻¹), so σ²_prior = ∇Q · A⁻¹ · ∇Q (single inverse, no extra M).
+with g = dVAF(T)/d(theta_A, theta_C) from forward.py --gradient, (lambda_i, w_i)
+the Gamma^-1-orthonormal eigenpairs of H w = lambda Gamma^-1 w from eigendec.py,
+and Gamma the prior covariance the eigendecomposition was posed with, block
+diagonal over the controls: A^-1 M A^-1 for the bilaplacian prior form, A^-1 for
+the older h1 form, A = delta M + gamma K (prior_precond.py; the form is read
+from the eigendecomposition's json). theta ~ N(0, Gamma), so the first term is
+the prior variance sigma^2_prior = g . Gamma g, the sum the reduction the data
+buy; with Gamma^-1-orthonormal w_i the
+Euclidean dot products are the right ones and sigma^2_post lies in
+[0, sigma^2_prior].
 
-Inner products use the Euclidean DOF-vector dot product. With A-orthonormal
-eigenvectors, this gives σ²_post bounded in [0, σ²_prior].
+    python scripts/uq_vaf.py --map sweep_hybrid_rc_d1e-05_L2km_thwaites_fixed_tau5km --T 50 --K 1500
 
-Run:
-    python uq_vaf.py --fwd_ckpt results/forward_vaf_50yr.h5
+reads results/forward_<map>_<T>yr.h5, results/eigendec_<map>_K<K>.{npz,json}
+and writes results/uq_<map>_<T>yr_K<K>_summary.json and _contribs.txt (the
+per-mode reductions). --forward / --eig override the file stems.
 """
 import argparse
 import json
-import numpy as np
-import firedrake as fd
-from firedrake import (
-    Constant, Function, FunctionSpace, CheckpointFile,
-    TrialFunction, TestFunction, inner, grad, dx, assemble,
-)
-from firedrake.petsc import PETSc
 from pathlib import Path
 
-DATA_DIR = Path(__file__).resolve().parent.parent
-MESH_FILE = DATA_DIR / "mesh" / "thwaites.h5"
+import numpy as np
+from firedrake import CheckpointFile, Function
+
+from prior_precond import Prior
+
+DATA = Path(__file__).resolve().parent.parent
+GT_PER_M3 = 917.0 / 1e12
 
 
-def make_prior_cov_solver(Q, delta, gamma):
-    """Return cov_action(x) → A⁻¹ x as a Function (fenics_ice convention).
+def parse_args():
+    ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
+    ap.add_argument("--map", required=True, help="the --name the inversion ran with")
+    ap.add_argument("--T", type=float, default=50.0, help="forward run length (years)")
+    ap.add_argument("--K", type=int, default=1500, help="eigendecomposition --K")
+    ap.add_argument("--forward", default=None,
+                    help="forward checkpoint stem under results/ (default forward_<map>_<T>yr)")
+    ap.add_argument("--eig", default=None,
+                    help="eigendecomposition stem under results/ (default eigendec_<map>_K<K>)")
+    ap.add_argument("--nmodes", type=int, default=None,
+                    help="use only the leading N modes (default: every positive one)")
+    ap.add_argument("--tag", default="",
+                    help="appended to the output stem, so a run from a non-default --forward "
+                         "does not overwrite the default one")
+    args = ap.parse_args()
+    args.forward = args.forward or f"forward_{args.map}_{args.T:g}yr"
+    args.eig = args.eig or f"eigendec_{args.map}_K{args.K}"
+    return args
 
-    A = δM + γK is the prior precision (R(θ) = ½ θᵀA θ ⇒ θ ~ N(0, A⁻¹)).
-    """
-    v = TrialFunction(Q)
-    w = TestFunction(Q)
-    a_form = (Constant(delta) * inner(v, w)
-              + Constant(gamma) * inner(grad(v), grad(w))) * dx
 
-    A_mat = assemble(a_form).M.handle
-    ksp_A = PETSc.KSP().create()
-    ksp_A.setOperators(A_mat)
-    ksp_A.setType("preonly")
-    ksp_A.getPC().setType("lu")
-    ksp_A.getPC().setFactorSolverType("mumps")
-    ksp_A.setUp()
+def prior_covariance(Q, delta, gamma, form="h1"):
+    r"""``apply(x) -> Gamma x`` on ``Q`` for the prior of that form (prior_precond.Prior)."""
+    pr = Prior(Q, delta, gamma, form)
 
-    def cov_action(x_func):
-        # y = A^{-1} x
+    def apply(x):
         y = Function(Q)
-        with x_func.dat.vec_ro as xv, y.dat.vec as yv:
-            ksp_A.solve(xv, yv)
+        y.dat.data[:] = pr.apply_covariance(x.dat.data_ro)
         return y
-    return cov_action
+    return apply
+
+
+def time_series(args, Q, vecs, D, prior):
+    r"""sigma_prior(t), sigma_post(t) of VAF and of the mean loss rate between gradient times.
+
+    Uses every gradient a ``forward.py --gradient-times`` run stored (the final
+    time under the plain names). The rate over [t_k-1, t_k] is a linear
+    functional too, with gradient (g_k - g_k-1) / (t_k - t_k-1), so its variance
+    comes from the same formula and accounts for the correlation between the two
+    times. Returns {} for a run without intermediate gradients.
+    """
+    ts = np.load(str(DATA / "results" / f"{args.forward}_ts.npz"), allow_pickle=True)
+    if "gradient_times" not in ts.files or len(ts["gradient_times"]) < 2:
+        return {}
+    tg = [float(t) for t in ts["gradient_times"]]
+    cov_A = prior_covariance(Q, prior["delta_A"], prior["gamma_A"], prior.get("prior_form", "h1"))
+    cov_C = prior_covariance(Q, prior["delta_C"], prior["gamma_C"], prior.get("prior_form", "h1"))
+    fA, fC = Function(Q), Function(Q)
+
+    def variances(gvec):
+        r"""(sigma2_prior, sigma2_post with K modes, its truncation lower bound)."""
+        n = Q.dim()
+        fA.dat.data[:] = gvec[:n]
+        fC.dat.data[:] = gvec[n:]
+        s2p = float(gvec[:n] @ cov_A(fA).dat.data_ro + gvec[n:] @ cov_C(fC).dat.data_ro)
+        a2 = (vecs.T @ gvec) ** 2
+        s2q = s2p - float((D * a2).sum())
+        return s2p, s2q, s2q - D[-1] * max(s2p - float(a2.sum()), 0.0)
+
+    grads = []
+    with CheckpointFile(str(DATA / "results" / f"{args.forward}.h5"), "r") as chk:
+        mesh = chk.load_mesh()
+        for k, t in enumerate(tg):
+            sfx = "" if k == len(tg) - 1 else f"_t{t:g}yr"
+            grads.append(np.concatenate([chk.load_function(mesh, f"dVAF_dtheta{c}{sfx}").dat.data_ro
+                                         for c in "AC"]))
+    times, vaf = ts["times"], ts["vaf_Gt"]
+    vaf_at = np.interp(tg, times, vaf) - vaf[0]
+    out = {"times": tg, "dvaf_Gt_t": vaf_at.tolist(), "sigma_prior_Gt_t": [],
+           "sigma_post_Gt_t": [], "rate_t_mid": [], "rate_Gt_per_yr": [],
+           "sigma_prior_rate": [], "sigma_post_rate": [],
+           "sigma_post_lo_Gt_t": [], "sigma_post_lo_rate": []}
+    print("\n      t   dVAF(t) Gt   sigma_prior   sigma_post [trunc. bound]   |  interval   "
+          "rate Gt/yr  sigma_post [bound]", flush=True)
+    prev = (0.0, np.zeros_like(grads[0]), 0.0)
+    for t, g, v in zip(tg, grads, vaf_at):
+        s2p, s2q, s2l = variances(g)
+        out["sigma_prior_Gt_t"].append(np.sqrt(s2p) * GT_PER_M3)
+        out["sigma_post_Gt_t"].append(np.sqrt(max(s2q, 0.0)) * GT_PER_M3)
+        out["sigma_post_lo_Gt_t"].append(np.sqrt(max(s2l, 0.0)) * GT_PER_M3)
+        t0, g0, v0 = prev
+        r2p, r2q, r2l = variances((g - g0) / (t - t0))
+        out["sigma_post_lo_rate"].append(np.sqrt(max(r2l, 0.0)) * GT_PER_M3)
+        out["rate_t_mid"].append(0.5 * (t + t0))
+        out["rate_Gt_per_yr"].append((v - v0) / (t - t0))
+        out["sigma_prior_rate"].append(np.sqrt(r2p) * GT_PER_M3)
+        out["sigma_post_rate"].append(np.sqrt(max(r2q, 0.0)) * GT_PER_M3)
+        print(f"  {t:5.1f}  {v:+10.1f}  {out['sigma_prior_Gt_t'][-1]:11.2f}  "
+              f"{out['sigma_post_Gt_t'][-1]:11.2f} [{out['sigma_post_lo_Gt_t'][-1]:6.2f}]   |  "
+              f"{t0:4.0f}-{t:<4.0f}  {out['rate_Gt_per_yr'][-1]:+9.2f}   "
+              f"{out['sigma_post_rate'][-1]:8.3f} [{out['sigma_post_lo_rate'][-1]:6.3f}]", flush=True)
+        prev = (t, g, v)
+    return out
 
 
 def main():
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--fwd_ckpt", required=True,
-                    help="Forward checkpoint with dVAF_dthetaA/C")
-    ap.add_argument("--eig_npz", default=str(DATA_DIR / "results" / "eigenvectors.npz"))
-    ap.add_argument("--prior_json", default=str(DATA_DIR / "results" / "prior_params.json"))
-    ap.add_argument("--nmodes", type=int, default=None,
-                    help="Limit to leading N modes (default: all positive)")
-    ap.add_argument("--out", default=None,
-                    help="Output dir (default: alongside fwd_ckpt)")
-    args = ap.parse_args()
+    args = parse_args()
+    out_stem = f"uq_{args.map}_{args.T:g}yr_K{args.K}" + (f"_{args.tag}" if args.tag else "")
+    print(f"UQ of VAF({args.T:g} yr) at {args.map}: {args.forward} x {args.eig}", flush=True)
 
-    fwd_path = Path(args.fwd_ckpt)
-    out_dir = Path(args.out) if args.out else fwd_path.parent
-    out_dir.mkdir(parents=True, exist_ok=True)
-    tag = fwd_path.stem  # e.g. "forward_vaf_50yr"
-
-    print(f"UQ propagation for {fwd_path.name}", flush=True)
-
-    # ── Load eigenpairs ──
-    eig = np.load(args.eig_npz)
-    vecs = eig["vecs"]            # shape (2n, n_pos)
-    vals = eig["eigenvalues"]     # shape (n_pos,)
-    n_dof = int(eig["n_dof"])
+    eig = np.load(str(DATA / "results" / f"{args.eig}.npz"))
+    with open(DATA / "results" / f"{args.eig}.json") as f:
+        prior = json.load(f)
+    vecs, vals, n = eig["vecs"], eig["eigenvalues"], int(eig["n_dof"])
     n_pos = vals.size
     if args.nmodes is not None:
-        n_use = min(args.nmodes, n_pos)
-        vecs = vecs[:, :n_use]
-        vals = vals[:n_use]
-    else:
-        n_use = n_pos
+        vecs, vals = vecs[:, :args.nmodes], vals[:args.nmodes]
     D = vals / (vals + 1.0)
-    print(f"  eigenpairs: {n_use} (of {n_pos} positive, λ_max={vals[0]:.3e}, λ_min={vals[-1]:.3e})",
-          flush=True)
-    print(f"  D = λ/(λ+1): D_max={D[0]:.6f}, D_min={D[-1]:.6f}", flush=True)
+    print(f"  {vals.size} modes of {n_pos} positive: lambda in [{vals[-1]:.3e}, {vals[0]:.3e}], "
+          f"D = lambda/(lambda+1) in [{D[-1]:.4f}, {D[0]:.6f}]", flush=True)
+    print(f"  prior: theta_A delta={prior['delta_A']:.3e} gamma={prior['gamma_A']:.3e}; "
+          f"theta_C delta={prior['delta_C']:.3e} gamma={prior['gamma_C']:.3e}", flush=True)
 
-    # ── Load prior hyperparameters ──
-    with open(args.prior_json) as f:
-        priors = json.load(f)
-    δ = priors["delta"]
-    γ_A = priors["gamma_A"]
-    γ_C = priors["gamma_C"]
-    print(f"  prior: δ={δ:.4e}, γ_A={γ_A:.4e}, γ_C={γ_C:.4e}", flush=True)
-
-    # ── Load mesh + gradient ──
-    with CheckpointFile(str(fwd_path), "r") as chk:
+    with CheckpointFile(str(DATA / "results" / f"{args.forward}.h5"), "r") as chk:
         mesh = chk.load_mesh()
         gA = chk.load_function(mesh, "dVAF_dthetaA")
         gC = chk.load_function(mesh, "dVAF_dthetaC")
     Q = gA.function_space()
-    assert Q.dim() == n_dof, f"DOF mismatch: gradient has {Q.dim()}, eigvecs expect {n_dof}"
+    assert Q.dim() == n, f"{Q.dim()} gradient dofs but the eigenvectors have {n} per control"
+    g = np.concatenate([gA.dat.data_ro, gC.dat.data_ro])
+    print(f"  |dVAF/dtheta_A| = {np.linalg.norm(gA.dat.data_ro):.4e}, "
+          f"|dVAF/dtheta_C| = {np.linalg.norm(gC.dat.data_ro):.4e} m^3", flush=True)
 
-    g_A_arr = gA.dat.data_ro.copy()
-    g_C_arr = gC.dat.data_ro.copy()
-    g_full = np.concatenate([g_A_arr, g_C_arr])  # shape (2n,)
-    print(f"  ||g_A||={np.linalg.norm(g_A_arr):.4e}, ||g_C||={np.linalg.norm(g_C_arr):.4e}",
-          flush=True)
-
-    # ── Prior variance σ²_prior = g · Γ g ──
-    cov_A = make_prior_cov_solver(Q, δ, γ_A)
-    cov_C = make_prior_cov_solver(Q, δ, γ_C)
-
-    ΓgA = cov_A(gA)
-    ΓgC = cov_C(gC)
-
-    with gA.dat.vec_ro as gv, ΓgA.dat.vec_ro as Γv:
-        σ2_prior_A = gv.dot(Γv)
-    with gC.dat.vec_ro as gv, ΓgC.dat.vec_ro as Γv:
-        σ2_prior_C = gv.dot(Γv)
+    # Prior variance g . A^{-1} g, per control block.
+    ΓgA = prior_covariance(Q, prior["delta_A"], prior["gamma_A"], prior.get("prior_form", "h1"))(gA)
+    ΓgC = prior_covariance(Q, prior["delta_C"], prior["gamma_C"], prior.get("prior_form", "h1"))(gC)
+    σ2_prior_A = float(gA.dat.data_ro @ ΓgA.dat.data_ro)
+    σ2_prior_C = float(gC.dat.data_ro @ ΓgC.dat.data_ro)
     σ2_prior = σ2_prior_A + σ2_prior_C
-    σ_prior = np.sqrt(max(σ2_prior, 0.0))
-    print(f"\n  σ²_prior(VAF) = {σ2_prior:.6e} m⁶ "
-          f"(θ_A: {σ2_prior_A:.3e}, θ_C: {σ2_prior_C:.3e})", flush=True)
-    print(f"  σ_prior(VAF)  = {σ_prior:.6e} m³ = {σ_prior * 917.0 / 1e12:.3f} Gt",
+
+    # Data reduction, mode by mode.
+    a = vecs.T @ g
+    contrib = D * a ** 2
+    reduction = float(contrib.sum())
+    σ2_post = σ2_prior - reduction
+    σ_prior, σ_post = np.sqrt(σ2_prior), np.sqrt(max(σ2_post, 0.0))
+    print(f"\n  sigma_prior(VAF) = {σ_prior * GT_PER_M3:9.3f} Gt  "
+          f"(theta_A {np.sqrt(σ2_prior_A) * GT_PER_M3:.3f}, theta_C {np.sqrt(σ2_prior_C) * GT_PER_M3:.3f})",
           flush=True)
+    print(f"  sigma_post(VAF)  = {σ_post * GT_PER_M3:9.3f} Gt   "
+          f"variance reduction {100 * reduction / σ2_prior:.2f} %, "
+          f"sigma ratio {σ_post / σ_prior:.4f}", flush=True)
+    # Truncation: the A-orthonormal eigenvectors are complete, so sum_i a_i^2
+    # over ALL modes is g . A^{-1} g = sigma2_prior. The modes beyond K hold the
+    # prior variance R = sigma2_prior - sum_{i<=K} a_i^2, and each has
+    # lambda_i <= lambda_K, so together they can remove at most D_K * R. Hence
+    # sigma2_post,K - D_K R <= sigma2_post,true <= sigma2_post,K (= the
+    # truncated value, which is therefore conservative).
+    R = max(σ2_prior - float((a ** 2).sum()), 0.0)
+    σ_post_lo = np.sqrt(max(σ2_post - D[-1] * R, 0.0))
+    print(f"  truncation at K={vals.size} (lambda_K={vals[-1]:.3g}, D_K={D[-1]:.3f}): the modes kept "
+          f"span {100 * (1 - R / σ2_prior):.2f} % of the prior variance of this QoI;\n"
+          f"  true sigma_post lies in [{σ_post_lo * GT_PER_M3:.3f}, {σ_post * GT_PER_M3:.3f}] Gt",
+          flush=True)
+    cum = np.cumsum(contrib) / σ2_prior
+    for frac in (0.5, 0.9, 0.99):
+        k = int(np.searchsorted(cum, frac * cum[-1])) + 1
+        print(f"  {k:5d} modes give {100 * frac:.0f} % of the reduction", flush=True)
 
-    # ── Mode contributions: a_i = w_i · g ──
-    a = vecs.T @ g_full                # shape (n_use,)
-    contribs = D * a ** 2              # variance reduction per mode
-
-    var_reduction = float(contribs.sum())
-    σ2_post = σ2_prior - var_reduction
-    σ_post = np.sqrt(max(σ2_post, 0.0))
-
-    print(f"\n  Σ D_i a_i² = {var_reduction:.6e} m⁶", flush=True)
-    print(f"  σ²_post = σ²_prior - Σ D_i a_i² = {σ2_post:.6e} m⁶", flush=True)
-    print(f"  σ_post  = {σ_post:.6e} m³ = {σ_post * 917.0 / 1e12:.3f} Gt", flush=True)
-    print(f"  Variance reduction: {100 * (1 - σ2_post / σ2_prior):.2f} %", flush=True)
-    print(f"  σ ratio (post/prior): {σ_post / σ_prior:.4f}", flush=True)
-
-    # ── Save ──
-    out_summary = out_dir / f"uq_{tag}_summary.json"
     summary = {
-        "tag": tag,
-        "n_modes_used": int(n_use),
-        "n_modes_positive": int(n_pos),
-        "lambda_max": float(vals[0]),
-        "lambda_min": float(vals[-1]),
-        "sigma2_prior_m6": float(σ2_prior),
-        "sigma2_prior_A_m6": float(σ2_prior_A),
-        "sigma2_prior_C_m6": float(σ2_prior_C),
-        "sigma2_post_m6": float(σ2_post),
-        "sigma_prior_m3": float(σ_prior),
-        "sigma_post_m3": float(σ_post),
-        "sigma_prior_Gt": float(σ_prior * 917.0 / 1e12),
-        "sigma_post_Gt": float(σ_post * 917.0 / 1e12),
-        "variance_reduction_frac": float(1 - σ2_post / σ2_prior) if σ2_prior > 0 else 0.0,
-        "g_A_norm": float(np.linalg.norm(g_A_arr)),
-        "g_C_norm": float(np.linalg.norm(g_C_arr)),
+        "map": args.map, "T_years": args.T, "forward": args.forward, "eig": args.eig,
+        "n_modes_used": int(vals.size), "n_modes_positive": int(n_pos),
+        "lambda_max": float(vals[0]), "lambda_min": float(vals[-1]),
+        "delta_A": prior["delta_A"], "gamma_A": prior["gamma_A"],
+        "delta_C": prior["delta_C"], "gamma_C": prior["gamma_C"],
+        "sigma2_prior_m6": σ2_prior, "sigma2_prior_A_m6": σ2_prior_A,
+        "sigma2_prior_C_m6": σ2_prior_C, "sigma2_post_m6": float(σ2_post),
+        "sigma_prior_Gt": float(σ_prior * GT_PER_M3), "sigma_post_Gt": float(σ_post * GT_PER_M3),
+        "variance_reduction_frac": reduction / σ2_prior,
+        "D_K": float(D[-1]), "prior_variance_captured_frac": 1 - R / σ2_prior,
+        "sigma_post_lo_Gt": float(σ_post_lo * GT_PER_M3),
+        "g_A_norm": float(np.linalg.norm(gA.dat.data_ro)),
+        "g_C_norm": float(np.linalg.norm(gC.dat.data_ro)),
     }
-    with open(out_summary, "w") as f:
+    summary.update(time_series(args, Q, vecs, D, prior))
+    with open(DATA / "results" / f"{out_stem}_summary.json", "w") as f:
         json.dump(summary, f, indent=2)
-    print(f"\nSaved {out_summary}", flush=True)
-
-    out_contribs = out_dir / f"uq_{tag}_contribs.txt"
-    with open(out_contribs, "w") as f:
-        f.write("# i  lambda_i  a_i  D_i*a_i^2  cumulative_reduction_frac\n")
-        cum = np.cumsum(contribs)
-        for i in range(n_use):
-            cum_frac = cum[i] / σ2_prior if σ2_prior > 0 else 0.0
-            f.write(f"{i} {vals[i]:.16e} {a[i]:.16e} "
-                    f"{contribs[i]:.16e} {cum_frac:.6f}\n")
-    print(f"Saved {out_contribs}", flush=True)
-    print("Done!", flush=True)
+    with open(DATA / "results" / f"{out_stem}_contribs.txt", "w") as f:
+        f.write("# i  lambda_i  a_i=w_i.g  D_i*a_i^2  cumulative_reduction_frac\n")
+        for i in range(vals.size):
+            f.write(f"{i} {vals[i]:.16e} {a[i]:.16e} {contrib[i]:.16e} {cum[i]:.6f}\n")
+    print(f"\nSaved results/{out_stem}_summary.json and _contribs.txt", flush=True)
 
 
 if __name__ == "__main__":
