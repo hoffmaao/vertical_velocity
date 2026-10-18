@@ -20,7 +20,7 @@ def interpolate_and_save_coarse(msh_path):
     import firedrake
     from firedrake import (
         Function, FunctionSpace, VectorFunctionSpace, Constant,
-        max_value, inner, grad, dx,
+        max_value,
     )
     import icepack
     import rasterio
@@ -44,15 +44,7 @@ def interpolate_and_save_coarse(msh_path):
     s.interpolate(max_value(
         b + H,
         Constant(1 - build_mesh.ICE_DENSITY / build_mesh.WATER_DENSITY) * H))
-    s0 = s.copy(deepcopy=True)
-    smoothing_length = Constant(2e3)
-    firedrake.solve(
-        firedrake.derivative(
-            0.5 * ((s - s0) ** 2 + smoothing_length ** 2 * inner(grad(s), grad(s))) * dx,
-            s,
-        ) == 0,
-        s,
-    )
+    # Not smoothed - see the note in build_mesh.py.
 
     u_obs = icepack.interpolate(
         (rasterio.open(f"netcdf:{build_mesh.VEL_FILE}:VX"),
