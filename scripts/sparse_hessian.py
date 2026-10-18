@@ -14,11 +14,9 @@ For ApRES, the misfit is on eps_zz(u) not u, so we use UFL with TestFunction(V)
 to encode the linear operator u → eps_zz at apres points, then adjoint-interp
 gives the adjoint of that chained operator.
 """
-import numpy as np
-import firedrake as fd
 from firedrake import (
     Function, Cofunction, FunctionSpace, VectorFunctionSpace,
-    TestFunction, Interpolate, Interpolator, assemble, dx,
+    TestFunction, Interpolate, Interpolator, assemble,
     VertexOnlyMesh,
 )
 from firedrake.adjoint import (
@@ -46,6 +44,25 @@ class TapedForward:
         self.u = simulation(self.θ_A, self.θ_C)
         pause_annotation()
         self.tape = get_working_tape()
+        self._linearise_adjoint_solvers()
+
+    def _linearise_adjoint_solvers(self):
+        r"""Make the taped adjoint solves one-shot linear solves.
+
+        firedrake builds each solve block's adjoint LinearVariationalSolver
+        with the forward solver's PETSc options, so our Newton settings
+        (snes_type newtonls, snes_rtol 1e-8, snes_max_it 250) are applied to
+        a linear system. The first Newton step already gives the LU solution;
+        when the right-hand side is such that the roundoff-limited residual
+        cannot fall by 1e-8, the solve iterates to the cap and raises
+        ConvergenceError (seen in uq_vaf_pcg.py for an SSA RC gradient). One
+        KSP-only step is the same solution without the unreachable tolerance.
+        """
+        for blk in self.tape.get_blocks():
+            solvers = getattr(blk, "_ad_solvers", None)
+            lvs = solvers.get("adjoint_lvs") if solvers else None
+            if lvs is not None:
+                lvs.snes.setType("ksponly")
 
     def tlm(self, v_A, v_C):
         r"""Apply (∂u/∂θ) · [v_A, v_C]. Returns δu ∈ V."""

@@ -4,11 +4,17 @@ fluidity prior mean.
 Vendored from ~/projects/ismip7/icepack2_tools/thermo_model.py
 (itself ported from mismip_time-dependent-da/scripts/thermo_model.py, the
 Recinos/fenics_ice line of work; only the MPI global_range helper is inlined
-here), with ONE adaptation for real Antarctica:
+here), with these adaptations for real Antarctica:
 the surface-energy boundary condition ``E_srf`` may be a spatially-varying
 Function (a mean-annual surface-temperature field) rather than the single
-scalar the idealized MISMIP+ setup used. Everything else is the original
-physics, verbatim.
+scalar the idealized MISMIP+ setup used;
+the per-cell fluidity is carried to the CG nodes by a lumped-mass (bounded)
+projection instead of an L2 projection, which overshot A(Tm) (1 + duval w_max)
+at sharp temperate/cold boundaries and put equivalent temperatures above the
+melting point (fixed 2026-09-28, see to_nodes);
+and ``geo_under_shelf`` (default True, the original behaviour) can switch the
+geothermal flux off where the ice floats and its base is ocean, not bedrock.
+Everything else is the original physics, verbatim.
 
 Model per solve (steady, linear given lagged inputs; E in DG0 on the plan-view
 mesh):
@@ -46,7 +52,7 @@ def global_range(f, comm=None):
     return (comm.allreduce(float(d.min()) if d.size else np.inf, op=MPI.MIN),
             comm.allreduce(float(d.max()) if d.size else -np.inf, op=MPI.MAX))
 
-DEFAULTS = dict(kappa=4.0, T_srf=263.15, q_geo=50.0, shear_amp=30.0,
+DEFAULTS = dict(kappa=4.0, T_srf=263.15, q_geo=50.0, geo_under_shelf=True, shear_amp=30.0,
                 duval=181.25, w_max=0.01, friction_exp=3.0, melt_delta=50.0,
                 u_scale=1.0)
 
@@ -76,6 +82,23 @@ def fluidity_from(E_eff, p):
     A_cold = rate_factor(temperature(E_eff))
     w = min_value(meltwater(E_eff), Constant(p["w_max"]))
     return A_cold * (1 + Constant(p["duval"]) * w)
+
+
+def to_nodes(expr, Q, name=None):
+    r"""Lumped-mass projection of a (cellwise) expression onto the CG1 space ``Q``.
+
+    Each nodal value is the area-weighted mean of the expression over the
+    node's patch, so it stays inside the range of the cell values. The L2
+    projection this replaces is not bounded: across a sharp jump between cells
+    it over- and undershoots, which pushed A above its physical ceiling
+    A(Tm) (1 + duval w_max) at temperate margins.
+    """
+    phi = fd.TestFunction(Q)
+    num = fd.assemble(expr * phi * dx).dat.data_ro
+    den = fd.assemble(phi * dx).dat.data_ro
+    out = fd.Function(Q, name=name)
+    out.dat.data[:] = num / den
+    return out
 
 
 def grounded_frac(h, s, bed, p):
@@ -122,8 +145,9 @@ def solve_energy(u_adv, h, s, C, A_k, bed, acc, p, with_strain=True,
     speed = sqrt(inner(u_adv, u_adv) + Constant(1e-12))
     q_fric = grounded_frac(h, s, bed, p) * C * speed ** (1.0 / p["friction_exp"] + 1)
     strain_on = Constant(1.0 if with_strain else 0.0)
+    geo_mask = Constant(1.0) if p["geo_under_shelf"] else grounded_frac(h, s, bed, p)
     L_src = (strain_on * h * q_strain + q_fric
-             + Constant(q_geo_icepack(p["q_geo"]))) * psi * dx
+             + geo_mask * Constant(q_geo_icepack(p["q_geo"]))) * psi * dx
 
     E_out = fd.Function(QD, name="energy")
     fd.solve(a_adv + a_exch == L_in + L_exch + L_src, E_out,
@@ -205,7 +229,7 @@ def compute_fluidity_prior(u, h, s, bed, C, acc, T_srf, p=None, max_picard=60,
     for it in range(1, max_picard + 1):
         A_dg = fd.Function(QD).project(A_k)
         E, _ = thermo_update(u, h_th, s, C, A_dg, bed, acc_dg, P, T_srf_field=T_field)
-        A_new = fd.Function(Q, name="fluidity").project(fluidity_from(E, P))
+        A_new = to_nodes(fluidity_from(E, P), Q, name="fluidity")
         A_new.dat.data[:] = np.clip(A_new.dat.data_ro, *A_clip)
         # Under-relaxation: A <-> strain-heating is a stiff fixed point at
         # fixed velocity (higher A -> less shear heat -> colder -> lower A),
