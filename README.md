@@ -39,3 +39,25 @@ scripts/uq_ridgeline_compare.py               hybrid vs SSA mass-loss figure
 ```
 
 Conventions (prior form, misfit normalization, file naming) are documented in the script headers.
+
+## Paper chain (rc friction, bilaplacian prior)
+
+The figures and numbers in the paper come from the MAPs
+`sweep_{ssa,hybrid}_rc_bilap_d4e-04_L3km_thwaites_fixed_tau5km` (rc friction, bilaplacian
+prior delta 4e-4, ELL 3 km, `VV_MESH=thwaites_fixed VV_TAU_SMOOTH=5000`), carried through:
+
+```
+scripts/sweep_regularization.py               MAP inversions over the (delta, ELL) prior surface
+scripts/forward.py --gradient                 taped 50-yr ISMIP7 forward + dVAF/dtheta
+scripts/eigendec.py --K 1500                  GN Hessian eigendecomposition at the MAP
+scripts/uq_vaf_pcg.py                         exact posterior sigma of VAF(t) by PCG
+scripts/uq_vaf.py --K 1500                    K-mode (low-rank) posterior sigma
+scripts/paper_extract.py --model M            fields behind the paper figures (Firedrake)
+scripts/paper_extract_profiles.py --model M   modelled ApRES eps_zz profiles (Firedrake)
+scripts/paper_figures.py                      every paper figure + the retreat-rate table
+```
+
+`output/launch/launch_bilap_chain.sh` runs the forward, eigendecomposition and UQ stages.
+`paper_figures.py` is plain matplotlib on archived results; `figstyle.py` holds the
+figure style (Morrow et al. 2026). It writes `figures/paper/`, which is copied to the
+paper repository, hoffmaao/paper-thwaites-vertical-velocity.
