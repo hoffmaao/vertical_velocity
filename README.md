@@ -15,9 +15,9 @@ approximation (SSA, plug flow).
 |---------------|-------------------------------------------------------------------------------------------------|
 | `scripts/`    | All code: ApRES processing (`apres/`), mesh, inversion, L-curve, eigendecomposition, UQ, MISMIP+ synthetic tests |
 | `figures/`    | Generated figures                                                                               |
-| `output/logs/`| Run logs, grouped by stage (`inversion`, `lcurve`, `eigendec`, `forward`, `mismip`)             |
+| `output/logs/`| Run logs, grouped by stage (`prior`, `inversion`, `lcurve`, `eigendec`, `forward`, `mismip`)    |
 | `manuscript/` | Methods text and bibliography                                                                   |
-| `docs/`       | Notes on tlm_adjoint / pyadjoint Hessian issues                                                 |
+| `docs/`       | Geometry-consistency rule (`geometry_consistency.md`); notes on tlm_adjoint / pyadjoint Hessian issues |
 | `data/`, `mesh/`, `results/` | Inputs, meshes/checkpoints and large numerical outputs (not tracked, ~57 GB)      |
 
 ## Pipeline
