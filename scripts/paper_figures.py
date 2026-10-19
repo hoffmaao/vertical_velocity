@@ -649,7 +649,8 @@ def fig_apres(d, tri, area, n):
     fs.panel_letter(top, "a", x=0.022, y=0.86)
 
     idx = profile_picks(sites)
-    axs = [fig.add_subplot(gs[1, j]) for j in range(4)]
+    n["apres"]["picks"] = [dict(name=sites[k]["name"], s_km=float(s_km[k])) for k in idx]
+    axs =[fig.add_subplot(gs[1, j]) for j in range(4)]
     # One x range for all four profiles, wide enough for every assimilated sample and its sigma.
     xlim = 5 * np.ceil(1.08e3 * max(np.max(np.abs(sites[k]["used"][1]) + sites[k]["used"][2])
                                     for k in idx) / 5)
