@@ -181,7 +181,7 @@ def save(fig, stem):
 
 
 def numbers(d, area):
-    r"""Headline numbers quoted in titles and captions (also written to JSON)."""
+    r"""Headline numbers quoted in the captions and text (also written to JSON)."""
     ex = d["ssa"]["ex"]
     g0 = haf(ex["h0"], ex["bed"]) > 0
     n = {}
