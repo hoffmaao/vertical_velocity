@@ -61,3 +61,17 @@ scripts/paper_figures.py                      every paper figure + the retreat-r
 `paper_figures.py` is plain matplotlib on archived results; `figstyle.py` holds the
 figure style (Morrow et al. 2026). It writes `figures/paper/`, which is copied to the
 paper repository, hoffmaao/paper-thwaites-vertical-velocity.
+
+## GRL manuscript figures
+
+The GRL manuscript ("Basal properties drive changes in englacial deformation on Thwaites
+Glacier", on Overleaf) uses the same style:
+
+```
+scripts/manuscript_prepare.py    raw ApRES bursts, strain profiles, MEaSUREs and BedMachine
+                                 -> results/manuscript/{apres,maps}.npz (run once)
+scripts/manuscript_figures.py    Figs. 1-7 -> figures/manuscript/fig<NN>.{png,pdf}, numbers.json
+```
+
+Figs. 6 and 7 are `paper_figures.py`'s F_apres and F_retreat. `apres_dat.py` reads the
+ApRES `.dat` bursts for the return-power section.

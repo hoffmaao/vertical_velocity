@@ -624,6 +624,15 @@ def window_mean(depth, eps, sig=None):
     return float(np.mean(eps[w])), float(np.sqrt(np.mean(sig[w] ** 2)))
 
 
+def profile_picks(sites):
+    r"""Indices into ``sites`` of the profiles drawn in full: in each quarter of the line, the
+    station where the two models' window means differ most."""
+    s_km = np.array([s["s_km"] for s in sites])
+    gap = np.abs(np.array([window_mean(*s["hybrid"]) - window_mean(*s["ssa"]) for s in sites]))
+    quarter = np.minimum((4 * s_km / s_km.max()).astype(int), 3)
+    return [int(np.flatnonzero(quarter == q)[np.argmax(gap[quarter == q])]) for q in range(4)]
+
+
 def fig_apres(d, tri, area, n):
     r"""Main-text Fig. 2: what the ApRES strain rates add. (a) Window-mean eps_zz along the
     line, observed and from both MAPs; (b-e) full profiles at the station in each quarter of
@@ -651,9 +660,7 @@ def fig_apres(d, tri, area, n):
     fs.title(top, "Along the ApRES line")
     fs.panel_letter(top, "a", x=0.022, y=0.86)
 
-    quarter = np.minimum((4 * s_km / s_km.max()).astype(int), 3)
-    gap = np.abs(mods["hybrid"] - mods["ssa"])
-    idx = [int(np.flatnonzero(quarter == q)[np.argmax(gap[quarter == q])]) for q in range(4)]
+    idx = profile_picks(sites)
     axs = [fig.add_subplot(gs[1, j]) for j in range(4)]
     # One x range for all four profiles, wide enough for every assimilated sample and its sigma.
     xlim = 5 * np.ceil(1.08e3 * max(np.max(np.abs(sites[k]["used"][1]) + sites[k]["used"][2])

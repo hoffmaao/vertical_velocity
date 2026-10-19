@@ -67,6 +67,10 @@ STYLES = {
     "speed":      ("magma",  False),
     "ratio":      ("Blues_r", False),
     "elevation":  ("cividis", False),
+    "strain":     ("RdBu_r", True),
+    "relief":     ("Greys_r", False),    # background under coloured symbols
+    "power":      ("bone",    False),    # radar return
+    "share":      ("viridis", False),
 }
 MINUS = "\N{MINUS SIGN}"
 HALO_LIGHT = [pe.Stroke(linewidth=1.9, foreground="white"), pe.Normal()]
@@ -219,16 +223,44 @@ def tri_field(ax, tri, v, kind, norm=None):
     if norm is None:
         norm = Normalize(*limits(v, kind))
     log = isinstance(norm, LogNorm)
+    lv = bands(norm)
     if log:
-        lv = np.geomspace(norm.vmin, norm.vmax, N_LEVELS + 1)
         v = np.maximum(v, 0.5 * norm.vmin)
-    else:
-        lv = np.linspace(norm.vmin, norm.vmax, N_LEVELS + 1)
     lo, hi = np.nanmin(v) < lv[0], np.nanmax(v) > lv[-1]
     extend = {(1, 1): "both", (1, 0): "min", (0, 1): "max"}.get((int(lo), int(hi)), "neither")
     m = ax.tricontourf(tri, v, lv, cmap=cmap, norm=norm if log else None, extend=extend, zorder=0)
     ax.set_rasterization_zorder(0.5)
     return m
+
+
+def bands(norm):
+    """The ``N_LEVELS`` + 1 band edges of ``norm`` (log-spaced for a LogNorm)."""
+    if isinstance(norm, LogNorm):
+        return np.geomspace(norm.vmin, norm.vmax, N_LEVELS + 1)
+    return np.linspace(norm.vmin, norm.vmax, N_LEVELS + 1)
+
+
+def grid_field(ax, x, y, v, kind, norm):
+    r"""Gridded field (rows along ``y``) in ``N_LEVELS`` discrete bands, rasterized under
+    vector overlays, as :func:`tri_field` for a regular grid."""
+    lv = bands(norm)
+    log = isinstance(norm, LogNorm)
+    if log:
+        v = np.where(np.isfinite(v), np.maximum(v, 0.5 * norm.vmin), np.nan)
+    lo, hi = np.nanmin(v) < lv[0], np.nanmax(v) > lv[-1]
+    extend = {(1, 1): "both", (1, 0): "min", (0, 1): "max"}.get((int(lo), int(hi)), "neither")
+    m = ax.contourf(x, y, v, lv, cmap=STYLES[kind][0], norm=norm if log else None,
+                    extend=extend, zorder=0)
+    ax.set_rasterization_zorder(0.5)
+    return m
+
+
+def discrete(kind, norm):
+    r"""(cmap, BoundaryNorm) in ``N_LEVELS`` bands, for symbols and image cells coloured
+    like a banded field."""
+    from matplotlib.colors import BoundaryNorm
+    cmap = plt.get_cmap(STYLES[kind][0])
+    return cmap, BoundaryNorm(bands(norm), cmap.N, extend="both")
 
 
 def colorbar(fig, mappable, cax, label):
@@ -237,7 +269,7 @@ def colorbar(fig, mappable, cax, label):
     cb.set_label(label, rotation=90, labelpad=4)
     cb.outline.set_linewidth(0.6)
     cb.ax.tick_params(width=0.5, length=2.5, labelsize=FS_TICK)
-    lv = np.asarray(mappable.levels)
+    lv = np.asarray(mappable.levels if hasattr(mappable, "levels") else mappable.norm.boundaries)
     if np.all(lv > 0) and lv[-1] / lv[0] > 50:
         cb.set_ticks([10.0 ** k for k in range(int(np.ceil(np.log10(lv[0]))),
                                                int(np.floor(np.log10(lv[-1]))) + 1)])
