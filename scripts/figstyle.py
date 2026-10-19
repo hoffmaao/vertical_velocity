@@ -11,12 +11,11 @@ not in a figure. Sources, by file in that repository:
     triangles, purple #9467bd), a marker on every data point, line width
     1.9 / marker size 8.5 at their drawing size; ``grid(which="both",
     alpha=0.3)``; panel letters in light-grey circles at the top left of each
-    axes; short headings in light-yellow rounded boxes; one framed legend
-    across the top of the figure, shared by every panel.
+    axes; one framed legend across the top of the figure, shared by every panel.
 ``verification/tracy/plot_solution.py``, ``verification/vauclin/plot_solution.py``
     field panels attached with no gaps and no ticks; 10 discrete colour bands
-    in panels and colour bars alike; a rotated, yellow-boxed row label on the
-    left; one colour bar per row on the right; time stamps in light-blue boxes.
+    in panels and colour bars alike; a rotated row label on the left; one colour
+    bar per row on the right.
 ``parallel_scaling/figstyle.py``
     ``save``: figures written without creation timestamps, so regenerating an
     unchanged figure gives an empty git diff.
@@ -27,6 +26,9 @@ down on the page. Here they are drawn at print size (Copernicus full width
 rescaling. Map panels, which Morrow et al. leave bare, carry a scale bar
 (polar stereographic, so no north arrow). Panel letters are lower case, as
 in their mass-conservation figure and the Copernicus caption convention.
+Departures from Morrow et al., by the authors' choice: panels carry no headings
+(their yellow title boxes), row labels are plain text, and figure text has no
+white outline; the caption says what each panel shows.
 
     import figstyle as fs
     fs.apply_rc()
@@ -49,8 +51,6 @@ LW, MS = 1.1, 4.5                 # their 1.9 / 8.5, scaled to print size
 
 # ── boxes (plot_paper_figures.py, tracy/plot_solution.py) ──────────────────
 LETTER_BOX = dict(boxstyle="circle,pad=0.25", facecolor="lightgrey", edgecolor="black", lw=0.6)
-TITLE_BOX = dict(boxstyle="round,pad=0.3", facecolor="lightyellow", edgecolor="black", lw=0.6)
-TIME_BOX = dict(boxstyle="round,pad=0.3", facecolor="lightblue", edgecolor="black", lw=0.6)
 
 # ── page and type ──────────────────────────────────────────────────────────
 FULL = 17.8 / 2.54                 # inches
@@ -110,15 +110,10 @@ def panel_letter(ax, letter, x=0.075, y=0.91):
             zorder=6, bbox=LETTER_BOX)
 
 
-def title(ax, text, pad=6):
-    """A short heading in a yellow box above the axes."""
-    ax.set_title(text, bbox=TITLE_BOX, pad=pad, fontsize=FS)
-
-
 def row_label(ax, text, x=-0.06):
-    """Rotated, yellow-boxed row label outside the left edge (tracy/plot_solution.py)."""
+    """Rotated row label outside the left edge (tracy/plot_solution.py), as plain text."""
     ax.text(x, 0.5, text, transform=ax.transAxes, rotation=90, ha="right", va="center",
-            fontsize=FS, bbox=TITLE_BOX)
+            fontsize=FS)
 
 
 def top_legend(fig, handles, ncol=None, y=1.0):
@@ -159,7 +154,7 @@ def limits(a, kind, percentile=1.0):
 
 
 # ── attached map panels (tracy/plot_solution.py layout) ────────────────────
-def map_grid(nrows, groups, aspect, width=FULL, left=0.30, right=0.55, top=0.30, bottom=0.06,
+def map_grid(nrows, groups, aspect, width=FULL, left=0.30, right=0.55, top=0.12, bottom=0.06,
              cbar_w=0.10, cbar_pad=0.05, group_gap=0.62, hgap=0.04):
     r"""Rows of attached map panels, ``groups`` panels per colour bar (e.g. [2, 1]: two
     panels sharing one colour bar, then a third with its own), sized so each panel shows

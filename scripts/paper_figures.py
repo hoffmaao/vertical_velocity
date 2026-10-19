@@ -26,7 +26,7 @@ Every visual choice comes from ``figstyle.py``, the Morrow et al. (2026)
 figure grammar the group's papers share; this file only decides what to show.
 SSA is red circles and the hybrid blue squares throughout; the 2015 grounding
 line is black and a 2065 one wears its model's colour. Panels carry a letter
-and a short heading; what each panel shows is stated in the caption.
+and no heading; what each panel shows is stated in the caption.
 """
 import argparse
 import json
@@ -304,9 +304,6 @@ def fig_summary(d, tri, area, n):
          rf"${POST}$ +{100 * (h['sig_post_chi2'] / h['sig_post'] - 1):.0f}% "
          rf"(ApRES $\sigma$ $\times${h['apr_scale']:.1f})"),
     ])
-    for axi, head in zip(ax.flat, ("VAF change", "VAF uncertainty", "VAF change by 2065",
-                                   rf"ApRES ${EPS}$", "Grounding lines", "Verification")):
-        fs.title(axi, head)
     for axi in (a, b, c, dd):
         fs.grid(axi)
     for axi, k in zip(ax.flat, "abcdef"):
@@ -335,13 +332,13 @@ def fig_controls(d, tri, area, n):
             rms=float(np.sqrt(np.sum(area * dv ** 2) / area.sum())),
             rms_near=float(np.sqrt(np.sum((area * dv ** 2)[near]) / area[near].sum())))
         fs.row_label(axs[r][0], f"${sym}$")
-    finish_maps(axs, box, d, tri, ("SSA", "hybrid", r"hybrid $-$ SSA"), stations=True)
+    finish_maps(axs, box, d, tri, stations=True)
     fs.top_legend(fig, [GL_KEY, STATION_KEY], y=1.0)
     save(fig, "S2_controls")
 
 
-def finish_maps(axs, box, d, tri, heads, stations=False, gl=True):
-    """Frame, overlay, head and letter a grid of map panels, in Morrow et al. order."""
+def finish_maps(axs, box, d, tri, stations=False, gl=True):
+    """Frame, overlay and letter a grid of map panels, in Morrow et al. order."""
     k = 0
     for r, row in enumerate(axs):
         for c, ax in enumerate(row):
@@ -350,8 +347,6 @@ def finish_maps(axs, box, d, tri, heads, stations=False, gl=True):
             if stations:
                 apres(ax, d)
             fs.frame(ax, box, scale=r == 0 and c == 0)
-            if r == 0 and heads[c]:
-                fs.title(ax, heads[c])
             fs.panel_letter(ax, "abcdefgh"[k])
             k += 1
 
@@ -368,7 +363,7 @@ def fig_data_fit(d, tri, area, n):
         mp = fs.tri_field(axs[0][1 + c], tri, e["speed_mod"] - e["speed_obs"], "residual",
                           Normalize(-100, 100))
     fs.colorbar(fig, mp, caxs[0][1], r"Model $-$ observed (m yr$^{-1}$)")
-    finish_maps(axs, box, d, tri, ("MEaSUREs speed", "SSA residual", "hybrid residual"))
+    finish_maps(axs, box, d, tri)
     apres(axs[0][0], d)
 
     # Bottom row: plain axes under the maps, in the same width.
@@ -389,7 +384,6 @@ def fig_data_fit(d, tri, area, n):
         a.set(xlim=(-lim, lim), ylim=(-lim, lim), xlabel=rf"Observed ${EPS}$ ($10^{{-3}}$ yr$^{{-1}}$)")
         if c == 0:
             a.set_ylabel(rf"Modelled ${EPS}$ ($10^{{-3}}$ yr$^{{-1}}$)")
-        fs.title(a, f"{SHORT[m]}, ApRES {'withheld' if m == 'ssa' else 'assimilated'}")
     a = pa[2]
     bins = np.linspace(-15, 15, 31)
     for m in MODELS:
@@ -400,7 +394,6 @@ def fig_data_fit(d, tri, area, n):
         a.plot(mid, cnt, color=COL[m], marker=MARK[m], ms=3)
     a.axvspan(-1, 1, color=GREY, alpha=0.18, lw=0)
     a.set(xlabel=r"(Model $-$ observed) / $\sigma$", ylabel="Samples", ylim=(0, None))
-    fs.title(a, r"Normalized ApRES residuals")
     for a, k in zip(pa, "def"):
         fs.grid(a)
         fs.panel_letter(a, k)
@@ -421,7 +414,7 @@ def fig_posterior_std(d, tri, area, n):
         mp = fs.tri_field(axs[r][2], tri, dr, "difference", Normalize(-0.3, 0.3))
         fs.colorbar(fig, mp, caxs[r][1], r"hybrid $-$ SSA")
         fs.row_label(axs[r][0], rf"$\theta_{k}$")
-    finish_maps(axs, box, d, tri, ("SSA", "hybrid", r"hybrid $-$ SSA"), stations=True)
+    finish_maps(axs, box, d, tri, stations=True)
     fs.top_legend(fig, [GL_KEY, STATION_KEY])
     save(fig, "S4_posterior_std")
 
@@ -437,8 +430,7 @@ def fig_sensitivity(d, tri, area, n):
             mp = fs.tri_field(axs[0][2 * j + c], tri, d[m]["ex"][f"dVAF_dtheta{k}"], "gradient",
                               Normalize(-lim, lim))
         fs.colorbar(fig, mp, caxs[0][j], rf"$\partial\,$VAF$_{{2065}}/\partial\theta_{k}$ (m)")
-    finish_maps(axs, box, d, tri, (r"SSA, $\theta_A$", r"hybrid, $\theta_A$",
-                                   r"SSA, $\theta_C$", r"hybrid, $\theta_C$"))
+    finish_maps(axs, box, d, tri)
     fs.top_legend(fig, [GL_KEY])
     save(fig, "S5_sensitivity")
 
@@ -461,10 +453,9 @@ def fig_trajectories(d, tri, area, n):
     ax[0].text(0.04, 0.05, rf"bars: $\pm 2{POST}$", transform=ax[0].transAxes)
     ax[1].set(ylabel=r"Sub-shelf melt (Gt yr$^{-1}$)")
     ax[2].set(ylabel=r"Peak speed (m yr$^{-1}$)", ylim=(2300, 4700))
-    for a, k, head in zip(ax, "abc", ("VAF change rate", "Melt forcing", "Peak speed")):
+    for a, k in zip(ax, "abc"):
         a.set(xlabel="Years after 2015", xlim=(0, T))
         fs.grid(a)
-        fs.title(a, head)
         fs.panel_letter(a, k)
     fs.top_legend(fig, [model_key(m) for m in MODELS])
     save(fig, "S6_trajectories")
@@ -483,7 +474,7 @@ def fig_grounding(d, tri, area, n):
     fs.colorbar(fig, mp, caxs[0][1], r"hybrid $-$ SSA thickness (m)")
     for c, m in enumerate(MODELS):
         gl2065(axs[0][c], tri, d, m)
-    finish_maps(axs, box, d, tri, ("SSA 2065", "hybrid 2065", r"hybrid $-$ SSA"))
+    finish_maps(axs, box, d, tri)
     both = (haf(d["ssa"]["ex"]["h_T"], ex0["bed"]) > 0) & (haf(d["hybrid"]["ex"]["h_T"], ex0["bed"]) > 0)
     near = both & (gl_dist(d) < 30e3)
     n["thicker_m"] = float(np.sum((dh * area)[near]) / area[near].sum())
@@ -509,9 +500,8 @@ def fig_spectrum(d, tri, area, n):
     ax[1].set(xscale="log", yscale="log", ylim=(1e-8, 30), xlabel="Mode $i$",
               ylabel="Share of VAF variance reduction")
     ax[2].set(xlabel="Modes used, $K$", ylabel="Prior VAF variance removed", ylim=(0, 1.15))
-    for a, k, head in zip(ax, "abc", ("Hessian spectrum", "Per-mode share", "Cumulative")):
+    for a, k in zip(ax, "abc"):
         fs.grid(a)
-        fs.title(a, head)
         fs.panel_letter(a, k)
     fs.top_legend(fig, [model_key(m, f"{LABEL[m]}, $n_\\mathrm{{eff}}$ = {n[m]['n_eff']:.0f}")
                         for m in MODELS])
@@ -540,13 +530,13 @@ def antarctica(stride=20):
 def fig_setting(d, tri, area, n):
     r"""Main-text Fig. 1: where the model domain and the ApRES line are."""
     box = full_box(d)
-    fig, axs, caxs = fs.map_grid(1, [1, 1], aspect(box), group_gap=0.75, top=0.32)
+    fig, axs, caxs = fs.map_grid(1, [1, 1], aspect(box), group_gap=0.75)
     ex = d["ssa"]["ex"]
     mp = fs.tri_field(axs[0][0], tri, ex["speed_obs"], "speed", LogNorm(10, 4000))
     fs.colorbar(fig, mp, caxs[0][0], r"Observed speed (m yr$^{-1}$)")
     mp = fs.tri_field(axs[0][1], tri, ex["bed"], "elevation", Normalize(-2000, 0))
     fs.colorbar(fig, mp, caxs[0][1], "Bed elevation (m)")
-    finish_maps(axs, box, d, tri, ("Surface speed", "Bed elevation"), stations=True)
+    finish_maps(axs, box, d, tri, stations=True)
     st, _, _ = stations(d["hybrid"]["ex"])
     for ax in axs[0]:
         ax.annotate("ApRES line", st[np.argmax(st[:, 0])], xytext=(12, 10),
@@ -656,7 +646,6 @@ def fig_apres(d, tri, area, n):
     lo, hi = top.get_ylim()
     top.set_ylim(lo, hi + 0.35 * (hi - lo))           # headroom for the letter and picks
     fs.grid(top)
-    fs.title(top, "Along the ApRES line")
     fs.panel_letter(top, "a", x=0.022, y=0.86)
 
     idx = profile_picks(sites)
@@ -687,7 +676,6 @@ def fig_apres(d, tri, area, n):
         ax.set_xlim(-xlim, xlim)
         ax.set_yticks([t for t in ax.get_yticks() if 0 <= t <= s["H"]])
         fs.grid(ax)
-        fs.title(ax, f"{s['name']}, {s_km[k]:.0f} km")
         fs.panel_letter(ax, letter, x=0.13, y=0.94)
     fs.top_legend(fig, [Line2D([], [], ls="", marker="d", ms=3.5, color=BLACK,
                                label=r"ApRES assimilated $\pm\sigma$"),
@@ -726,9 +714,8 @@ def fig_retreat(d, tri, area, n):
     b.set_ylim(bottom=min(-0.2, b.get_ylim()[0]))
     b.text(0.15, 0.94, "\n".join(tot), transform=b.transAxes, va="top")
     b.text(0.97, 0.04, rf"bands: $\pm 2{POST}$", transform=b.transAxes, ha="right", va="bottom")
-    for ax, k, head in zip((a, b), "ab", ("VAF loss rate", "Sea-level contribution")):
+    for ax, k in zip((a, b), "ab"):
         fs.grid(ax)
-        fs.title(ax, head)
         fs.panel_letter(ax, k)
     fs.top_legend(fig, [model_key(m) for m in MODELS])
     save(fig, "F_retreat_rates")

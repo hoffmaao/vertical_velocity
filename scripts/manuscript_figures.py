@@ -82,7 +82,7 @@ def mask_line(ax, x, y, field, ls="-"):
 def fig_study_area(a, mp, model, n):
     from manuscript_prepare import REGION
     box = REGION
-    fig, axs, caxs = fs.map_grid(1, [1], pf.aspect(box), left=0.08, top=0.34)
+    fig, axs, caxs = fs.map_grid(1, [1], pf.aspect(box), left=0.08)
     ax = axs[0][0]
     m = fs.grid_field(ax, mp["speed_x"], mp["speed_y"], mp["speed"], "speed", LogNorm(10, 4000))
     fs.colorbar(fig, m, caxs[0][0], r"Surface speed (m yr$^{-1}$)")
@@ -98,7 +98,6 @@ def fig_study_area(a, mp, model, n):
     ax.annotate("Fig. 5", (b5[1], b5[3]), xytext=(2, 2), textcoords="offset points",
                 ha="left", va="bottom", fontsize=fs.FS_TICK, color=BLACK)
     fs.frame(ax, box, scale=True)
-    fs.title(ax, "Thwaites Glacier")
     pf.locator(fig, ax, np.array([[box[0], box[2]], [box[1], box[3]]]),
                rect=(0.015, 0.60, 0.25, 0.385))
     fs.top_legend(fig, [Line2D([], [], color=BLACK, lw=0.7, label="grounding line"),
@@ -160,8 +159,6 @@ def fig_sections(a, mp, model, n):
         x.set(xlim=(-1.0, s.max() + 1.0), ylim=(-1700, 1500), ylabel="Elevation (m)")
         fs.panel_letter(x, "ab"[k], x=0.03, y=0.88)
     ax[1].set_xlabel("Distance along the ApRES line (km)")
-    fs.title(ax[0], "Return power, 2022-23")
-    fs.title(ax[1], "Vertical strain rate, 2022-23 to 2023-24")
     fs.top_legend(fig, [Line2D([], [], color=BLACK, lw=0.8, label="surface (BedMachine v4)"),
                         Line2D([], [], color=BLACK, lw=0.8, ls=(0, (3, 1.5)),
                                label="bed (BedMachine v4)")], y=0.90)
@@ -224,10 +221,8 @@ def fig_legendre(a, mp, model, n):
     ax[3].plot(nn, cn[i], color=BLUE, marker="s", ms=3.0, zorder=4)
     ax[3].set(yscale="log", xlabel="Polynomial degree $n$", ylabel=r"$|c_n|$ (m yr$^{-1}$)",
               xticks=nn)
-    for x, letter, head in zip(ax, "abcd", ("Basis", a["name"][i], "Departure from linear",
-                                            "All 91 stations")):
+    for x, letter in zip(ax, "abcd"):
         fs.grid(x)
-        fs.title(x, head)
         fs.panel_letter(x, letter, x=0.12, y=0.93)
     ax[3].grid(False, which="minor")
     fs.top_legend(fig, [Line2D([], [], color=BLACK, lw=0.6, label="ApRES measured"),
@@ -261,7 +256,6 @@ def fig_surface(a, mp, model, n):
            xlabel=rf"Surface ${EPS} = -\nabla\cdot\mathbf{{u}}$ ($10^{{-3}}$ yr$^{{-1}}$)",
            ylabel=rf"ApRES ${EPS}$, 100$-$400 m ($10^{{-3}}$ yr$^{{-1}}$)")
     fs.grid(ax)
-    fs.title(ax, "Near-surface strain rate")
     fs.top_legend(fig, [Line2D([], [], ls="", marker="d", ms=3.0, color=BLACK,
                                label=f"ApRES station (n = {ok.sum()})"),
                         Line2D([], [], color=RED,
@@ -280,7 +274,7 @@ def fig5_box(a, mp):
 
 def fig_maps(a, mp, model, n):
     box = fig5_box(a, mp)
-    fig, axs, caxs = fs.map_grid(2, [1], pf.aspect(box), left=0.42, bottom=0.62, top=0.14)
+    fig, axs, caxs = fs.map_grid(2, [1], pf.aspect(box), left=0.42, bottom=0.62)
     bed_norm = Normalize(-1600, -900)
     xy = a["xy"]
     rows = ((a["eps_avg"] * 1e3, "strain", Normalize(-10, 10),
