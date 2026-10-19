@@ -1,0 +1,21 @@
+Mesh: 67600 vertices
+tau_d [MPa]: [0.001, 0.271]  C_w0: [0.000327, 0.424]
+SMB [m/yr]: [0.000, 2.051]  T_srf [K]: [242.3, 260.0]
+  Thermo fluidity prior (fixed u; kappa=4.0, q_geo=50.0 mW/m2, shear_amp=30.0, duval=181.25):
+    it  1: A [  12.4,    232.1]  dA_l2=1.77e+00 dA_max=1.06e+01 dA_rel=1.06e+01 moving=67553/67600
+    it  2: A [   7.8,    349.4]  dA_l2=3.97e-01 dA_max=5.46e-01 dA_rel=1.08e+00 moving=67512/67600
+    it  3: A [   5.1,    423.5]  dA_l2=1.92e-01 dA_max=2.17e-01 dA_rel=3.88e-01 moving=67489/67600
+    it  4: A [   3.5,    468.0]  dA_l2=1.07e-01 dA_max=1.12e-01 dA_rel=3.22e-01 moving=67098/67600
+    it  5: A [   2.5,    494.7]  dA_l2=6.23e-02 dA_max=6.17e-02 dA_rel=2.84e-01 moving=66869/67600
+    it  6: A [   1.9,    510.7]  dA_l2=3.61e-02 dA_max=4.79e-02 dA_rel=2.39e-01 moving=66549/67600
+    it  7: A [   1.5,    520.3]  dA_l2=2.09e-02 dA_max=3.89e-02 dA_rel=1.88e-01 moving=66417/67600
+    it  8: A [   1.3,    526.0]  dA_l2=1.27e-02 dA_max=2.99e-02 dA_rel=1.49e-01 moving=65643/67600
+    it  9: A [   1.2,    529.5]  dA_l2=8.25e-03 dA_max=2.25e-02 dA_rel=1.24e-01 moving=63193/67600
+    it 10: A [   1.1,    531.6]  dA_l2=5.61e-03 dA_max=1.57e-02 dA_rel=8.87e-02 moving=62674/67600
+    it 11: A [   1.1,    532.8]  dA_l2=3.79e-03 dA_max=1.13e-02 dA_rel=5.95e-02 moving=59848/67600
+    it 12: A [   1.0,    533.6]  dA_l2=2.49e-03 dA_max=7.98e-03 dA_rel=3.80e-02 moving=55001/67600
+    it 13: A [   1.0,    534.0]  dA_l2=1.58e-03 dA_max=5.29e-03 dA_rel=2.34e-02 moving=44749/67600
+    it 14: A [   1.0,    534.3]  dA_l2=9.67e-04 dA_max=3.33e-03 dA_rel=1.39e-02 moving=24052/67600
+    thermo prior converged (L2 rel 9.67e-04 < 1.0e-03); 24052/67600 dof(s) still moving by more than rtol of their own value (worst 1.39e-02).
+A_prior [MPa^-3/yr]: [1.01, 534.27]
+Saved /media/andrew/wd1/projects/vertical_velocity/mesh/physical_prior.h5

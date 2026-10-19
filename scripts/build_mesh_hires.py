@@ -20,10 +20,11 @@ import icepack
 import rasterio
 from firedrake import (
     Function, FunctionSpace, VectorFunctionSpace, Constant,
-    max_value, inner, grad, dx,
+    max_value,
 )
 from scipy.spatial import cKDTree
 from shapely.geometry import Polygon, MultiPolygon
+import os
 from pathlib import Path
 
 
@@ -55,7 +56,7 @@ RES_COARSE = 5000
 H_MIN = 100.0
 ICE_DENSITY = 917.0
 WATER_DENSITY = 1024.0
-OUTPUT_NAME = "thwaites"
+OUTPUT_NAME = os.environ.get("VV_MESH", "thwaites")
 
 
 # ═══════════════════════════════════════════════════════════════════
@@ -234,16 +235,20 @@ def interpolate_and_save(msh_path):
         )
     )
 
+    # Surface from the flotation relation. It is NOT smoothed: smoothing s after
+    # deriving it breaks s = max(b + H, (1 - rho_I/rho_W) H), which every
+    # consumer re-imposes. The old 2 km Helmholtz smooth here left the stored
+    # surface up to 362 m from that relation at 31.6% of nodes, put 1894 nodes
+    # below their hydrostatic height (negative flotation factor, hence negative
+    # basal drag), and made the first prognostic step - which calls
+    # icepack.compute_surface - quadruple the peak velocity and blow the run up.
+    # ismip7 and gia-icepack apply the same Helmholtz operator only to masks and
+    # forcing fields, never to geometry, and derive s last from the (averaged)
+    # inputs; physical_prior.py already smooths the driving stress, which
+    # recovers the same tau_d statistics without breaking the relation
+    # (scripts/check_geometry.py prints both).
     s = Function(Q, name="surface")
     s.interpolate(max_value(b + H, Constant(1 - ICE_DENSITY / WATER_DENSITY) * H))
-    s0 = s.copy(deepcopy=True)
-    firedrake.solve(
-        firedrake.derivative(
-            0.5 * ((s - s0) ** 2 + Constant(2e3) ** 2 * inner(grad(s), grad(s))) * dx,
-            s,
-        ) == 0,
-        s,
-    )
 
     u_obs = icepack.interpolate(
         (rasterio.open(f"netcdf:{VEL_FILE}:VX"),
