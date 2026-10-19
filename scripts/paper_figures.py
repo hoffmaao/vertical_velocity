@@ -251,7 +251,7 @@ def fig_summary(d, tri, area, n):
                    capsize=3, lw=1.3)
         c.annotate(f"{fs.num(n[m]['dvaf'], '.0f')} $\\pm$ {2 * n[m]['sig_post']:.0f}",
                    (i, n[m]["dvaf"]), xytext=(0, -11), textcoords="offset points", va="top",
-                   ha="center", path_effects=[fs.pe.withStroke(linewidth=2.0, foreground="white")])
+                   ha="center")
     c.annotate("", xy=(0.5, n["hybrid"]["dvaf"]), xytext=(0.5, n["ssa"]["dvaf"]),
                arrowprops=dict(arrowstyle="<->", color=BLACK, lw=0.8))
     c.text(0.56, 0.5 * (n["hybrid"]["dvaf"] + n["ssa"]["dvaf"]), f"{n['gap']:.0f} Gt", va="center")
@@ -551,8 +551,7 @@ def fig_setting(d, tri, area, n):
     for ax in axs[0]:
         ax.annotate("ApRES line", st[np.argmax(st[:, 0])], xytext=(12, 10),
                     textcoords="offset points", ha="left", fontsize=fs.FS_TICK,
-                    arrowprops=dict(arrowstyle="-", color=BLACK, lw=0.6),
-                    path_effects=[fs.pe.withStroke(linewidth=1.8, foreground="white")])
+                    arrowprops=dict(arrowstyle="-", color=BLACK, lw=0.6))
     locator(fig, axs[0][1], ex["xy"])
     fs.top_legend(fig, [GL_KEY, STATION_KEY])
     save(fig, "F_setting")

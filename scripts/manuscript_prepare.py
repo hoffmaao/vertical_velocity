@@ -55,7 +55,7 @@ WIN, STEP, SIG_MAX = 60.0, 20.0, 1.5e-3       # eps_zz section windows; sigma_w 
 SMOOTH = 2000.0                 # velocity filter for the surface strain rate (m)
 BIN = 2.0                       # return power bins (m)
 R_MAX = 3200.0                  # deep enough for the noise window below the thickest ice
-REGION = (-1625e3, -1325e3, -565e3, -375e3)   # Fig. 1 map (x0, x1, y0, y1)
+REGION = (-1633e3, -1263e3, -569e3, -276e3)   # Fig. 1 map: the whole model domain + 8 km
 LINE_PAD = 6e3                  # Fig. 5 map: margin around the stations
 
 

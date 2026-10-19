@@ -212,8 +212,7 @@ def scalebar(ax, loc=(0.07, 0.06), color=BLACK):
     ax.plot([bx, bx + L * 1e3], [by, by], color=color, lw=2.0, solid_capstyle="butt",
             zorder=6, path_effects=HALO_LIGHT)
     ax.annotate(f"{L:g} km", (bx + L * 5e2, by), textcoords="offset points", xytext=(0, 3),
-                ha="center", fontsize=FS_TICK, color=color, zorder=6,
-                path_effects=[pe.withStroke(linewidth=1.8, foreground="white")])
+                ha="center", fontsize=FS_TICK, color=color, zorder=6)
 
 
 def tri_field(ax, tri, v, kind, norm=None):

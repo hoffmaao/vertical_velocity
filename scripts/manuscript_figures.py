@@ -43,7 +43,6 @@ DATA = Path(__file__).resolve().parent.parent
 RES = DATA / "results" / "manuscript"
 OUT = DATA / "figures" / "manuscript"
 EPS = pf.EPS
-HALO_TEXT = [fs.pe.withStroke(linewidth=1.8, foreground="white")]
 STATION_KEY = pf.STATION_KEY
 DIAMOND = dict(fmt="d", ms=3.0, color=BLACK, ecolor="0.6", elinewidth=0.5, capsize=0)
 COL_WIDTH = 0.7                    # widest station column in the sections (km)
@@ -97,7 +96,7 @@ def fig_study_area(a, mp, model, n):
     ax.add_patch(Rectangle((b5[0], b5[2]), b5[1] - b5[0], b5[3] - b5[2], fill=False, ec=RED,
                            lw=1.0, zorder=6))
     ax.annotate("Fig. 5", (b5[1], b5[3]), xytext=(2, 2), textcoords="offset points",
-                ha="left", va="bottom", fontsize=fs.FS_TICK, color=BLACK, path_effects=HALO_TEXT)
+                ha="left", va="bottom", fontsize=fs.FS_TICK, color=BLACK)
     fs.frame(ax, box, scale=True)
     fs.title(ax, "Thwaites Glacier")
     pf.locator(fig, ax, np.array([[box[0], box[2]], [box[1], box[3]]]),
@@ -299,7 +298,7 @@ def fig_maps(a, mp, model, n):
             p = xy[list(a["name"]).index(nm)]
             ax.scatter(*p, s=60, facecolors="none", edgecolors=BLACK, linewidths=0.9, zorder=6)
             ax.annotate("bcde"[j], p, xytext=(0, 7), textcoords="offset points", ha="center",
-                        va="bottom", fontsize=fs.FS_TICK, path_effects=HALO_TEXT, zorder=7)
+                        va="bottom", fontsize=fs.FS_TICK, zorder=7)
         fs.frame(ax, box, scale=r == 0)
         fs.row_label(ax, head, x=-0.02)
         fs.panel_letter(ax, "ab"[r], x=0.035, y=0.88)
