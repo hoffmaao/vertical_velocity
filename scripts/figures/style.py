@@ -152,8 +152,9 @@ def gmt_cpt_bands(cmap: str, edges, path: str) -> str:
     return path
 
 
-def gmt_top_legend(fig, entries, *, width_cm: float) -> float:
-    """One framed legend centred across the figure, as figstyle.top_legend.
+def gmt_top_legend(fig, entries, *, width_cm: float, frame: bool = True) -> float:
+    """One legend centred across the figure, as figstyle.top_legend; framed
+    unless ``frame`` is False.
 
     ``entries`` are (kind, spec, label): kind "symbol" with spec (style, fill,
     pen) (fill None for an open symbol), "line" with spec = pen, or "ramp"
@@ -182,8 +183,11 @@ def gmt_top_legend(fig, entries, *, width_cm: float) -> float:
     x0 = 0.5 * (width_cm - box_w)
     region = [0, width_cm, 0, box_h]
     proj = f"X{width_cm}c/{box_h}c"
+    # Without a frame the box is still drawn, in white: PyGMT crops the page
+    # to the drawn content, and bare text alone gets its ascenders cut off.
     fig.plot(x=[x0, x0 + box_w, x0 + box_w, x0, x0], y=[0, 0, box_h, box_h, 0],
-             fill="white", pen="0.6p,black", region=region, projection=proj)
+             fill="white", pen="0.6p,black" if frame else "0.6p,white",
+             region=region, projection=proj)
     for i, (kind, spec, label) in enumerate(entries):
         r, c = divmod(i, ncol)
         x = x0 + pad_cm + sum(cols[:c]) + col_cm * c

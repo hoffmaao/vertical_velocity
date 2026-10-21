@@ -341,12 +341,12 @@ def main() -> None:
     # --------------------------------------------------- legend, then the map
     # The domain outline is keyed only when the mesh extract supplied one.
     style.gmt_top_legend(fig, [
-        ("ramp", (GL_RAMP, "1.4p"), "grounding zone (2022\2552024)"),
-        ("ramp", (FRONT_RAMP, "1.4p"), "ice front (2022\2552024)"),
+        ("ramp", (GL_RAMP, "1.4p"), "grounding zone (2022-2024)"),
+        ("ramp", (FRONT_RAMP, "1.4p"), "ice front (2022-2024)"),
         *([("line", DOMAIN_PEN, "model domain")] if domain else []),
         ("symbol", ("c0.12c", SITE_COLOR, SITE_PEN), "ApRES stations"),
         ("symbol", ("s0.28c", None, "1.0p,black"), "extent of Fig. 4"),
-    ], width_cm=WIDTH_CM)
+    ], width_cm=WIDTH_CM, frame=False)
     fig.shift_origin(yshift=f"-{height_cm + 0.25:.3f}c")
 
     # --------------------------------------------- MOA shaded-relief backdrop
