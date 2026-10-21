@@ -8,7 +8,7 @@ pipeline can run headlessly.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Iterable, List, Optional, Tuple, Dict
+from typing import List, Optional, Dict
 
 import matplotlib
 
@@ -212,11 +212,25 @@ def plot_pair_diagnostics(
     axs[2].set_ylabel("|coherence| (0..1)")
     axs[2].grid(True, alpha=0.3)
 
+    # Extra diagnostics (Vaňková-style)
+    extra_lines = ""
+    if np.isfinite(result.melt_rate_m_per_year_amp):
+        extra_lines += f"melt (amp) = {result.melt_rate_m_per_year_amp:.3f} m/yr\n"
+    if np.isfinite(result.melt_rate_phase_minus_amp_m_per_year):
+        extra_lines += f"phase-amp = {result.melt_rate_phase_minus_amp_m_per_year:.3f} m/yr\n"
+    if np.isfinite(result.melt_rate_subband_std_m_per_year):
+        extra_lines += f"subband std = {result.melt_rate_subband_std_m_per_year:.3f} m/yr\n"
+    if np.isfinite(result.bed_coherence_mag):
+        extra_lines += f"bed |coh| = {result.bed_coherence_mag:.3f}\n"
+    if result.melt_quality_flag != "ok":
+        extra_lines += f"melt QC = {result.melt_quality_flag}\n"
+
     txt = (
         f"vsr = {result.vsr_per_year:.3e} ± {result.vsr_err_per_year:.1e} /yr\n"
-        f"melt rate = {result.melt_rate_m_per_year:.3f} ± {result.melt_rate_err_m_per_year:.3f} m/yr\n"
-        f"bed shift = {result.bed_shift_m:.3f} ± {result.bed_shift_err_m:.3f} m\n"
-        f"fit: n={result.n_fit_points:d}, R^2={result.fit_r2:.2f}, mean(|coh|)={result.mean_coherence_used:.3f}"
+        f"melt (phase) = {result.melt_rate_m_per_year:.3f} ± {result.melt_rate_err_m_per_year:.3f} m/yr\n"
+        + extra_lines
+        + f"bed shift = {result.bed_shift_m:.3f} ± {result.bed_shift_err_m:.3f} m\n"
+        + f"fit: n={result.n_fit_points:d}, R^2={result.fit_r2:.2f}, mean(|coh|)={result.mean_coherence_used:.3f}"
     )
     axs[2].text(0.02, 0.02, txt, transform=axs[2].transAxes, va="bottom", ha="left")
 
@@ -325,6 +339,10 @@ def plot_timeseries(
     basal_mean_amp_db = None
     peak_ratio_db = None
     peak_sep_m = None
+    peak1_depth = None
+    peak2_depth = None
+    peak1_amp_db = None
+    peak2_amp_db = None
 
     if profiles is not None and len(profiles) > 0:
         profiles = sorted(profiles, key=lambda p: p.timestamp)
@@ -337,6 +355,11 @@ def plot_timeseries(
         peak_ratio_db = np.array([m["peak_ratio_db"] for m in metrics], dtype=float)
         peak_sep_m = np.array([m["peak_separation_m"] for m in metrics], dtype=float)
 
+        peak1_depth = np.array([m["peak1_depth_m"] for m in metrics], dtype=float)
+        peak2_depth = np.array([m["peak2_depth_m"] for m in metrics], dtype=float)
+        peak1_amp_db = np.array([m["peak1_amp_db"] for m in metrics], dtype=float)
+        peak2_amp_db = np.array([m["peak2_amp_db"] for m in metrics], dtype=float)
+
         # Optional median filtering for diagnostics as well (for readability)
         if cfg.timeseries_median_filter_enabled and cfg.timeseries_median_filter_window > 1:
             w = int(cfg.timeseries_median_filter_window)
@@ -345,8 +368,13 @@ def plot_timeseries(
             basal_mean_amp_db_f = _rolling_median_nan(basal_mean_amp_db, w)
             peak_ratio_db_f = _rolling_median_nan(peak_ratio_db, w)
             peak_sep_m_f = _rolling_median_nan(peak_sep_m, w)
+            peak1_depth_f = _rolling_median_nan(peak1_depth, w)
+            peak2_depth_f = _rolling_median_nan(peak2_depth, w)
+            peak1_amp_db_f = _rolling_median_nan(peak1_amp_db, w)
+            peak2_amp_db_f = _rolling_median_nan(peak2_amp_db, w)
         else:
             bed_depth_f = bed_peak_amp_db_f = basal_mean_amp_db_f = peak_ratio_db_f = peak_sep_m_f = None
+            peak1_depth_f = peak2_depth_f = peak1_amp_db_f = peak2_amp_db_f = None
 
     # -----------------------------------------
     # Plot
@@ -416,18 +444,30 @@ def plot_timeseries(
 
     if nrows > 2 and acq_t is not None:
         # --- (3) Bed depth
-        axs[2].scatter(acq_t, bed_depth, label="bed depth", alpha=0.7)
+        axs[2].scatter(acq_t, bed_depth, label="picked bed", alpha=0.7)
+        axs[2].scatter(acq_t, peak1_depth, label="peak1", alpha=0.5)
+        axs[2].scatter(acq_t, peak2_depth, label="peak2", alpha=0.5)
         if bed_depth_f is not None:
             axs[2].plot(acq_t, bed_depth_f, label=f"median({cfg.timeseries_median_filter_window})")
+        if peak1_depth_f is not None:
+            axs[2].plot(acq_t, peak1_depth_f, label=f"peak1 median({cfg.timeseries_median_filter_window})")
+        if peak2_depth_f is not None:
+            axs[2].plot(acq_t, peak2_depth_f, label=f"peak2 median({cfg.timeseries_median_filter_window})")
         axs[2].set_ylabel("Bed depth (m)")
         axs[2].grid(True, alpha=0.3)
         axs[2].legend(loc="best", fontsize=max(8, cfg.font_size - 2))
 
         # --- (4) Basal amplitude metrics
-        axs[3].scatter(acq_t, bed_peak_amp_db, label="bed peak", alpha=0.7)
+        axs[3].scatter(acq_t, bed_peak_amp_db, label="picked bed", alpha=0.7)
+        axs[3].scatter(acq_t, peak1_amp_db, label="peak1", alpha=0.6)
+        axs[3].scatter(acq_t, peak2_amp_db, label="peak2", alpha=0.6)
         axs[3].scatter(acq_t, basal_mean_amp_db, label=f"mean[{cfg.basal_window_mean_len_m:.0f} m]", alpha=0.7)
         if bed_peak_amp_db_f is not None:
             axs[3].plot(acq_t, bed_peak_amp_db_f, label=f"bed peak median({cfg.timeseries_median_filter_window})")
+        if peak1_amp_db_f is not None:
+            axs[3].plot(acq_t, peak1_amp_db_f, label=f"peak1 median({cfg.timeseries_median_filter_window})")
+        if peak2_amp_db_f is not None:
+            axs[3].plot(acq_t, peak2_amp_db_f, label=f"peak2 median({cfg.timeseries_median_filter_window})")
         if basal_mean_amp_db_f is not None:
             axs[3].plot(
                 acq_t,
@@ -461,4 +501,143 @@ def plot_timeseries(
 
     axs[-1].set_xlabel("Time")
     fig.suptitle(f"{cfg.station}: strain + melt + basal diagnostics")
+    savefig(fig, outpath, cfg)
+
+
+def plot_melt_method_diagnostics(results: List[StrainMeltResult], outpath: Path, cfg: ProcessingConfig) -> None:
+    """Plot diagnostics comparing phase- and amplitude-derived melt, and
+    sub-band frequency dependence.
+
+    This follows the spirit of Vaňková et al. (2021): when basal returns are
+    complex (e.g., intermittently accreted ice), phase-derived melt and
+    amplitude-derived thickness change can disagree, and phase-derived melt
+    can become frequency dependent.
+    """
+
+    if len(results) == 0:
+        return
+
+    cfg = cfg.validate()
+    _apply_style(cfg)
+
+    t = [r.t2 for r in results]
+    melt_phase = np.array([r.melt_rate_m_per_year for r in results], dtype=float)
+    melt_amp = np.array([r.melt_rate_m_per_year_amp for r in results], dtype=float)
+    diff = np.array([r.melt_rate_phase_minus_amp_m_per_year for r in results], dtype=float)
+    absdiff = np.array([r.melt_rate_phase_minus_amp_abs_m_per_year for r in results], dtype=float)
+
+    sub0 = np.array([r.melt_rate_subband0_m_per_year for r in results], dtype=float)
+    sub1 = np.array([r.melt_rate_subband1_m_per_year for r in results], dtype=float)
+    sub2 = np.array([r.melt_rate_subband2_m_per_year for r in results], dtype=float)
+    sub_std = np.array([r.melt_rate_subband_std_m_per_year for r in results], dtype=float)
+
+    def _rolling_median_nan(x: np.ndarray, window: int) -> np.ndarray:
+        x = np.asarray(x, dtype=float)
+        n = x.size
+        if window <= 1 or n == 0:
+            return x.copy()
+        half = window // 2
+        out = np.full(n, np.nan, dtype=float)
+        for i in range(n):
+            lo = max(0, i - half)
+            hi = min(n, i + half + 1)
+            out[i] = float(np.nanmedian(x[lo:hi]))
+        return out
+
+    def _robust_ylim(y: np.ndarray) -> tuple[float, float] | None:
+        y = np.asarray(y, dtype=float)
+        y = y[np.isfinite(y)]
+        if y.size == 0:
+            return None
+        if y.size >= 5:
+            p_lo, p_hi = cfg.timeseries_plot_robust_percentiles
+            lo = float(np.nanpercentile(y, p_lo))
+            hi = float(np.nanpercentile(y, p_hi))
+        else:
+            lo = float(np.nanmin(y))
+            hi = float(np.nanmax(y))
+        if not (np.isfinite(lo) and np.isfinite(hi)):
+            return None
+        if hi == lo:
+            span = abs(lo) if lo != 0 else 1.0
+            lo -= 0.5 * span
+            hi += 0.5 * span
+        else:
+            span = hi - lo
+        pad = float(cfg.timeseries_plot_robust_pad_frac) * span
+        return lo - pad, hi + pad
+
+    # Optional median filtering for display
+    w = int(cfg.timeseries_median_filter_window)
+    do_filt = cfg.timeseries_median_filter_enabled and w > 1
+    melt_phase_f = _rolling_median_nan(melt_phase, w) if do_filt else None
+    melt_amp_f = _rolling_median_nan(melt_amp, w) if do_filt else None
+    diff_f = _rolling_median_nan(diff, w) if do_filt else None
+    absdiff_f = _rolling_median_nan(absdiff, w) if do_filt else None
+    sub0_f = _rolling_median_nan(sub0, w) if do_filt else None
+    sub1_f = _rolling_median_nan(sub1, w) if do_filt else None
+    sub2_f = _rolling_median_nan(sub2, w) if do_filt else None
+    substd_f = _rolling_median_nan(sub_std, w) if do_filt else None
+
+    fig, axs = plt.subplots(3, 1, figsize=(9, 9), sharex=True)
+
+    # --- (1) Phase vs amplitude melt
+    axs[0].scatter(t, melt_phase, label="phase", alpha=cfg.timeseries_plot_raw_alpha)
+    axs[0].scatter(t, melt_amp, label="amplitude", alpha=cfg.timeseries_plot_raw_alpha)
+    if melt_phase_f is not None:
+        axs[0].plot(t, melt_phase_f, label=f"phase median({w})")
+    if melt_amp_f is not None:
+        axs[0].plot(t, melt_amp_f, label=f"amp median({w})")
+    axs[0].set_ylabel("Melt rate (m/yr)")
+    axs[0].grid(True, alpha=0.3)
+    axs[0].legend(loc="best", fontsize=max(8, cfg.font_size - 2))
+    if cfg.timeseries_plot_use_robust_ylim:
+        y_for_lim = melt_phase_f if (cfg.timeseries_plot_use_filtered_for_ylim and melt_phase_f is not None) else melt_phase
+        lims = _robust_ylim(y_for_lim)
+        if lims is not None:
+            axs[0].set_ylim(*lims)
+
+    # --- (2) Disagreement
+    axs[1].scatter(t, diff, label="phase - amp", alpha=cfg.timeseries_plot_raw_alpha)
+    axs[1].scatter(t, absdiff, label="|phase - amp|", alpha=cfg.timeseries_plot_raw_alpha)
+    if diff_f is not None:
+        axs[1].plot(t, diff_f, label=f"(phase-amp) median({w})")
+    if absdiff_f is not None:
+        axs[1].plot(t, absdiff_f, label=f"|.| median({w})")
+    axs[1].set_ylabel("Disagreement (m/yr)")
+    axs[1].grid(True, alpha=0.3)
+    axs[1].legend(loc="best", fontsize=max(8, cfg.font_size - 2))
+    if cfg.timeseries_plot_use_robust_ylim:
+        y_for_lim = absdiff_f if (cfg.timeseries_plot_use_filtered_for_ylim and absdiff_f is not None) else absdiff
+        lims = _robust_ylim(y_for_lim)
+        if lims is not None:
+            axs[1].set_ylim(*lims)
+
+    # --- (3) Sub-band melt rates
+    axs[2].scatter(t, sub0, label="subband0", alpha=cfg.timeseries_plot_raw_alpha)
+    axs[2].scatter(t, sub1, label="subband1", alpha=cfg.timeseries_plot_raw_alpha)
+    axs[2].scatter(t, sub2, label="subband2", alpha=cfg.timeseries_plot_raw_alpha)
+    if sub0_f is not None:
+        axs[2].plot(t, sub0_f, label=f"sub0 median({w})")
+    if sub1_f is not None:
+        axs[2].plot(t, sub1_f, label=f"sub1 median({w})")
+    if sub2_f is not None:
+        axs[2].plot(t, sub2_f, label=f"sub2 median({w})")
+
+    # Also show sub-band spread as a secondary axis
+    ax2 = axs[2].twinx()
+    ax2.scatter(t, sub_std, label="subband std", alpha=0.3)
+    if substd_f is not None:
+        ax2.plot(t, substd_f, label=f"std median({w})")
+    ax2.set_ylabel("Subband std (m/yr)")
+
+    axs[2].set_ylabel("Subband melt (m/yr)")
+    axs[2].grid(True, alpha=0.3)
+    # Combined legend
+    h1, l1 = axs[2].get_legend_handles_labels()
+    h2, l2 = ax2.get_legend_handles_labels()
+    axs[2].legend(h1 + h2, l1 + l2, loc="best", fontsize=max(8, cfg.font_size - 2))
+    axs[2].set_xlabel("Time")
+
+    fig.suptitle(f"{cfg.station}: melt method diagnostics")
     savefig(fig, outpath, cfg)

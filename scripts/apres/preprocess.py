@@ -30,6 +30,7 @@ Design notes
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from typing import Optional, Sequence, Tuple
 
@@ -86,6 +87,21 @@ class PreprocessedProfile:
     lambdac_m: float
     er_ice: float
     pad_factor: int
+
+    # Optional: sub-band spectra interpolated onto `range_coarse_m`
+    # Shape: (n_subbands, nr)
+    subband_edges_hz: Optional[np.ndarray] = None
+    subband_fc_hz: Optional[np.ndarray] = None
+    spec_cor_subbands: Optional[np.ndarray] = None
+
+    # Optional: chirp-to-chirp coherency per depth bin (small — same shape as
+    # range_m). γ_chirp(z) = |⟨S(z)⟩|² / ⟨|S(z)|²⟩ ∈ [0, 1].
+    # 1 → fully coherent / specular; ≪ 1 → incoherent / volume scattering / noise.
+    chirp_coherence: Optional[np.ndarray] = None
+    # Optional: full per-chirp complex spectra (n_chirps, nr) — only stored
+    # when cfg.keep_chirp_spectra=True. Cast to complex64 to keep on-disk
+    # footprint tractable (~22 MB / file at typical Thwaites geometry).
+    spec_cor_per_chirp: Optional[np.ndarray] = None
 
 
 # ----------------------------
@@ -766,6 +782,38 @@ def preprocess_file(path: Path, cfg: ProcessingConfig, *, figures_dir: Optional[
     range_fine_mean = range_fine_mean[0]
     range_mean = range_mean[0]
 
+    # 10b. Per-chirp range processing (for chirp-coherence diagnostic and/or
+    # downstream chirp-resolved analyses). Linearity of the FFT means
+    # mean(spec_cor_all, axis=0) == spec_cor_mean (already validated upstream),
+    # so this is a redundant pass but keeps the existing pipeline untouched.
+    chirp_coherence = None
+    spec_cor_per_chirp = None
+    want_per_chirp = bool(getattr(cfg, "compute_chirp_coherence", False)) or bool(getattr(cfg, "keep_chirp_spectra", False))
+    if want_per_chirp and burst.vif.shape[0] > 1:
+        try:
+            _, spec_cor_all, _, _ = fmcw_range_vel(
+                burst.vif,
+                burst,
+                range_coarse,
+                cfg.pad_factor,
+                winfun=getattr(cfg, "winfun", "blackman"),
+            )
+            # γ_chirp(z) = |mean_k S_k(z)|² / mean_k |S_k(z)|²  ∈ [0, 1]
+            if getattr(cfg, "compute_chirp_coherence", False):
+                mean_complex = np.mean(spec_cor_all, axis=0)
+                mean_power = np.mean(np.abs(spec_cor_all) ** 2, axis=0)
+                with np.errstate(divide="ignore", invalid="ignore"):
+                    chirp_coherence = np.where(
+                        mean_power > 0,
+                        np.abs(mean_complex) ** 2 / mean_power,
+                        0.0,
+                    ).astype(np.float64)
+            if getattr(cfg, "keep_chirp_spectra", False):
+                spec_cor_per_chirp = spec_cor_all.astype(np.complex64)
+        except Exception:
+            chirp_coherence = None
+            spec_cor_per_chirp = None
+
     # 4 (continued): bed / ice thickness pick
     bed_idx, bed_depth = estimate_ice_thickness(
         burst_meaned,
@@ -783,6 +831,67 @@ def preprocess_file(path: Path, cfg: ProcessingConfig, *, figures_dir: Optional[
     # Ensure float arrays
     phase_std_error = np.asarray(phase_std_error, dtype=float)
     range_error = np.asarray(range_error, dtype=float)
+
+    # ----------------------------------------------
+    # Optional: sub-band spectra for frequency-dependence diagnostics
+    # ----------------------------------------------
+    subband_edges_hz = None
+    subband_fc_hz = None
+    spec_cor_subbands = None
+
+    if getattr(cfg, "subbands_enabled", False) and getattr(cfg, "subband_fracs", None):
+        try:
+            f0_full = float(burst_meaned.f0_hz)
+            f1_full = float(burst_meaned.f1_hz)
+            bw_full = float(f1_full - f0_full)
+            if bw_full > 0:
+                edges = []
+                fcs = []
+                specs = []
+
+                for (a, b) in cfg.subband_fracs:
+                    a = float(a)
+                    b = float(b)
+                    f_low = f0_full + a * bw_full
+                    f_high = f0_full + b * bw_full
+
+                    # Work on a copy of the meaned burst so we don't mutate
+                    # the full-band burst used above.
+                    sub = ApRESBurst(**{**burst_meaned.__dict__})
+                    sub.vif = np.asarray(burst_meaned.vif).copy()
+
+                    sub = cull_frequency_range(sub, (f_low, f_high))
+                    range_coarse_sub = depth_conversion_range_coarse(sub, cfg.pad_factor, cfg.max_range_m)
+
+                    _, spec_cor_sub, _, _ = fmcw_range_vel(
+                        sub.vif,
+                        sub,
+                        range_coarse_sub,
+                        cfg.pad_factor,
+                        winfun=getattr(cfg, "winfun", "blackman"),
+                    )
+
+                    # Meaned burst has nch=1
+                    spec_cor_sub = np.asarray(spec_cor_sub[0])
+
+                    # Interpolate onto the full-band range axis so downstream
+                    # bed-window indexing is consistent.
+                    re = np.interp(range_coarse, range_coarse_sub, np.real(spec_cor_sub), left=np.nan, right=np.nan)
+                    im = np.interp(range_coarse, range_coarse_sub, np.imag(spec_cor_sub), left=np.nan, right=np.nan)
+                    specs.append(re + 1j * im)
+                    edges.append([f_low, f_high])
+                    fcs.append(float(sub.fc_hz))
+
+                if specs:
+                    spec_cor_subbands = np.stack(specs, axis=0)
+                    subband_edges_hz = np.asarray(edges, dtype=float)
+                    subband_fc_hz = np.asarray(fcs, dtype=float)
+        except Exception:
+            # Keep preprocessing robust: if sub-band processing fails for any
+            # reason we simply omit these diagnostics.
+            subband_edges_hz = None
+            subband_fc_hz = None
+            spec_cor_subbands = None
 
     # Package
     return PreprocessedProfile(
@@ -812,4 +921,9 @@ def preprocess_file(path: Path, cfg: ProcessingConfig, *, figures_dir: Optional[
         lambdac_m=float(burst.lambdac_m),
         er_ice=float(burst.er_ice),
         pad_factor=int(cfg.pad_factor),
+        subband_edges_hz=subband_edges_hz,
+        subband_fc_hz=subband_fc_hz,
+        spec_cor_subbands=spec_cor_subbands,
+        chirp_coherence=chirp_coherence,
+        spec_cor_per_chirp=spec_cor_per_chirp,
     )

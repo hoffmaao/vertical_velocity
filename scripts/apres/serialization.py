@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import asdict
 from datetime import datetime
 from pathlib import Path
-from typing import List, Optional
+from typing import List
 
 import numpy as np
 
@@ -22,6 +22,41 @@ def save_preprocessed_npz(profile: PreprocessedProfile, outpath: Path) -> None:
     """Save a PreprocessedProfile to an .npz file."""
     outpath = Path(outpath)
     outpath.parent.mkdir(parents=True, exist_ok=True)
+
+    # Optional sub-band spectra (may be None for backwards compatibility)
+    extra = {}
+    if getattr(profile, "spec_cor_subbands", None) is not None:
+        try:
+            sb = np.asarray(profile.spec_cor_subbands)
+            extra.update(
+                {
+                    "subband_edges_hz": np.asarray(profile.subband_edges_hz, dtype=float)
+                    if profile.subband_edges_hz is not None
+                    else np.zeros((0, 2), dtype=float),
+                    "subband_fc_hz": np.asarray(profile.subband_fc_hz, dtype=float)
+                    if profile.subband_fc_hz is not None
+                    else np.zeros((0,), dtype=float),
+                    "subband_spec_cor_real": np.real(sb),
+                    "subband_spec_cor_imag": np.imag(sb),
+                }
+            )
+        except Exception:
+            # If something goes wrong, silently drop sub-band fields
+            extra = {}
+
+    # Optional chirp-coherence diagnostic + (heavy) per-chirp spectra
+    if getattr(profile, "chirp_coherence", None) is not None:
+        try:
+            extra["chirp_coherence"] = np.asarray(profile.chirp_coherence, dtype=float)
+        except Exception:
+            pass
+    if getattr(profile, "spec_cor_per_chirp", None) is not None:
+        try:
+            spc = np.asarray(profile.spec_cor_per_chirp)
+            extra["spec_cor_per_chirp_real"] = np.real(spc).astype(np.float32)
+            extra["spec_cor_per_chirp_imag"] = np.imag(spc).astype(np.float32)
+        except Exception:
+            pass
 
     np.savez_compressed(
         outpath,
@@ -53,6 +88,7 @@ def save_preprocessed_npz(profile: PreprocessedProfile, outpath: Path) -> None:
         lambdac_m=np.array(profile.lambdac_m),
         er_ice=np.array(profile.er_ice),
         pad_factor=np.array(profile.pad_factor),
+        **extra,
     )
 
 
@@ -85,6 +121,30 @@ def load_preprocessed_npz(path: Path) -> PreprocessedProfile:
                 lon = None if np.isnan(v) else v
             except Exception:
                 lon = None
+        # Optional sub-band fields
+        sb_edges = None
+        sb_fc = None
+        sb_spec = None
+        if "subband_spec_cor_real" in z and "subband_spec_cor_imag" in z:
+            try:
+                sb_spec = z["subband_spec_cor_real"] + 1j * z["subband_spec_cor_imag"]
+                if sb_spec.size == 0:
+                    sb_spec = None
+            except Exception:
+                sb_spec = None
+        if "subband_edges_hz" in z:
+            try:
+                v = np.asarray(z["subband_edges_hz"], dtype=float)
+                sb_edges = None if v.size == 0 else v
+            except Exception:
+                sb_edges = None
+        if "subband_fc_hz" in z:
+            try:
+                v = np.asarray(z["subband_fc_hz"], dtype=float)
+                sb_fc = None if v.size == 0 else v
+            except Exception:
+                sb_fc = None
+
         return PreprocessedProfile(
             file_path=Path(str(z["file_path"])),
             name=str(z["name"]),
@@ -112,6 +172,21 @@ def load_preprocessed_npz(path: Path) -> PreprocessedProfile:
             lambdac_m=float(z["lambdac_m"]),
             er_ice=float(z["er_ice"]),
             pad_factor=int(z["pad_factor"]),
+            subband_edges_hz=sb_edges,
+            subband_fc_hz=sb_fc,
+            spec_cor_subbands=sb_spec,
+            chirp_coherence=(
+                np.asarray(z["chirp_coherence"], dtype=float)
+                if "chirp_coherence" in z and np.asarray(z["chirp_coherence"]).size > 0
+                else None
+            ),
+            spec_cor_per_chirp=(
+                (z["spec_cor_per_chirp_real"].astype(np.complex64)
+                 + 1j * z["spec_cor_per_chirp_imag"].astype(np.complex64))
+                if ("spec_cor_per_chirp_real" in z and "spec_cor_per_chirp_imag" in z
+                    and z["spec_cor_per_chirp_real"].size > 0)
+                else None
+            ),
         )
 
 
@@ -182,6 +257,17 @@ def save_pair_diagnostics_npz(
         melt_err_m=result.melt_err_m,
         melt_rate_m_per_year=result.melt_rate_m_per_year,
         melt_rate_err_m_per_year=result.melt_rate_err_m_per_year,
+        # Additional melt diagnostics
+        bed_shift_amp_m=result.bed_shift_amp_m,
+        melt_m_amp=result.melt_m_amp,
+        melt_rate_m_per_year_amp=result.melt_rate_m_per_year_amp,
+        melt_rate_phase_minus_amp_m_per_year=result.melt_rate_phase_minus_amp_m_per_year,
+        melt_rate_phase_minus_amp_abs_m_per_year=result.melt_rate_phase_minus_amp_abs_m_per_year,
+        melt_rate_subband0_m_per_year=result.melt_rate_subband0_m_per_year,
+        melt_rate_subband1_m_per_year=result.melt_rate_subband1_m_per_year,
+        melt_rate_subband2_m_per_year=result.melt_rate_subband2_m_per_year,
+        melt_rate_subband_std_m_per_year=result.melt_rate_subband_std_m_per_year,
+        melt_rate_subband_range_m_per_year=result.melt_rate_subband_range_m_per_year,
         # Coarse alignment
         coarse_range_m=coarse.range_m,
         coarse_lag_bins=coarse.lag_bins,

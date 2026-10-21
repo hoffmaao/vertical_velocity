@@ -14,7 +14,7 @@ approximation (SSA, plug flow).
 | Path          | Contents                                                                                        |
 |---------------|-------------------------------------------------------------------------------------------------|
 | `scripts/`    | All code: ApRES processing (`apres/`), mesh, inversion, L-curve, eigendecomposition, UQ, MISMIP+ synthetic tests |
-| `figures/`    | Generated figures                                                                               |
+| `figures/`    | Generated figures (`strain_pipeline/`: the GRL manuscript's current Figs. 1-5, see below)          |
 | `output/logs/`| Run logs, grouped by stage (`prior`, `inversion`, `lcurve`, `eigendec`, `forward`, `mismip`)    |
 | `manuscript/` | Methods text and bibliography                                                                   |
 | `docs/`       | Geometry-consistency rule (`geometry_consistency.md`); notes on tlm_adjoint / pyadjoint Hessian issues |
@@ -75,3 +75,35 @@ scripts/manuscript_figures.py    Figs. 1-7 -> figures/manuscript/fig<NN>.{png,pd
 
 Figs. 6 and 7 are `paper_figures.py`'s F_apres and F_retreat. `apres_dat.py` reads the
 ApRES `.dat` bursts for the return-power section.
+
+### Figures currently in the manuscript (ApRES strain pipeline)
+
+The manuscript in hoffmaao/paper-thwaites-nonlinear-deformation still uses the five
+figures in `figures/strain_pipeline/` (`fig01_overview` ... `fig05_legendre`), not the
+output of `manuscript_figures.py`. They come from a separate pipeline that processes the
+raw repeat bursts itself, with the `apres/` package, instead of reading
+`data/apres_legendre_fits.h5`. Its Legendre fit (`fit_legendre.py`, `apres/legendre.py`)
+is not the same as the one in `manuscript_prepare.py`, so check which pipeline a number in
+the text comes from until the manuscript switches to one set of figures.
+
+```
+scripts/run_pipeline.sh            all stages below, in order (env: PY_ANALYSIS, PY_FIGURES, JOBS)
+scripts/run_pipeline.sh figures    figures only, from existing results/
+
+scripts/build_site_catalog.py          data/{2022-2023,2023-2024} bursts -> results/sites/{site_catalog,repeat_pairs}.csv
+scripts/compute_vertical_velocities.py repeat-pair cross-correlation -> results/vertical_velocity/{profiles.nc,site_summary.csv} (~30 min, 4 cores)
+scripts/compute_strain_rates.py        -> results/vertical_velocity/strain_profiles.nc
+scripts/compute_surface_strain.py      ASE annual velocity mosaics -> results/sites/surface_strain.csv
+scripts/fit_legendre.py                -> results/vertical_velocity/legendre_fits.csv
+scripts/figures/fig0{1..5}_*.py        -> figures/strain_pipeline/fig0N_*.{png,pdf} (PyGMT for Figs. 1 and 4)
+```
+
+The five figures follow the paper's figure style (`scripts/figstyle.py`, after Morrow et
+al. 2026) through `scripts/figures/style.py`, which also carries it over to PyGMT: Times
+type at the same point sizes, discrete colour bands, panel letters, one legend across
+the top (framed, except in Fig. 1), and every figure drawn at its printed width (17.8 cm, Fig. 3 at 0.55 of that).
+
+External datasets (BedMachine, MEaSUREs, ASE velocity mosaics, REMA, MOA, coastlines,
+IceLines, grounding lines) are located through `scripts/paths.py`, with an environment
+variable override for each. Fig. 1 also outlines the model domain from the mesh extract
+written by `paper_extract.py` (`MODEL_EXTRACT`, default `results/paper/extract_ssa.npz`).

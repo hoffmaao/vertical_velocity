@@ -24,7 +24,7 @@ import numpy as np
 
 from .config import ProcessingConfig
 from .preprocess import PreprocessedProfile
-from .xcorr import XCorrResult, fmcw_xcorr
+from .xcorr import fmcw_xcorr
 
 
 @dataclass
@@ -121,6 +121,32 @@ class StrainMeltResult:
     melt_err_m: float
     melt_rate_m_per_year: float
     melt_rate_err_m_per_year: float
+
+    # ------------------------------------------------------------
+    # Additional diagnostics for basal complexity / accretion
+    # ------------------------------------------------------------
+    # "Amplitude" method: estimate bed motion from the picked bed depth
+    # (i.e., the depth of the dominant amplitude peak) and convert to melt by
+    # subtracting the strain-predicted displacement.
+    bed_shift_amp_m: float = float("nan")
+    melt_m_amp: float = float("nan")
+    melt_rate_m_per_year_amp: float = float("nan")
+
+    # Vaňková-style disagreement between phase- and amplitude-derived melt.
+    melt_rate_phase_minus_amp_m_per_year: float = float("nan")
+    melt_rate_phase_minus_amp_abs_m_per_year: float = float("nan")
+
+    # Frequency dependence tests: phase-derived melt using sub-bands of the chirp.
+    # (Only first three are stored explicitly; std/range are computed over all
+    # available sub-bands.)
+    melt_rate_subband0_m_per_year: float = float("nan")
+    melt_rate_subband1_m_per_year: float = float("nan")
+    melt_rate_subband2_m_per_year: float = float("nan")
+    melt_rate_subband_std_m_per_year: float = float("nan")
+    melt_rate_subband_range_m_per_year: float = float("nan")
+    bed_coherence_mag: float = float("nan")
+    melt_quality_ok: int = 1
+    melt_quality_flag: str = "ok"
 
     # --- Fit diagnostics (helps QC poor strain-rate profiles)
     n_fit_points: int = 0
@@ -853,6 +879,64 @@ def _bed_shift_xcorr(p1: PreprocessedProfile, p2: PreprocessedProfile, cfg: Proc
     )
 
 
+def _bed_shift_xcorr_on_spectrum(
+    range_axis_m: np.ndarray,
+    spec1: np.ndarray,
+    spec2: np.ndarray,
+    bed_depth_m: float,
+    coarse_shift_m: float,
+    wl_m: float,
+    cfg: ProcessingConfig,
+) -> BedShift:
+    """Bed shift via complex xcorr on precomputed spectra.
+
+    This is used for sub-band / frequency dependence tests where we do not
+    necessarily have phase-error estimates (so dhe_m may be NaN).
+    """
+
+    range_axis_m = np.asarray(range_axis_m, dtype=float).reshape(-1)
+    spec1 = np.asarray(spec1).reshape(-1)
+    spec2 = np.asarray(spec2).reshape(-1)
+    dr = float(np.mean(np.diff(range_axis_m)))
+
+    win_lo, win_hi = cfg.xcor_bed_win_m
+    fi = np.where(
+        (range_axis_m >= min(bed_depth_m + win_lo, bed_depth_m + win_hi))
+        & (range_axis_m <= max(bed_depth_m + win_lo, bed_depth_m + win_hi))
+    )[0]
+
+    if fi.size < 5:
+        raise ValueError("Bed window too small / outside range")
+
+    # Restrict to indices where both spectra are finite
+    good = np.isfinite(np.real(spec1[fi])) & np.isfinite(np.real(spec2[fi]))
+    fi = fi[good]
+    if fi.size < 5:
+        raise ValueError("Not enough finite samples in bed window")
+
+    sr_lo = float(coarse_shift_m) - cfg.bed_search_wavelength_margin * float(wl_m)
+    sr_hi = float(coarse_shift_m) + cfg.bed_search_wavelength_margin * float(wl_m)
+    maxlag = (int(np.floor(sr_lo / dr)), int(np.ceil(sr_hi / dr)))
+
+    res = fmcw_xcorr(spec1, spec2, fi, maxlag)
+    mci = int(np.argmax(np.abs(res.cc)))
+    cc = complex(res.cc[mci])
+    lag = int(res.lags[mci])
+
+    lagdh = lag * dr
+    phasedh = -np.angle(cc) * (float(wl_m) / (4.0 * np.pi))
+    dh = float(lagdh + phasedh)
+
+    return BedShift(
+        method="xcorr_subband",
+        dh_m=dh,
+        dhe_m=float("nan"),
+        lag_bins=lag,
+        phase_rad=float(np.angle(cc)),
+        coherence=cc,
+    )
+
+
 # -----------------------------
 # Public MATLAB-like wrappers
 # -----------------------------
@@ -921,6 +1005,102 @@ def strain_melt_between_profiles(
 
         bed_shift_m = bed.dh_m
         bed_shift_err = bed.dhe_m
+        bed_coherence_mag = float(abs(bed.coherence)) if np.isfinite(abs(bed.coherence)) else float("nan")
+
+        # -----------------------------
+        # Vaňková-style phase vs amplitude disagreement
+        # -----------------------------
+        # Amplitude method: track the picked bed depth (from preprocessing)
+        # and convert to melt by subtracting strain-predicted displacement.
+        bed_shift_amp_m = float(p2.bed_depth_m - p1.bed_depth_m)
+        melt_amp = float(-(bed_shift_amp_m - dh_strain))
+        melt_rate_amp = float(melt_amp * cfg.daysPerYear / dt_days)
+        melt_rate_diff = float(melt_rate - melt_rate_amp)
+        melt_rate_diff_abs = float(abs(melt_rate_diff))
+
+        # -----------------------------
+        # Sub-band / frequency dependence tests
+        # -----------------------------
+        sub_melt_rates = []
+        try:
+            if (
+                getattr(p1, "spec_cor_subbands", None) is not None
+                and getattr(p2, "spec_cor_subbands", None) is not None
+                and getattr(p1, "subband_fc_hz", None) is not None
+                and getattr(p2, "subband_fc_hz", None) is not None
+            ):
+                sb1 = np.asarray(p1.spec_cor_subbands)
+                sb2 = np.asarray(p2.spec_cor_subbands)
+                fc1 = np.asarray(p1.subband_fc_hz, dtype=float)
+                fc2 = np.asarray(p2.subband_fc_hz, dtype=float)
+                n_sb = int(min(sb1.shape[0], sb2.shape[0], fc1.size, fc2.size))
+
+                for i in range(n_sb):
+                    # Use the mean center frequency across the pair
+                    fc = float(0.5 * (fc1[i] + fc2[i]))
+                    if not np.isfinite(fc) or fc <= 0:
+                        sub_melt_rates.append(float("nan"))
+                        continue
+
+                    wl = float(p1.ci_m_s / fc)
+                    bsub = _bed_shift_xcorr_on_spectrum(
+                        p1.range_coarse_m,
+                        sb1[i],
+                        sb2[i],
+                        bed_depth_m=float(bed_depth),
+                        coarse_shift_m=float(dh_strain),
+                        wl_m=wl,
+                        cfg=cfg,
+                    )
+                    melt_sub = float(-(bsub.dh_m - dh_strain))
+                    sub_melt_rates.append(float(melt_sub * cfg.daysPerYear / dt_days))
+        except Exception:
+            # Diagnostics only: don't let this break the core solver
+            sub_melt_rates = []
+
+        melt_quality_reasons = []
+        if cfg.melt_quality_gate_enabled:
+            if not np.isfinite(bed_coherence_mag) or bed_coherence_mag < float(cfg.melt_quality_min_bed_coherence):
+                melt_quality_reasons.append("low_bed_coherence")
+            if (
+                cfg.melt_quality_max_phase_amp_diff_m_per_year is not None
+                and np.isfinite(melt_rate_diff_abs)
+                and melt_rate_diff_abs > float(cfg.melt_quality_max_phase_amp_diff_m_per_year)
+            ):
+                melt_quality_reasons.append("phase_amp_mismatch")
+            sub_std = float(np.nanstd(sub_melt_rates)) if len(sub_melt_rates) > 0 else float("nan")
+            sub_range = (
+                float(np.nanmax(sub_melt_rates) - np.nanmin(sub_melt_rates))
+                if len(sub_melt_rates) > 0
+                else float("nan")
+            )
+            if (
+                cfg.melt_quality_max_subband_std_m_per_year is not None
+                and np.isfinite(sub_std)
+                and sub_std > float(cfg.melt_quality_max_subband_std_m_per_year)
+            ):
+                melt_quality_reasons.append("subband_std_high")
+            if (
+                cfg.melt_quality_max_subband_range_m_per_year is not None
+                and np.isfinite(sub_range)
+                and sub_range > float(cfg.melt_quality_max_subband_range_m_per_year)
+            ):
+                melt_quality_reasons.append("subband_range_high")
+
+            if melt_quality_reasons:
+                melt = float("nan")
+                melt_err = float("nan")
+                melt_rate = float("nan")
+                melt_rate_err = float("nan")
+
+        melt_quality_ok = 0 if (cfg.melt_quality_gate_enabled and melt_quality_reasons) else 1
+        melt_quality_flag = "ok" if melt_quality_ok else "|".join(melt_quality_reasons)
+        subband_std = float(np.nanstd(sub_melt_rates)) if len(sub_melt_rates) > 0 else float("nan")
+        subband_range = (
+            float(np.nanmax(sub_melt_rates) - np.nanmin(sub_melt_rates))
+            if len(sub_melt_rates) > 0
+            else float("nan")
+        )
 
     else:
         bed = BedShift(method="none", dh_m=float("nan"), dhe_m=float("nan"), lag_bins=0, phase_rad=float("nan"), coherence=complex("nan"))
@@ -930,6 +1110,18 @@ def strain_melt_between_profiles(
         melt_rate_err = float("nan")
         bed_shift_m = float("nan")
         bed_shift_err = float("nan")
+
+        bed_shift_amp_m = float("nan")
+        melt_amp = float("nan")
+        melt_rate_amp = float("nan")
+        melt_rate_diff = float("nan")
+        melt_rate_diff_abs = float("nan")
+        sub_melt_rates = []
+        bed_coherence_mag = float("nan")
+        melt_quality_ok = 0
+        melt_quality_flag = "melt_disabled"
+        subband_std = float("nan")
+        subband_range = float("nan")
 
     # Fit QC metrics (useful for filtering poor-quality pairs)
     n_fit_points = int(np.sum(fit.used_mask))
@@ -957,6 +1149,19 @@ def strain_melt_between_profiles(
         melt_err_m=float(melt_err),
         melt_rate_m_per_year=float(melt_rate),
         melt_rate_err_m_per_year=float(melt_rate_err),
+        bed_shift_amp_m=float(bed_shift_amp_m),
+        melt_m_amp=float(melt_amp),
+        melt_rate_m_per_year_amp=float(melt_rate_amp),
+        melt_rate_phase_minus_amp_m_per_year=float(melt_rate_diff),
+        melt_rate_phase_minus_amp_abs_m_per_year=float(melt_rate_diff_abs),
+        melt_rate_subband0_m_per_year=float(sub_melt_rates[0]) if len(sub_melt_rates) > 0 else float("nan"),
+        melt_rate_subband1_m_per_year=float(sub_melt_rates[1]) if len(sub_melt_rates) > 1 else float("nan"),
+        melt_rate_subband2_m_per_year=float(sub_melt_rates[2]) if len(sub_melt_rates) > 2 else float("nan"),
+        melt_rate_subband_std_m_per_year=float(subband_std),
+        melt_rate_subband_range_m_per_year=float(subband_range),
+        bed_coherence_mag=float(bed_coherence_mag),
+        melt_quality_ok=int(melt_quality_ok),
+        melt_quality_flag=str(melt_quality_flag),
         n_fit_points=n_fit_points,
         fit_r2=float(fit.r2),
         mean_coherence_used=float(mean_cohere_used),

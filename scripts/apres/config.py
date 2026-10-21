@@ -67,6 +67,15 @@ class ProcessingConfig:
     max_chirps_correlation: int = 200
     bad_chirps_sigma: float = 3.0
 
+    # Chirp-to-chirp diagnostics (cheap; always on by default).
+    # Stores chirp_coherence(z) on PreprocessedProfile — the magnitude-squared
+    # coherency between each chirp and the burst mean, per depth bin.
+    # Specular bed → ~1; volume scattering → < 1.
+    compute_chirp_coherence: bool = True
+    # Optionally retain the full per-chirp complex spectra (heavy: ~22 MB
+    # complex64 per file). Required for downstream chirp-resolved analyses.
+    keep_chirp_spectra: bool = False
+
     # Correlation-based noise-depth detection
     correlation_limit: float = 0.65
 
@@ -95,6 +104,30 @@ class ProcessingConfig:
     # depth: [bed - above, bed + below].
     basal_peak_window_above_m: float = 10.0
     basal_peak_window_below_m: float = 50.0
+
+    # --------------------
+    # Sub-band / frequency dependence diagnostics
+    # --------------------
+    # Vaňková et al. (2021) show that melt inferred from the complex-phase
+    # method can disagree with amplitude-based thickness change when the
+    # basal return is affected by intermittently accreted ice / reflector
+    # complexity. A useful diagnostic is to re-compute bed displacement using
+    # different sub-bands of the FMCW chirp (i.e., different center
+    # frequencies) and check whether the inferred melt rate is frequency-
+    # dependent.
+    #
+    # Implementation here: during preprocessing we compute additional
+    # phase-sensitive range profiles for a small number of fractional
+    # sub-bands, interpolated onto the full-band range axis. During strain/melt
+    # solving we compute a bed-shift/melt-rate for each sub-band.
+    subbands_enabled: bool = True
+    # Fractions of the available chirp bandwidth to use as sub-bands.
+    # Example: three equal-width sub-bands.
+    subband_fracs: Tuple[Tuple[float, float], ...] = (
+        (0.00, 0.33),
+        (0.33, 0.67),
+        (0.67, 1.00),
+    )
 
     # --------------------
     # Strain / melt settings
@@ -151,6 +184,19 @@ class ProcessingConfig:
     xcor_bed_win_m: Tuple[float, float] = (-2.0, 1.0)
     range_bed_win_m: Tuple[float, float] = (-1.0, 0.0)
     bed_search_wavelength_margin: float = 1.0  # +/- N wavelengths around coarse bed shift
+
+    # Melt-quality gating
+    # -------------------
+    # Basal reflector loss / reflector switching tends to show up as weak bed
+    # coherence, disagreement between phase- and amplitude-derived melt, or
+    # strong frequency dependence across sub-bands. If enabled, these checks
+    # suppress the phase-derived melt estimate for the affected pair while
+    # preserving the strain estimate and the raw diagnostics.
+    melt_quality_gate_enabled: bool = True
+    melt_quality_min_bed_coherence: float = 0.50
+    melt_quality_max_phase_amp_diff_m_per_year: float | None = 2.0
+    melt_quality_max_subband_std_m_per_year: float | None = 1.0
+    melt_quality_max_subband_range_m_per_year: float | None = 2.0
 
     # --------------------
     # Plotting
@@ -221,8 +267,30 @@ class ProcessingConfig:
         if self.basal_peak_window_above_m < 0 or self.basal_peak_window_below_m <= 0:
             raise ValueError("basal_peak_window_above_m must be >=0 and basal_peak_window_below_m must be >0")
 
+        if self.subbands_enabled:
+            if not self.subband_fracs:
+                raise ValueError("subband_fracs must be a non-empty sequence when subbands_enabled=True")
+            for (a, b) in self.subband_fracs:
+                a = float(a)
+                b = float(b)
+                if not (0.0 <= a < b <= 1.0):
+                    raise ValueError(
+                        "Each (start,end) in subband_fracs must satisfy 0.0 <= start < end <= 1.0"
+                    )
+
         if self.bed_shift_method not in {"xcorr", "rangeDiff"}:
             raise ValueError("bed_shift_method must be 'xcorr' or 'rangeDiff'")
+        if not (0.0 <= float(self.melt_quality_min_bed_coherence) <= 1.0):
+            raise ValueError("melt_quality_min_bed_coherence must be between 0 and 1")
+        if self.melt_quality_max_phase_amp_diff_m_per_year is not None:
+            if float(self.melt_quality_max_phase_amp_diff_m_per_year) < 0.0:
+                raise ValueError("melt_quality_max_phase_amp_diff_m_per_year must be >= 0")
+        if self.melt_quality_max_subband_std_m_per_year is not None:
+            if float(self.melt_quality_max_subband_std_m_per_year) < 0.0:
+                raise ValueError("melt_quality_max_subband_std_m_per_year must be >= 0")
+        if self.melt_quality_max_subband_range_m_per_year is not None:
+            if float(self.melt_quality_max_subband_range_m_per_year) < 0.0:
+                raise ValueError("melt_quality_max_subband_range_m_per_year must be >= 0")
 
         if self.ice_thickness_method not in {"max", "use"}:
             raise ValueError("ice_thickness_method must be 'max' or 'use'")
