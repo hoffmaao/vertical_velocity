@@ -1,10 +1,11 @@
 """Figure 1 - setting of the repeat ApRES survey on Thwaites Glacier.
 
-A regional panel showing surface speed over the Thwaites trunk during the
-survey period, the grounding line, the ice-shelf front, and the 88 sites
-occupied in both field seasons, with an Antarctic locator inset.  The three
-autonomous stations, which logged through the year between the two visits, are
-drawn as squares.
+A regional panel covering the whole model domain, showing surface speed over
+the Thwaites trunk during the survey period, the grounding line, the ice-shelf
+front, the model domain outline, and the 88 sites occupied in both field
+seasons, with an Antarctic locator inset.  The three autonomous stations, which
+logged through the year between the two visits, are drawn the same way as every
+other site: they are the same instrument making the same measurement.
 
 Data
 ----
@@ -31,14 +32,19 @@ continental context in the locator inset.
 
 Design notes
 ------------
-Speed is drawn on the magma ramp on a logarithmic scale, matching the velocity
-figures in the fabric_anisotropy study, with white contours over it.  The range
-is extended past that study's 400 m/yr ceiling because the Thwaites trunk runs
-an order of magnitude faster and would otherwise saturate to a single colour
-across the whole grounding zone.
+The map extends over the whole model domain plus a margin.  The domain outline
+is the boundary of the model mesh read from paths.MODEL_EXTRACT; without that
+file the map falls back to a fixed region and draws no outline.
 
-Nothing is written onto the map that is not an axis annotation, a colorbar
-label, the scale bar's value or a legend entry.
+Speed is drawn on the magma ramp in 10 discrete log-spaced bands, as on the
+paper's other speed maps, with no contours.  The range is extended to 4000
+m/yr because the Thwaites trunk runs an order of magnitude faster than the
+fabric_anisotropy study's 400 m/yr ceiling and would otherwise saturate to a
+single colour across the whole grounding zone.
+
+The frame is bare: no axis annotations, only a scale bar.  Every symbol is keyed
+in one framed legend across the top, and the locator inset sits top left.
+Nothing else is written onto the map.
 
 Usage
 -----

@@ -94,7 +94,8 @@ def shear_edges(cap: float) -> np.ndarray:
 
 
 def draw_panel(fig, *, bed, bed_cpt, region, proj, values, cpt, x, y, resolved,
-               stations_xy, stations_v, letter, row_label, scale=False):
+               stations_xy, stations_v, stations_resolved, letter, row_label,
+               scale=False):
     """One bare map panel: banded bed underneath, every ApRES site on top."""
     fig.grdimage(grid=bed, region=region, projection=proj, cmap=bed_cpt,
                  nan_transparent=True, frame="+n")
@@ -102,10 +103,12 @@ def draw_panel(fig, *, bed, bed_cpt, region, proj, values, cpt, x, y, resolved,
     # Sites where shear is resolved carry a thin outline; the rest a heavy one,
     # drawn last so they stay findable.  Both are keyed in the legend.
     res = np.asarray(resolved, dtype=bool)
-    if len(stations_xy[0]):
-        fig.plot(x=stations_xy[0], y=stations_xy[1], style=SITE_STYLE,
-                 fill=stations_v, cmap=cpt, pen=PEN_RESOLVED,
-                 region=region, projection=proj)
+    st_res = np.asarray(stations_resolved, dtype=bool)
+    sx, sy = stations_xy
+    for keep, pen in ((st_res, PEN_RESOLVED), (~st_res, PEN_UNRESOLVED)):
+        if keep.any():
+            fig.plot(x=sx[keep], y=sy[keep], style=SITE_STYLE, fill=stations_v[keep],
+                     cmap=cpt, pen=pen, region=region, projection=proj)
     if res.any():
         fig.plot(x=x[res], y=y[res], style=SITE_STYLE, fill=values[res],
                  cmap=cpt, pen=PEN_RESOLVED, region=region, projection=proj)
@@ -173,6 +176,7 @@ def main() -> None:
     cap = np.ceil(10.0 * float(np.nanmax(ratio_all[np.isfinite(ratio_all)]))) / 10.0
     shear_cpt = style.gmt_cpt_bands(style.SEQ_SHARE, shear_edges(cap), str(tmp / "shear.cpt"))
     resolved = point["shear_resolved"].astype(bool).values
+    st_resolved = stations["shear_resolved"].astype(bool).values
 
     pygmt.config(**style.GMT_CONFIG)
     fig = pygmt.Figure()
@@ -190,7 +194,7 @@ def main() -> None:
     draw_panel(
         fig, bed=bed, bed_cpt=bed_cpt, region=region, proj=proj, values=eps,
         cpt=eps_cpt, x=x, y=y, resolved=resolved, stations_xy=(sx, sy),
-        stations_v=eps_st, letter="a",
+        stations_v=eps_st, stations_resolved=st_resolved, letter="a",
         row_label=f"Depth-averaged {style.GMT_EPS_ZZ}", scale=True,
     )
     style.gmt_colorbar(fig, cmap=eps_cpt, length_cm=cbar_len,
@@ -202,7 +206,8 @@ def main() -> None:
     draw_panel(
         fig, bed=bed, bed_cpt=bed_cpt, region=region, proj=proj, values=ratio,
         cpt=shear_cpt, x=x, y=y, resolved=resolved, stations_xy=(sx, sy),
-        stations_v=stations["shear_share"].values, letter="b",
+        stations_v=stations["shear_share"].values, stations_resolved=st_resolved,
+        letter="b",
         row_label="Shear share",
     )
     # The bands span 0 to the rounded-up maximum, so nothing overflows them.
