@@ -10,8 +10,11 @@ to these figure scripts and to PyGMT, so a value changed there changes here:
     so those sizes are the sizes on the page;
   * series in a fixed colour and marker order, never cycled;
   * fields in ``N_LEVELS`` discrete colour bands, with the colormap chosen by
-    the quantity (``figstyle.STYLES``);
-  * panel letters in grey circles, one framed legend across the top;
+    the quantity (``figstyle.STYLES``, except the strain-rate and shear-share
+    ramps below, which avoid the blue of Fig. 4's bed); Fig. 4's bed itself is
+    a continuous hillshaded ramp under the banded symbols;
+  * panel letters in grey circles, one legend across the top (framed, except
+    in Fig. 1; Fig. 4 has none and keys its markers in the caption);
   * PNG and PDF written without timestamps, so an unchanged figure gives an
     empty git diff.
 """
