@@ -67,7 +67,8 @@ def use_paper_style() -> None:
             "savefig.pad_inches": 0.02,
             "font.size": 9,
             "font.family": "sans-serif",
-            "font.sans-serif": ["Helvetica", "Arial", "DejaVu Sans"],
+            # Nimbus Sans is the metric-compatible Helvetica clone on Linux.
+            "font.sans-serif": ["Helvetica", "Nimbus Sans", "Arial", "DejaVu Sans"],
             "axes.titlesize": 9,
             "axes.labelsize": 9,
             "axes.labelcolor": INK,

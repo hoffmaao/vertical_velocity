@@ -53,12 +53,17 @@ MIN_SAMPLES_FOR_EXAMPLE = 300
 
 
 def choose_example(df):
-    """A well-sampled site with a typical shear share."""
+    """A well-sampled site with a typical shear share.
+
+    With an even number of candidates the median sits exactly halfway between
+    two sites, so ties are real; they go to the cleaner fit (smaller residual).
+    """
     ok = df[(df["shear_resolved"] == 1) & (df["n_fitted"] >= MIN_SAMPLES_FOR_EXAMPLE)]
     if ok.empty:
         ok = df
     target = ok["shear_share"].median()
-    return ok.iloc[(ok["shear_share"] - target).abs().argsort().iloc[0]]
+    ranked = ok.assign(_gap=(ok["shear_share"] - target).abs())
+    return ranked.sort_values(["_gap", "residual_rms_m_yr"], kind="stable").iloc[0]
 
 
 def main() -> None:
