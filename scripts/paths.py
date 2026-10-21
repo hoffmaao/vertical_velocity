@@ -89,6 +89,13 @@ MEASURES_GL = _env_path(
     "MEASURES_GL", "~/data/measures_gl/InSAR_GL_Antarctica_v02.1.gpkg"
 )
 
+# Model mesh (nodes and triangles) exported by paper_extract.py, read for the
+# model-domain outline on the overview map.  Any of the extracts will do: the
+# SSA and hybrid runs share one mesh.
+MODEL_EXTRACT = _env_path(
+    "MODEL_EXTRACT", str(ROOT / "results" / "paper" / "extract_ssa.npz")
+)
+
 # Period the repeat ApRES survey spans, used to select dated boundary products.
 SURVEY_START = "2022-10-01"
 SURVEY_END = "2024-03-01"

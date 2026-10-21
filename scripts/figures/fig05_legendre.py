@@ -75,38 +75,38 @@ def main() -> None:
         raise SystemExit("no sites survive the quality screen")
     lo, hi = data.fitting_window(df)
 
-    # Each panel is filled by its curves from edge to edge, so a key placed
-    # inside any of them would sit on the data.  All four legends go above
-    # their axes instead, and the figure is made taller to carry them.
     fig, axs = plt.subplots(
-        1, 4, figsize=(style.TWO_COL, 0.36 * style.TWO_COL),
-        gridspec_kw={"wspace": 0.34, "width_ratios": [1.0, 1.0, 1.0, 1.15],
-                     "top": 0.80, "bottom": 0.17, "left": 0.075, "right": 0.985},
+        1, 4, figsize=(style.TWO_COL, 0.40 * style.TWO_COL),
+        gridspec_kw={"wspace": 0.42, "top": 0.82, "bottom": 0.15,
+                     "left": 0.07, "right": 0.99},
     )
+    for ax in axs:
+        style.grid(ax)
+    every = 40          # one marker per 40 samples: series stay identifiable
 
-    def legend_above(ax, *, ncol, **kw):
-        """Key centred above the axes, clear of the data."""
-        return ax.legend(
-            loc="lower center", bbox_to_anchor=(0.5, 1.005), ncol=ncol,
-            fontsize=5.8, frameon=False, borderaxespad=0.0,
-            columnspacing=0.9, handletextpad=0.5, labelspacing=0.35, **kw,
-        )
+    def series(n):
+        """Colour and marker of basis degree n: L0 black diamonds, then the
+        fixed order (red circles, blue squares, green, purple)."""
+        if n == 0:
+            return style.INK, "D"
+        return style.CATEGORICAL[n - 1], style.MARKERS[n - 1]
 
-    # ------------------------------------------------ the orthonormal basis
+    # ------------------------------------------------ (a) the orthonormal basis
     ax = axs[0]
     zeta = np.linspace(lo, hi, 400)
     basis = design_matrix(zeta, DEGREE, (lo, hi))
-    names = ["$L_0$", "$L_1$ plug", "$L_2$", "$L_3$", "$L_4$"]
+    basis_handles = []
     for n in range(DEGREE + 1):
-        colour = style.INK_MUTED if n == 0 else style.CATEGORICAL[(n - 1) % len(style.CATEGORICAL)]
-        ax.plot(basis[:, n], zeta, color=colour, lw=1.1, label=names[n])
-    ax.axvline(0.0, color=style.GRID, lw=0.6, zorder=0)
-    ax.set_xlabel("basis amplitude")
-    ax.set_ylabel(r"normalised depth $\zeta = z/H$")
+        colour, marker = series(n)
+        (h,) = ax.plot(basis[:, n], zeta, color=colour, marker=marker,
+                       markevery=(n * 8, every), label=rf"$\tilde{{L}}_{n}$")
+        basis_handles.append(h)
+    ax.axvline(0.0, color=style.INK_MUTED, lw=0.6, zorder=1)
+    ax.set_xlabel("Basis amplitude")
+    ax.set_ylabel(r"$\zeta$ = depth / $H$")
     ax.set_ylim(hi, lo)
-    legend_above(ax, ncol=3, handlelength=1.1)
 
-    # ------------------------------------------------------- example profile
+    # ------------------------------------------------------- (b) example profile
     row = choose_example(df)
     site = str(row["site"])
     i = list(ds["site"].values).index(site)
@@ -124,64 +124,62 @@ def main() -> None:
         raise SystemExit(f"could not fit the example site {site}")
     order = np.argsort(full.zeta)
     zf = full.zeta[order]
+    po = np.argsort(plug.zeta)
 
     ax = axs[1]
-    ax.plot(full.w_observed[order], zf, color=style.CATEGORICAL[0], lw=0.9,
-            label="measured")
-    ax.plot(plug.w_model[np.argsort(plug.zeta)], np.sort(plug.zeta),
-            color=style.INK, lw=0.9, ls=(0, (4, 2)), label="degree 1")
-    ax.plot(full.w_model[order], zf, color=style.CATEGORICAL[1], lw=0.9,
-            ls=(0, (1, 1.4)), label=f"degree {DEGREE}")
-    ax.set_xlabel("$w$ (m yr$^{-1}$)")
+    (h_meas,) = ax.plot(full.w_observed[order], zf, color=style.INK, lw=0.8,
+                        label="ApRES measured")
+    (h_plug,) = ax.plot(plug.w_model[po], plug.zeta[po], color=style.CATEGORICAL[0],
+                        marker=style.MARKERS[0], markevery=(0, every),
+                        label="degree 1 (plug flow)")
+    (h_full,) = ax.plot(full.w_model[order], zf, color=style.CATEGORICAL[1],
+                        marker=style.MARKERS[1], markevery=(every // 2, every),
+                        label=f"degree {DEGREE}")
+    ax.set_xlabel(r"$w$ (m yr$^{-1}$)")
+    ax.set_ylabel(r"$\zeta$")
     ax.set_ylim(hi, lo)
-    ax.tick_params(labelleft=False)
-    legend_above(ax, ncol=2, handlelength=1.3)
 
-    # ------------------------------------------- departure from plug flow
+    # ------------------------------------------- (c) departure from plug flow
+    # In mm/yr: the shear signal is two orders of magnitude below w itself.
     ax = axs[2]
-    plug_model = np.interp(zf, np.sort(plug.zeta),
-                           plug.w_model[np.argsort(plug.zeta)])
-    departure = full.w_observed[order] - plug_model
-    shear_model = full.w_model[order] - plug_model
-    ax.plot(departure, zf, color=style.CATEGORICAL[0], lw=0.7, alpha=0.85,
-            label="measured $-$ plug")
-    ax.plot(shear_model, zf, color=style.CATEGORICAL[1], lw=1.2,
-            label=r"fitted $n\geq2$")
-    ax.axvline(0.0, color=style.GRID, lw=0.6, zorder=0)
-    ax.set_xlabel("departure (m yr$^{-1}$)")
+    plug_model = np.interp(zf, plug.zeta[po], plug.w_model[po])
+    departure = 1e3 * (full.w_observed[order] - plug_model)
+    shear_model = 1e3 * (full.w_model[order] - plug_model)
+    ax.plot(departure, zf, color=style.INK, lw=0.8)
+    ax.plot(shear_model, zf, color=style.CATEGORICAL[1], marker=style.MARKERS[1],
+            markevery=(every // 2, every))
+    ax.axvline(0.0, color=style.INK_MUTED, lw=0.6, zorder=1)
+    ax.set_xlabel(r"$w - w_\mathrm{plug}$ (mm yr$^{-1}$)")
+    ax.set_ylabel(r"$\zeta$")
     ax.set_ylim(hi, lo)
-    ax.tick_params(labelleft=False)
-    legend_above(ax, ncol=2, handlelength=1.3)
-    # -------------------------------------------------- coefficient spectrum
+
+    # -------------------------------------------------- (d) coefficient spectrum
     ax = axs[3]
     degrees = np.arange(DEGREE + 1)
     cols = [f"c{n}" for n in degrees]
     coeffs = np.abs(df[cols].values)
-    for series in coeffs:
-        ax.plot(degrees, series, color=style.CATEGORICAL[0], lw=0.4, alpha=0.16,
-                zorder=1)
-    median = np.nanmedian(coeffs, axis=0)
-    ax.plot(degrees, median, color=style.INK, lw=1.4, marker="o", ms=3.4,
-            mec="white", mew=0.5, zorder=3, label="median")
-    ax.fill_between(
+    for c in coeffs:
+        ax.plot(degrees, c, color="0.78", lw=0.4, zorder=1)
+    h_iqr = ax.fill_between(
         degrees, np.nanpercentile(coeffs, 25, axis=0),
         np.nanpercentile(coeffs, 75, axis=0),
-        color=style.INK, alpha=0.13, lw=0, zorder=2, label="IQR",
+        color="0.45", alpha=0.35, lw=0, zorder=2, label="interquartile range",
     )
+    (h_med,) = ax.plot(degrees, np.nanmedian(coeffs, axis=0), color=style.INK,
+                       marker="D", zorder=3, label="median, all stations")
     ax.set_yscale("log")
     ax.set_xticks(degrees)
-    # Degree is a non-negative integer, so the axis stops at zero rather than
-    # opening a margin into values the quantity cannot take.  The markers at
-    # the ends are left unclipped so they still draw in full.
-    ax.set_xlim(0, DEGREE)
-    for artist in ax.lines:
-        artist.set_clip_on(False)
-    ax.set_xlabel("polynomial degree $n$")
-    ax.set_ylabel("$|c_n|$ (m yr$^{-1}$)")
-    legend_above(ax, ncol=2, handlelength=1.2)
+    ax.set_xlim(-0.2, DEGREE + 0.2)
+    ax.set_xlabel("Polynomial degree $n$")
+    ax.set_ylabel(r"$|c_n|$ (m yr$^{-1}$)")
 
-    for a in axs:
+    for a, letter in zip(axs, "abcd"):
         a.margins(y=0.02)
+        style.panel_letter(a, letter, x=0.13, y=0.92)
+
+    style.top_legend(
+        fig, [h_meas, h_plug, h_full, h_med, h_iqr, *basis_handles], ncol=5, y=0.84,
+    )
 
     print(f"example site: {site} at {row['distance_km']:.1f} km, "
           f"A_s={row['shear_amplitude']:.3f}, A_p={row['plug_amplitude']:.3f} m/yr")

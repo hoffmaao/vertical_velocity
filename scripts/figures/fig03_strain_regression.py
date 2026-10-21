@@ -103,34 +103,35 @@ def main() -> None:
     xerr = merged.get("eps_zz_surface_err", pd.Series(np.nan, index=merged.index)).values
     good = np.isfinite(x) & np.isfinite(y)
 
-    fig, ax = plt.subplots(figsize=(1.18 * style.ONE_COL, 1.18 * style.ONE_COL))
+    # Sized so the cropped figure is ONE_COL wide: the equal-aspect axes and
+    # tight bounding box trim about 9% off the drawn width.
+    fig, ax = plt.subplots(figsize=(1.095 * style.ONE_COL, 1.095 * style.ONE_COL))
+    k = style.STRAIN_SCALE
+    style.grid(ax)
 
-    lim = float(np.nanmax(np.abs(np.concatenate([x[good], y[good]])))) * 1.12
-    ax.plot([-lim, lim], [-lim, lim], color=style.INK_MUTED, lw=0.8,
-            ls=(0, (4, 3)), zorder=1, label="1:1")
-    ax.axhline(0.0, color=style.GRID, lw=0.6, zorder=0)
-    ax.axvline(0.0, color=style.GRID, lw=0.6, zorder=0)
+    # Square limits on a round multiple of 5 x 10^-3 /yr just beyond the data.
+    lim = 5.0 * np.ceil(float(np.nanmax(np.abs(np.concatenate([x[good], y[good]])))) * k / 5.0)
+    ax.axhline(0.0, color=style.INK_MUTED, lw=0.6, zorder=1)
+    ax.axvline(0.0, color=style.INK_MUTED, lw=0.6, zorder=1)
+    ax.plot([-lim, lim], [-lim, lim], color=style.INK_MUTED, lw=0.9,
+            ls=(0, (4, 3)), zorder=2, label="1:1")
 
     ax.errorbar(
-        x[good], y[good], yerr=yerr[good], xerr=xerr[good], fmt="none",
-        ecolor=style.INK_MUTED, elinewidth=0.5, alpha=0.5, zorder=2,
+        k * x[good], k * y[good], yerr=k * yerr[good], xerr=k * xerr[good], fmt="none",
+        ecolor="0.6", elinewidth=0.5, zorder=3,
     )
-    ax.scatter(x[good], y[good], s=24, color=style.CATEGORICAL[0],
-               edgecolor="white", linewidth=0.4, zorder=4,
-               label=f"ApRES site ($n={int(good.sum())}$)")
+    ax.plot(k * x[good], k * y[good], ls="none", marker="D", ms=3.6, color=style.INK,
+            zorder=5, label=f"ApRES station ($n$ = {int(good.sum())})")
 
-    # Least squares on every site, and on the survey-period velocities alone.
-    # The fit statistics go in the legend rather than in a text block, so the
-    # only words on the panel are keyed to something drawn on it.
-    # Ordinary least squares.  The fit statistics go in the legend rather than
-    # in a text block, so the only words on the panel are keyed to something
-    # drawn on it.
+    # Ordinary least squares, on the strain rates in 1/yr so the printed
+    # statistics do not depend on the plotting units.  The statistics go in
+    # the legend rather than in a text block.
     if good.sum() >= 3:
         slope, intercept = np.polyfit(x[good], y[good], 1)
         r = np.corrcoef(x[good], y[good])[0, 1]
         xs = np.array([-lim, lim])
-        ax.plot(xs, slope * xs + intercept, color=style.INK, lw=1.1, zorder=5,
-                label=f"fit: slope {slope:.2f}, $R^2$ {r ** 2:.2f}")
+        ax.plot(xs, slope * xs + k * intercept, color=style.CATEGORICAL[0], zorder=4,
+                label=f"fit: slope {slope:.2f}, $R^2$ = {r ** 2:.2f}")
         print(f"  slope={slope:+.3f} intercept={intercept:+.2e} "
               f"R2={r ** 2:.3f} n={int(good.sum())}")
         print(f"  median sigma_x={np.nanmedian(xerr[good]):.2e} "
@@ -139,13 +140,16 @@ def main() -> None:
     ax.set_xlim(-lim, lim)
     ax.set_ylim(-lim, lim)
     ax.set_aspect("equal")
-    ax.set_xlabel(r"surface $\dot\varepsilon_{zz}$ from $-\nabla\!\cdot\mathbf{u}$ (yr$^{-1}$)")
-    ax.set_ylabel(rf"ApRES $\dot\varepsilon_{{zz}}$, {DEPTH_MIN_M:.0f}-{DEPTH_MAX_M:.0f} m (yr$^{{-1}}$)")
-    # Lower right: the upper left is where the 1:1 line runs and where the
-    # extensional sites sit.
-    ax.legend(loc="lower right", fontsize=6.6, borderaxespad=0.4,
-              frameon=True, framealpha=1.0, facecolor="white",
-              edgecolor=style.GRID)
+    ax.set_xlabel(rf"Surface {style.EPS_ZZ} = $-\nabla\!\cdot\mathbf{{u}}$ ({style.STRAIN_UNIT})")
+    ax.set_ylabel(rf"ApRES {style.EPS_ZZ}, {DEPTH_MIN_M:.0f}–{DEPTH_MAX_M:.0f} m mean "
+                  rf"({style.STRAIN_UNIT})")
+    # Legend order: data, then the fit, then the reference line.
+    h, l = ax.get_legend_handles_labels()
+    order = [l.index(s) for s in l if s.startswith("ApRES")] + \
+            [l.index(s) for s in l if s.startswith("fit")] + [l.index("1:1")]
+    # Anchored to the top of the axes as drawn, which the equal aspect moves.
+    fig.canvas.draw()
+    style.top_legend(fig, [h[i] for i in order], ncol=1, y=ax.get_position().y1 + 0.015)
 
     style.save(fig, paths.FIGURES / "fig03_strain_regression.png")
 

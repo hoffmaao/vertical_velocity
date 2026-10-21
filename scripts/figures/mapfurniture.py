@@ -1,8 +1,8 @@
 """Shared map furniture for the PyGMT map figures.
 
-Keeps the scale bar identical between figures, so a reader who has learned to
-read one map can read the other without relearning its furniture.  Both map
-figures are drawn with PyGMT, so only the GMT bar is needed.
+Keeps the scale bar identical between figures, and identical to the one on
+the paper's matplotlib maps (figstyle.scalebar), so a reader who has learned
+to read one map can read the others without relearning its furniture.
 """
 
 from __future__ import annotations
@@ -10,45 +10,26 @@ from __future__ import annotations
 import numpy as np
 
 
-def scalebar_bw(fig, *, x0: float, y0: float, length_km: float,
-                n_segments: int = 4, height_km: float = 2.2,
-                font: str = "7p,Helvetica,black") -> None:
-    """Alternating black-and-white bar scale, drawn in projected kilometres.
+def scalebar(fig, *, region, projection, loc=(0.06, 0.07)) -> None:
+    """Kilometre scale bar sized to a round fifth of the panel width, as
+    figstyle.scalebar: a black bar with a thin white halo, its length above it.
 
-    GMT's own fancy scale bar is unavailable on a Cartesian projection, and a
-    plain line carries no intermediate divisions.  This draws the conventional
-    chequered bar: equal segments alternating black and white with a hairline
-    frame, labelled at its ends and annotated with its unit.
+    ``region`` is in projected kilometres; ``loc`` is the bar's left end as a
+    fraction of the panel."""
+    import style
 
-    Parameters
-    ----------
-    x0, y0
-        Left end of the bar, in the same projected kilometres as the map.
-    length_km
-        Total length of the bar.
-    n_segments
-        Number of alternating cells; 4 gives quarter divisions.
-    height_km
-        Bar thickness, in map units.
-    """
-    seg = float(length_km) / int(n_segments)
-    for i in range(int(n_segments)):
-        xa = x0 + i * seg
-        xb = xa + seg
-        fill = "black" if i % 2 == 0 else "white"
-        fig.plot(
-            x=[xa, xb, xb, xa, xa],
-            y=[y0, y0, y0 + height_km, y0 + height_km, y0],
-            fill=fill, pen="0.5p,black", close=True,
-        )
-    # End and midpoint labels, plus the unit on the right-hand end.
-    ticks = [0.0, length_km / 2.0, length_km]
-    for t in ticks:
-        label = f"{t:g}" if t != length_km else f"{t:g} km"
-        fig.text(
-            x=[x0 + t], y=[y0 + height_km + 1.0], text=[label],
-            font=font, justify="CB",
-        )
+    x0, x1, y0, y1 = region
+    raw = (x1 - x0) / 5.0
+    mag = 10 ** np.floor(np.log10(raw))
+    length = float(min([1, 2, 5, 10], key=lambda m: abs(m * mag - raw)) * mag)
+    bx = x0 + loc[0] * (x1 - x0)
+    by = y0 + loc[1] * (y1 - y0)
+    for pen in ("3.6p,white", "2p,black"):
+        fig.plot(x=[bx, bx + length], y=[by, by], pen=pen, region=region,
+                 projection=projection)
+    fig.text(x=[bx + 0.5 * length], y=[by], text=[f"{length:g} km"],
+             font=style.GMT_ANNOT, justify="CB", offset="0c/0.12c",
+             region=region, projection=projection)
 
 
 def nan_split_polylines(x, y):

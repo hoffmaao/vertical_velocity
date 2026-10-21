@@ -63,17 +63,22 @@ for p in (HERE, HERE.parent):
 import data  # noqa: E402
 import mapfurniture  # noqa: E402
 import paths  # noqa: E402
+import style  # noqa: E402
 
-# Map region in EPSG:3031 kilometres: the survey line plus the grounding zone
-# and shelf front immediately downstream of it.
-REGION_KM = [-1620, -1330, -560, -380]
-WIDTH_CM = 12.0
+# Map region in EPSG:3031 kilometres: the whole model domain plus a margin, so
+# the reader sees the area the model assimilates the survey into.  Used as is
+# when the model mesh extract is not available.
+REGION_KM = [-1633, -1263, -569, -276]
+DOMAIN_MARGIN_KM = 8.0
+# Map width at print size: map + colour bar fill the 17.8 cm text width.
+WIDTH_CM = 16.2
+DOMAIN_PEN = f"1.0p,{style.CATEGORICAL[1]}"
 
 # Black with a white rim.  The sites sit on the mid-range of the magma ramp,
 # where a black dot carries furthest, and the white rim separates it from the
 # darker ice upstream without the marker losing its shape.
 SITE_COLOR = "black"
-SITE_PEN = "0.375p,white"
+SITE_PEN = "0.2p,white"
 
 # Boundary traces are shaded by acquisition date, light for the start of the
 # survey and dark for the end, so the bundle reads as a time series rather
@@ -81,13 +86,10 @@ SITE_PEN = "0.375p,white"
 DATE_MIN, DATE_MAX = 2022.75, 2024.2
 GL_RAMP = ("#b8b8b8", "#8a8a8a", "#5c5c5c", "#2e2e2e", "#000000")
 FRONT_RAMP = ("#ffc4b8", "#f7907e", "#e35745", "#c22015", "#7f0d08")
-GL_COLOR = GL_RAMP[-2]
-FRONT_COLOR = FRONT_RAMP[-2]
 
-# Matching the fabric_anisotropy velocity figures: magma, logarithmic, with
-# white contours.  The ceiling is raised from 400 to 4000 m/yr for the trunk.
+# Magma on a logarithmic scale in N_LEVELS discrete bands, as on the paper's
+# other speed maps.  The ceiling is 4000 m/yr so the trunk does not saturate.
 SPEED_MIN, SPEED_MAX = 10.0, 4000.0
-SPEED_CONTOURS = (30, 100, 300, 1000, 3000)
 
 
 def _to_km(da):
@@ -270,65 +272,39 @@ def load_front():
     return list(mapfurniture.nan_split_polylines(xy[:, 0] / 1000.0, xy[:, 1] / 1000.0))
 
 
-def draw_legend(fig, region_km, proj) -> None:
-    """Legend drawn by hand, because the key has to show the date shading.
+def load_model_domain():
+    """Outline of the model mesh as closed polylines in km, or [] without it.
 
-    GMT's own legend can only give a symbol one colour, so a line entry there
-    could show the grounding line or the front but not the fact that each is a
-    bundle shaded from light at the start of the survey to dark at the end.
-    Here each line symbol is drawn as the ramp itself - the same five shades,
-    in the same order, as the traces on the map - which puts the shading
-    convention in the symbol so the label only has to name the feature and its
-    period.  The box is sized as a fraction of the map region, so it keeps its
-    proportions if the region changes; the width is set by the longest label.
-    """
-    x0, x1, y0, y1 = region_km
-    span = x1 - x0
-
-    pad = 0.020 * span
-    box_w = 0.465 * span
-    row_h = 0.050 * (y1 - y0)
-    rows = 3
-    box_h = row_h * (rows + 0.6)
-
-    bx0 = x0 + pad
-    bx1 = bx0 + box_w
-    by1 = y1 - pad
-    by0 = by1 - box_h
-
-    fig.plot(x=[bx0, bx1, bx1, bx0, bx0], y=[by0, by0, by1, by1, by0],
-             fill="white", pen="0.5p,black", close=True,
-             region=region_km, projection=proj)
-
-    sym_x0 = bx0 + 0.030 * span
-    sym_x1 = sym_x0 + 0.055 * span
-    text_x = sym_x1 + 0.018 * span
-    top = by1 - row_h * 0.8
-
-    def row(i):
-        return top - i * row_h
-
-    # A black marker reads directly on the white key, so it needs no backing
-    # patch of the map behind it.
-    fig.plot(x=[0.5 * (sym_x0 + sym_x1)], y=[row(0)], style="c0.085c",
-             fill=SITE_COLOR, pen=SITE_PEN,
-             region=region_km, projection=proj)
-    fig.text(x=[text_x], y=[row(0)], text=["ApRES site"],
-             font="8p,Helvetica,black", justify="LM",
-             region=region_km, projection=proj)
-
-    # Line entries: the symbol is the ramp, light (earliest) to dark (latest).
-    for i, (ramp, label) in enumerate(
-        ((GL_RAMP, "grounding zone (2022-2024)"),
-         (FRONT_RAMP, "ice front (2022-2024)")), start=1
-    ):
-        edges = np.linspace(sym_x0, sym_x1, len(ramp) + 1)
-        for j, colour in enumerate(ramp):
-            fig.plot(x=[edges[j], edges[j + 1]], y=[row(i), row(i)],
-                     pen=f"2p,{colour}", region=region_km, projection=proj)
-        fig.text(x=[text_x], y=[row(i)], text=[label],
-                 font="8p,Helvetica,black", justify="LM",
-                 region=region_km, projection=proj)
+    The boundary is the set of triangle edges used by exactly one cell,
+    chained into rings."""
+    f = paths.MODEL_EXTRACT
+    if not f.exists():
+        print(f"  model mesh extract not found ({f}); drawing no domain outline")
+        return []
+    with np.load(f, allow_pickle=False) as z:
+        xy, cells = z["xy"] / 1000.0, z["cells"]
+    e = np.sort(np.vstack([cells[:, [0, 1]], cells[:, [1, 2]], cells[:, [2, 0]]]), axis=1)
+    u, cnt = np.unique(e, axis=0, return_counts=True)
+    nbr = {}
+    for a, b in u[cnt == 1]:
+        nbr.setdefault(a, []).append(b)
+        nbr.setdefault(b, []).append(a)
+    rings, seen = [], set()
+    for start in nbr:
+        if start in seen:
+            continue
+        ring, prev, cur = [start], None, start
+        seen.add(start)
+        while True:
+            nxt = [n for n in nbr[cur] if n != prev and (n not in seen or n == start)]
+            if not nxt or nxt[0] == start:
+                break
+            prev, cur = cur, nxt[0]
+            ring.append(cur)
+            seen.add(cur)
+        ring.append(start)
+        rings.append((xy[ring, 0], xy[ring, 1]))
+    return rings
 
 
 def main() -> None:
@@ -341,52 +317,45 @@ def main() -> None:
     sx = pairs["x_ps_m"].values / 1000.0
     sy = pairs["y_ps_m"].values / 1000.0
 
-    x0, x1, y0, y1 = REGION_KM
+    domain = load_model_domain()
+    region = list(REGION_KM)
+    if domain:
+        dx = np.concatenate([r[0] for r in domain])
+        dy = np.concatenate([r[1] for r in domain])
+        region = [float(np.floor(dx.min() - DOMAIN_MARGIN_KM)), float(np.ceil(dx.max() + DOMAIN_MARGIN_KM)),
+                  float(np.floor(dy.min() - DOMAIN_MARGIN_KM)), float(np.ceil(dy.max() + DOMAIN_MARGIN_KM))]
+    x0, x1, y0, y1 = region
     height_cm = WIDTH_CM * (y1 - y0) / (x1 - x0)
     proj = f"X{WIDTH_CM}c/{height_cm:.3f}c"
+    tmp = Path(tempfile.mkdtemp(prefix="fig01_"))
 
-    # One type size for every annotation on the figure and one for every
-    # label, so the colorbar's ticks and title match the map's axes instead of
-    # defaulting to GMT's own smaller colorbar sizes.
-    pygmt.config(
-        FONT_ANNOT_PRIMARY="8p,Helvetica,black",
-        FONT_ANNOT_SECONDARY="8p,Helvetica,black",
-        FONT_LABEL="9p,Helvetica,black",
-        MAP_FRAME_TYPE="plain",
-        MAP_FRAME_PEN="0.7p,black",
-        MAP_TICK_LENGTH_PRIMARY="2.5p",
-        MAP_TICK_PEN_PRIMARY="0.6p,black",
-    )
+    pygmt.config(**style.GMT_CONFIG)
     fig = pygmt.Figure()
 
+    # --------------------------------------------------- legend, then the map
+    style.gmt_top_legend(fig, [
+        ("ramp", (GL_RAMP, "1.4p"), "grounding zone (2022\2552024)"),
+        ("ramp", (FRONT_RAMP, "1.4p"), "ice front (2022\2552024)"),
+        ("line", DOMAIN_PEN, "model domain"),
+        ("symbol", ("c0.12c", SITE_COLOR, SITE_PEN), "ApRES stations"),
+        ("symbol", ("s0.28c", None, "1.0p,black"), "extent of Fig. 4"),
+    ], width_cm=WIDTH_CM)
+    fig.shift_origin(yshift=f"-{height_cm + 0.25:.3f}c")
+
     # --------------------------------------------- MOA shaded-relief backdrop
-    moa = load_moa(REGION_KM)
+    moa = load_moa(region)
     lo, hi = np.nanpercentile(moa.values, [2, 98])
     pygmt.makecpt(cmap="gray", series=[float(lo), float(hi)])
-    fig.grdimage(
-        grid=moa, region=REGION_KM, projection=proj, cmap=True,
-        nan_transparent=True,
-        frame=["WSne", "xa50f25+lpolar-stereographic easting (km)",
-               "ya50f25+lpolar-stereographic northing (km)"],
-    )
+    fig.grdimage(grid=moa, region=region, projection=proj, cmap=True,
+                 nan_transparent=True, frame="+n")
 
     # ------------------------------------------------------------ speed field
-    log_speed, _ = load_speed(REGION_KM)
-    # magma in its natural direction - slow ice dark, fast ice bright - which
-    # is how the fabric_anisotropy velocity figures read it.
-    pygmt.makecpt(
-        cmap="magma",
-        series=[np.log10(SPEED_MIN), np.log10(SPEED_MAX), 0.01],
-    )
-    # Semi-transparent so the MOA surface texture reads through the colour.
-    fig.grdimage(
-        grid=log_speed, region=REGION_KM, projection=proj, cmap=True,
-        nan_transparent=True, transparency=18,
-    )
-    fig.grdcontour(
-        grid=log_speed, levels=[np.log10(c) for c in SPEED_CONTOURS],
-        pen="0.35p,white@30", region=REGION_KM, projection=proj,
-    )
+    log_speed, _ = load_speed(region)
+    edges = np.linspace(np.log10(SPEED_MIN), np.log10(SPEED_MAX), style.N_LEVELS + 1)
+    speed_cpt = style.gmt_cpt_bands(style.SEQ_SPEED, edges, str(tmp / "speed.cpt"))
+    # Semi-transparent so the MOA surface texture reads through the bands.
+    fig.grdimage(grid=log_speed, region=region, projection=proj, cmap=speed_cpt,
+                 nan_transparent=True, transparency=18)
 
     # ------------------------------------------ dated grounding line and fronts
     def _in_view(px, py):
@@ -404,82 +373,59 @@ def main() -> None:
     for gx, gy, year in sorted(load_grounding_lines(), key=lambda t: (np.isnan(t[2]), t[2])):
         if _in_view(gx, gy):
             fig.plot(x=gx, y=gy, pen=f"0.3p,{_shade(year, GL_RAMP)}",
-                     region=REGION_KM, projection=proj)
+                     region=region, projection=proj)
     for fx, fy, year in sorted(load_icelines(), key=lambda t: (np.isnan(t[2]), t[2])):
         if _in_view(fx, fy):
             fig.plot(x=fx, y=fy, pen=f"0.35p,{_shade(year, FRONT_RAMP)}",
-                     region=REGION_KM, projection=proj)
+                     region=region, projection=proj)
+
+    # ----------------------------------------------------------- model domain
+    for rx, ry in domain:
+        fig.plot(x=rx, y=ry, pen=DOMAIN_PEN, region=region, projection=proj)
 
     # ------------------------------------------------------------------ sites
     # Every ApRES measurement is drawn the same way, attended or autonomous:
-    # they are the same instrument making the same measurement, and the
-    # distinction belongs in the caption rather than in a second colour.
-    # Distance ticks are gone: at this scale the tick rings sat on top of
-    # neighbouring sites and hid them.
+    # they are the same instrument making the same measurement.
     all_x = np.concatenate([sx, stations["x_ps_m"].values / 1000.0]) if len(stations) else sx
     all_y = np.concatenate([sy, stations["y_ps_m"].values / 1000.0]) if len(stations) else sy
-    fig.plot(x=all_x, y=all_y, style="c0.085c", fill=SITE_COLOR,
-             pen=SITE_PEN)
+    fig.plot(x=all_x, y=all_y, style="c0.12c", fill=SITE_COLOR, pen=SITE_PEN,
+             region=region, projection=proj)
 
     # ------------------------------------------------- detail-figure extent
-    # The ground covered by the detail map, drawn unlabelled: the box is a
-    # locator, and naming it here would duplicate the caption.
-    try:
-        dx0, dx1, dy0, dy1 = data.detail_region_km()
-        fig.plot(
-            x=[dx0, dx1, dx1, dx0, dx0], y=[dy0, dy0, dy1, dy1, dy0],
-            pen="1.0p,black", region=REGION_KM, projection=proj,
-        )
-    except Exception:
-        pass
+    dx0, dx1, dy0, dy1 = data.detail_region_km()
+    fig.plot(x=[dx0, dx1, dx1, dx0, dx0], y=[dy0, dy0, dy1, dy1, dy0],
+             pen="1.0p,black", region=region, projection=proj)
 
-    # ----------------------------------------------------------- scale bar
-    mapfurniture.scalebar_bw(
-        fig, x0=x1 - 0.27 * (x1 - x0), y0=y1 - 0.13 * (y1 - y0),
-        length_km=50.0,
-    )
+    # ------------------------------------------------- frame and scale bar
+    fig.plot(x=[x0, x1, x1, x0, x0], y=[y0, y0, y1, y1, y0], pen="0.6p,black",
+             region=region, projection=proj, no_clip=True)
+    mapfurniture.scalebar(fig, region=region, projection=proj, loc=(0.06, 0.05))
 
     # ------------------------------------------------------------- colorbar
-    with tempfile.NamedTemporaryFile("w", suffix=".txt", delete=False) as fh:
-        for t in (10, 100, 1000):
-            fh.write(f"{np.log10(t)}\ta\t{t}\n")
-        for t in (30, 300, 3000, 4000):
-            fh.write(f"{np.log10(t)}\tf\n")
-        tickfile = fh.name
-    # GMT scales a colorbar's annotation and label fonts down when the bar is
-    # thin, so a bar left on the figure's own FONT_LABEL renders smaller than
-    # the frame labels beside it.  These sizes land at the frame's size after
-    # that scaling, and the bar is thickened to reduce it.  Same values as
-    # Figure 4, so the two map figures carry the same colorbar type.
-    with pygmt.config(
-        FONT_ANNOT_PRIMARY="12p,Helvetica,black",
-        FONT_LABEL="13p,Helvetica,black",
-    ):
-        fig.colorbar(
-            position="JBC+w7.5c/0.225c+h+o0c/1.5c",
-            frame=[f"xc{tickfile}", "x+lsurface speed (m yr@+-1@+)"],
-        )
-
-    # --------------------------------------------------------------- legend
-    draw_legend(fig, REGION_KM, proj)
+    # Log-spaced bands, annotated at the decades.
+    tickfile = tmp / "speed_ticks.txt"
+    with open(tickfile, "w") as fh:
+        for t in (1, 2, 3):
+            fh.write(f"{t}\ta\t10@+{t}@+\n")
+        for e in edges[1:-1]:
+            fh.write(f"{e:.6f}\tf\n")
+    style.gmt_colorbar(fig, cmap=speed_cpt, length_cm=0.88 * height_cm,
+                       frame=[f"xc{tickfile}+lSurface speed (m yr@+{style.GMT_MINUS}1@+)"])
 
     # -------------------------------------------------------- locator inset
     ant_km = [-2800, 2800, -2500, 2300]
-    inset_w = 2.75
+    inset_w = 3.4
     inset_h = inset_w * (ant_km[3] - ant_km[2]) / (ant_km[1] - ant_km[0])
     with fig.inset(
-        position=f"jBL+w{inset_w}c/{inset_h:.3f}c+o0.1c",
-        box="+gwhite+p0.7p,black",
+        position=f"jTL+w{inset_w}c/{inset_h:.3f}c+o0.15c",
+        box="+gwhite+p0.6p,black",
     ):
         # Drawn in projected kilometres rather than with `coast`, so the
-        # BedMachine mask can be imaged directly and the ice shelves - where
-        # the ice crossing this survey eventually goes - are a distinct tone
-        # rather than being merged into the coastline.
+        # BedMachine mask can be imaged directly and the ice shelves are a
+        # distinct tone rather than being merged into the coastline.
         inset_proj = f"X{inset_w}c/{inset_h:.3f}c"
         mask = load_mask_full(ant_km)
-        # A hand-written categorical CPT: one flat colour per BedMachine mask
-        # class, so ocean, land, grounded ice and shelf are distinguishable
-        # without interpolating between class numbers.
+        # One flat colour per BedMachine mask class.
         classes = [
             (0, "white"),      # ocean
             (1, "gray72"),     # ice-free land
@@ -487,27 +433,24 @@ def main() -> None:
             (3, "#9ecae1"),    # floating ice shelf
             (4, "gray88"),     # Lake Vostok
         ]
-        with tempfile.NamedTemporaryFile("w", suffix=".cpt", delete=False) as fh:
+        maskcpt = tmp / "mask.cpt"
+        with open(maskcpt, "w") as fh:
             for value, colour in classes:
                 fh.write(f"{value - 0.5} {colour} {value + 0.5} {colour}\n")
-            maskcpt = fh.name
         fig.grdimage(grid=mask, region=ant_km, projection=inset_proj,
-                     cmap=maskcpt, nan_transparent=True, frame=["+n"])
+                     cmap=str(maskcpt), nan_transparent=True, frame=["+n"])
         fig.plot(x=[x0, x1, x1, x0, x0], y=[y0, y0, y1, y1, y0],
-                 pen="1.2p,black",
+                 pen=f"1.0p,{style.CATEGORICAL[0]}",
                  region=ant_km, projection=inset_proj)
         # The mask is imaged to the panel edge, so the inset border is redrawn
         # over it to stay continuous on all four sides.
         ax0, ax1, ay0, ay1 = ant_km
         fig.plot(
             x=[ax0, ax1, ax1, ax0, ax0], y=[ay0, ay0, ay1, ay1, ay0],
-            pen="0.7p,black", region=ant_km, projection=inset_proj,
+            pen="0.6p,black", region=ant_km, projection=inset_proj,
         )
 
-    out = paths.FIGURES / "fig01_overview.png"
-    out.parent.mkdir(parents=True, exist_ok=True)
-    fig.savefig(out, dpi=400)
-    print(f"wrote {out}")
+    style.gmt_save(fig, paths.FIGURES / "fig01_overview.png")
 
 
 if __name__ == "__main__":

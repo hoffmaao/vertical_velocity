@@ -95,9 +95,15 @@ scripts/compute_vertical_velocities.py repeat-pair cross-correlation -> results/
 scripts/compute_strain_rates.py        -> results/vertical_velocity/strain_profiles.nc
 scripts/compute_surface_strain.py      ASE annual velocity mosaics -> results/sites/surface_strain.csv
 scripts/fit_legendre.py                -> results/vertical_velocity/legendre_fits.csv
-scripts/figures/fig0{1..5}_*.py        -> figures/strain_pipeline/ (PyGMT for Figs. 1 and 4)
+scripts/figures/fig0{1..5}_*.py        -> figures/strain_pipeline/fig0N_*.{png,pdf} (PyGMT for Figs. 1 and 4)
 ```
+
+The five figures follow the paper's figure style (`scripts/figstyle.py`, after Morrow et
+al. 2026) through `scripts/figures/style.py`, which also carries it over to PyGMT: Times
+type at the same point sizes, discrete colour bands, panel letters, a framed legend across
+the top, and every figure drawn at its printed width (17.8 cm, Fig. 3 at 0.55 of that).
 
 External datasets (BedMachine, MEaSUREs, ASE velocity mosaics, REMA, MOA, coastlines,
 IceLines, grounding lines) are located through `scripts/paths.py`, with an environment
-variable override for each.
+variable override for each. Fig. 1 also outlines the model domain from the mesh extract
+written by `paper_extract.py` (`MODEL_EXTRACT`, default `results/paper/extract_ssa.npz`).

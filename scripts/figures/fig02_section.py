@@ -105,10 +105,12 @@ def main() -> None:
     bed_bm = pairs["bm_bed_m"].values
     dist = pairs["distance_km"].values
 
-    fig, axs = plt.subplots(
-        2, 1, figsize=(style.TWO_COL, 0.62 * style.TWO_COL),
-        sharex=True, gridspec_kw={"hspace": 0.11},
-    )
+    fig = plt.figure(figsize=(style.TWO_COL, 0.58 * style.TWO_COL))
+    gs = fig.add_gridspec(2, 2, width_ratios=[1.0, 0.018], wspace=0.03, hspace=0.10,
+                          left=0.08, right=0.92, top=0.90, bottom=0.10)
+    axs = [fig.add_subplot(gs[0, 0])]
+    axs.append(fig.add_subplot(gs[1, 0], sharex=axs[0]))
+    caxs = [fig.add_subplot(gs[0, 1]), fig.add_subplot(gs[1, 1])]
 
     # ---------------------------------------------------------------- (a) power
     depth, power = load_power_section(pairs)
@@ -123,7 +125,9 @@ def main() -> None:
         power = np.apply_along_axis(
             lambda row: np.convolve(row, k, mode="same"), 1, power
         )
-    norm_p = Normalize(0.0, float(np.nanpercentile(power, 99.5)))
+    # Top of the scale: the 99.5th percentile, to the nearest 10 dB.
+    p_top = 10.0 * max(1.0, np.round(float(np.nanpercentile(power, 99.5)) / 10.0))
+    cmap_p, norm_p = style.discrete("power", Normalize(0.0, p_top))
     for xi, s, col in zip(dist, surface_bm, power):
         good = np.isfinite(col)
         if not good.any():
@@ -132,10 +136,10 @@ def main() -> None:
             np.array([xi - COLUMN_WIDTH_KM, xi + COLUMN_WIDTH_KM]),
             np.append(s - depth - DEPTH_STEP_M / 2, s - depth[-1] + DEPTH_STEP_M / 2)[::-1],
             col[::-1, None],
-            cmap=style.SEQ_POWER, norm=norm_p, shading="flat", rasterized=True,
+            cmap=cmap_p, norm=norm_p, shading="flat", rasterized=True,
         )
-    m_power = plt.cm.ScalarMappable(norm=norm_p, cmap=style.SEQ_POWER)
-    style.thin_colorbar(fig, m_power, axs[0], "return SNR (dB)")
+    style.colorbar(fig, plt.cm.ScalarMappable(norm=norm_p, cmap=cmap_p), caxs[0],
+                   "Return SNR (dB)")
 
     # ------------------------------------------------------ (b) strain rate
     site_index = {s: i for i, s in enumerate(ds["site"].values)}
@@ -144,7 +148,12 @@ def main() -> None:
 
     strain = xr.open_dataset(paths.VERTICAL_VELOCITY / "strain_profiles.nc")
     strain_sites = list(strain["site"].values)
-    e_norm = Normalize(*style.symmetric_limits(strain["strain_rate"].values, 99.0))
+    kscale = style.STRAIN_SCALE
+    # Symmetric about zero at the 99th percentile of |strain rate|, to the
+    # nearest 5 x 10^-3 /yr; the rare stronger values saturate into the arrows.
+    e_abs = np.abs(kscale * strain["strain_rate"].values)
+    e_lim = 5.0 * max(1.0, np.round(float(np.nanpercentile(e_abs[np.isfinite(e_abs)], 99)) / 5.0))
+    cmap_e, e_norm = style.discrete("strain", Normalize(-e_lim, e_lim))
 
     for i in keep:
         site = str(ds["site"].values[order[i]])
@@ -153,21 +162,19 @@ def main() -> None:
         k = strain_sites.index(site)
         zs = strain["depth"].values[k]
         es = strain["strain_rate"].values[k]
-        gs = np.isfinite(zs) & np.isfinite(es)
-        if not gs.any():
+        gs_ = np.isfinite(zs) & np.isfinite(es)
+        if not gs_.any():
             continue
-        e = surface_bm[i] - zs[gs]
+        e = surface_bm[i] - zs[gs_]
         axs[1].pcolormesh(
             np.array([dist[i] - COLUMN_WIDTH_KM, dist[i] + COLUMN_WIDTH_KM]),
             np.append(e - 1.0, e[-1] + 1.0),
-            es[gs][:, None],
-            cmap=style.DIV_VELOCITY, norm=e_norm, shading="flat", rasterized=True,
+            kscale * es[gs_][:, None],
+            cmap=cmap_e, norm=e_norm, shading="flat", rasterized=True,
         )
 
-    style.thin_colorbar(
-        fig, plt.cm.ScalarMappable(norm=e_norm, cmap=style.DIV_VELOCITY), axs[1],
-        r"$\dot\varepsilon_{zz}$ (yr$^{-1}$)",
-    )
+    style.colorbar(fig, plt.cm.ScalarMappable(norm=e_norm, cmap=cmap_e), caxs[1],
+                   rf"{style.EPS_ZZ} ({style.STRAIN_UNIT})")
     # ------------------------------------------------------------- geometry
     # The surface comes from REMA at 32 m along a densely sampled path, not
     # from the 500 m BedMachine surface read once per site: at one point per
@@ -176,21 +183,27 @@ def main() -> None:
     rema_d, rema_z = surface.surface_profile(
         pairs["x_ps_m"].values, pairs["y_ps_m"].values, dist
     )
+    surface_label = "ice surface (REMA v2)"
     if rema_z is None or not np.isfinite(rema_z).any():
         rema_d, rema_z = dist, surface_bm
+        surface_label = "ice surface (BedMachine v4)"
 
-    for ax in axs:
-        ax.plot(rema_d, rema_z, color=style.COLOR_SURFACE_LINE, lw=1.0, zorder=5)
-        ax.set_ylabel("elevation (m)")
-        ax.set_ylim(np.nanmin(bed_bm) - 120, np.nanmax(rema_z) + 160)
+    for ax, letter in zip(axs, "ab"):
+        (h_surf,) = ax.plot(rema_d, rema_z, color=style.COLOR_SURFACE_LINE, lw=0.9,
+                            zorder=5, label=surface_label)
+        ax.set_ylabel("Elevation (m)")
+        # Headroom above the surface carries the panel letter clear of the data.
+        ax.set_ylim(np.nanmin(bed_bm) - 120, np.nanmax(rema_z) + 420)
         ax.margins(x=0.01)
+        style.panel_letter(ax, letter, x=0.03, y=0.91)
 
     # The bed is drawn only under the strain rate, where it is the context for
-    # the measurement rather than an overlay on it.  Neither line is keyed on
-    # the panel: the surface and the bed are identified in the caption.
-    axs[1].plot(dist, bed_bm, color=style.COLOR_BED_BEDMACHINE, lw=1.1, zorder=5)
-
-    axs[1].set_xlabel("distance along flow (km)")
+    # the measurement rather than an overlay on it.
+    (h_bed,) = axs[1].plot(dist, bed_bm, color=style.COLOR_BED_BEDMACHINE, lw=0.9,
+                           ls=(0, (3, 2)), zorder=5, label="bed (BedMachine v4)")
+    axs[0].tick_params(labelbottom=False)
+    axs[1].set_xlabel("Distance along flow (km)")
+    style.top_legend(fig, [h_surf, h_bed], y=0.915)
 
     style.save(fig, paths.FIGURES / "fig02_section.png")
 
