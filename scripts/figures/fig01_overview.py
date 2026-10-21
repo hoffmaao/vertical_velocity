@@ -43,7 +43,7 @@ fabric_anisotropy study's 400 m/yr ceiling and would otherwise saturate to a
 single colour across the whole grounding zone.
 
 The frame is bare: no axis annotations, only a scale bar.  Every symbol is keyed
-in one framed legend across the top, and the locator inset sits top left.
+in one unframed legend across the top, and the locator inset sits top left.
 Nothing else is written onto the map.
 
 Usage

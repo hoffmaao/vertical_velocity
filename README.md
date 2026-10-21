@@ -100,8 +100,8 @@ scripts/figures/fig0{1..5}_*.py        -> figures/strain_pipeline/fig0N_*.{png,p
 
 The five figures follow the paper's figure style (`scripts/figstyle.py`, after Morrow et
 al. 2026) through `scripts/figures/style.py`, which also carries it over to PyGMT: Times
-type at the same point sizes, discrete colour bands, panel letters, a framed legend across
-the top, and every figure drawn at its printed width (17.8 cm, Fig. 3 at 0.55 of that).
+type at the same point sizes, discrete colour bands, panel letters, one legend across
+the top (framed, except in Fig. 1), and every figure drawn at its printed width (17.8 cm, Fig. 3 at 0.55 of that).
 
 External datasets (BedMachine, MEaSUREs, ASE velocity mosaics, REMA, MOA, coastlines,
 IceLines, grounding lines) are located through `scripts/paths.py`, with an environment
