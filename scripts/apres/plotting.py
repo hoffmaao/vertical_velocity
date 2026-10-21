@@ -8,7 +8,7 @@ pipeline can run headlessly.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Iterable, List, Optional, Tuple, Dict
+from typing import List, Optional, Dict
 
 import matplotlib
 

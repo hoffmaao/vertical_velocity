@@ -40,7 +40,7 @@ a flat dictionary suitable for one CSV row per shot.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from typing import Dict, Optional, Tuple
 
 import numpy as np

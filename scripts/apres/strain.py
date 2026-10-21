@@ -24,7 +24,7 @@ import numpy as np
 
 from .config import ProcessingConfig
 from .preprocess import PreprocessedProfile
-from .xcorr import XCorrResult, fmcw_xcorr
+from .xcorr import fmcw_xcorr
 
 
 @dataclass
