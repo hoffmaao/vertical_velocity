@@ -39,10 +39,15 @@ N_LEVELS = fs.N_LEVELS
 
 # --------------------------------------------------------------------- colour
 SEQ_POWER = fs.STYLES["power"][0]        # radar return
-SEQ_SHARE = fs.STYLES["share"][0]        # shear share
 SEQ_SPEED = fs.STYLES["speed"][0]        # surface speed
-SEQ_RELIEF = fs.STYLES["relief"][0]      # bed under coloured symbols
-DIV_VELOCITY = fs.STYLES["strain"][0]    # strain rate, centred on zero
+# The bed map (Fig. 4) is a hillshaded bathymetric ramp, which is all blue
+# because the bed lies below sea level, so the quantities drawn over it avoid
+# blue: a purple-orange diverging ramp for strain rate (orange extending,
+# purple thinning, light grey at zero) and yellow-orange-red for shear share.
+# Fig. 2 uses the same strain ramp so the quantity reads the same everywhere.
+BED_CPT = "abyss"                        # GMT bathymetry ramp, deep navy to light blue
+SEQ_SHARE = "YlOrRd"                     # shear share
+DIV_VELOCITY = "PuOr_r"                  # strain rate, centred on zero
 
 # Series order (Morrow et al. reported.py): colour and marker travel together.
 CATEGORICAL = (fs.RED, fs.BLUE, fs.GREEN, fs.PURPLE, fs.BLACK)
@@ -100,6 +105,16 @@ num = fs.num
 nice = fs.nice
 bands = fs.bands
 discrete = fs.discrete
+
+
+def discrete_cmap(name: str, norm):
+    """(cmap, BoundaryNorm) of colormap ``name`` in N_LEVELS bands, as
+    figstyle.discrete for a colormap outside figstyle.STYLES."""
+    import matplotlib.pyplot as plt
+    from matplotlib.colors import BoundaryNorm
+
+    cmap = plt.get_cmap(name)
+    return cmap, BoundaryNorm(bands(norm), cmap.N, extend="both")
 
 
 def symmetric_limits(values, percentile: float = 1.0) -> tuple[float, float]:

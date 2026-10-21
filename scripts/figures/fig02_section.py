@@ -153,7 +153,7 @@ def main() -> None:
     # nearest 5 x 10^-3 /yr; the rare stronger values saturate into the arrows.
     e_abs = np.abs(kscale * strain["strain_rate"].values)
     e_lim = 5.0 * max(1.0, np.round(float(np.nanpercentile(e_abs[np.isfinite(e_abs)], 99)) / 5.0))
-    cmap_e, e_norm = style.discrete("strain", Normalize(-e_lim, e_lim))
+    cmap_e, e_norm = style.discrete_cmap(style.DIV_VELOCITY, Normalize(-e_lim, e_lim))
 
     for i in keep:
         site = str(ds["site"].values[order[i]])

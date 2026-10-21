@@ -3,10 +3,11 @@
 Two stacked map panels over the same ground, with bed topography beneath:
 the depth-averaged vertical strain rate above, and the share of the
 deformation carried by shear rather than plug flow below.  The bed is shared
-between the panels and carries one colour bar, at the foot of the figure, in
-grey relief so the coloured symbols above it carry all the hue.  The panels
-follow the paper's map grammar (figstyle): bare frames with a scale bar,
-discrete colour bands, panel letters and a row label on the left.
+between the panels and carries one colour bar, at the foot of the figure; it
+is drawn as a conventional bed map, a continuous topo/bathy ramp over
+hillshade.  The panels follow the paper's map grammar (figstyle): bare frames
+with a scale bar, discrete colour bands for the measured quantities, panel
+letters and a row label on the left.
 
 Every ApRES measurement is drawn the same way, whether it came from an
 attended transect occupation or from one of the three autonomous stations,
@@ -16,7 +17,8 @@ basis over the same normalised-depth window.
 
 Whether shear is resolved at a site is carried by the marker outline - thin
 where the degree->=2 coefficients are jointly distinguishable from zero, heavy
-where they are not - and keyed in the legend above the panels.
+where they are not.  The convention is given in the caption; the figure
+carries no legend.
 
 Why a strip and not a square map
 --------------------------------
@@ -28,10 +30,12 @@ context this crop removes.
 
 Colour
 ------
-The depth-averaged strain rate changes sign along flow, so it is drawn on a
-diverging ramp with a neutral midpoint pinned to zero.  The shear share is
-bounded and one-signed, so it gets a sequential ramp whose band edges are
-spaced as a power law, because three quarters of the sites sit below 0.15.
+The bed lies entirely below sea level, so the bed map is blue, and neither
+quantity drawn over it uses blue.  The depth-averaged strain rate changes sign
+along flow, so it is drawn on a purple-orange diverging ramp with a neutral
+midpoint pinned to zero.  The shear share is bounded and one-signed, so it
+gets a yellow-orange-red ramp whose band edges are spaced as a power law,
+because three quarters of the sites sit below 0.15.
 
 Usage
 -----
@@ -63,6 +67,8 @@ PANEL_GAP_CM = 0.25
 SITE_STYLE = "c0.20c"
 PEN_RESOLVED = "0.4p,black"
 PEN_UNRESOLVED = "1.3p,black"
+BED_SPACING_KM = 0.1
+BED_SMOOTH_KM = 1.0
 
 SHEAR_GAMMA = 0.65
 
@@ -82,6 +88,26 @@ def load_bed(region_km):
     return bed
 
 
+def smooth_bed(bed):
+    """BedMachine bed ready for hillshading: Gaussian-smoothed over
+    BED_SMOOTH_KM, then resampled (cubic) to BED_SPACING_KM.
+
+    Shaded at its native 500 m, or after a bicubic resample, the hillshade is
+    dominated by the seams of BedMachine's interpolation between radar lines
+    (straight streaks and crosses) rather than by the relief; a 1 km smoothing
+    removes them and leaves the troughs and ridges.  The resample after it is
+    cubic because a linear one leaves flat facets that catch the light as
+    white glints."""
+    from scipy import ndimage
+
+    dx = float(abs(bed["x"].values[1] - bed["x"].values[0]))
+    smoothed = bed.copy(data=ndimage.gaussian_filter(bed.values, BED_SMOOTH_KM / dx,
+                                                     mode="nearest"))
+    x = np.arange(float(bed["x"].min()), float(bed["x"].max()), BED_SPACING_KM)
+    y = np.arange(float(bed["y"].min()), float(bed["y"].max()), BED_SPACING_KM)
+    return smoothed.interp(x=x, y=y, method="cubic")
+
+
 def shear_edges(cap: float) -> np.ndarray:
     """Band edges for the shear share, spaced as a power law up to ``cap``.
 
@@ -93,15 +119,15 @@ def shear_edges(cap: float) -> np.ndarray:
     return cap * f ** (1.0 / SHEAR_GAMMA)
 
 
-def draw_panel(fig, *, bed, bed_cpt, region, proj, values, cpt, x, y, resolved,
-               stations_xy, stations_v, stations_resolved, letter, row_label,
-               scale=False):
-    """One bare map panel: banded bed underneath, every ApRES site on top."""
-    fig.grdimage(grid=bed, region=region, projection=proj, cmap=bed_cpt,
-                 nan_transparent=True, frame="+n")
+def draw_panel(fig, *, bed, shade, bed_cpt, region, proj, values, cpt, x, y,
+               resolved, stations_xy, stations_v, stations_resolved, letter,
+               row_label, scale=False):
+    """One bare map panel: hillshaded bed underneath, every ApRES site on top."""
+    fig.grdimage(grid=bed, shading=shade, region=region, projection=proj,
+                 cmap=bed_cpt, nan_transparent=True, frame="+n")
 
     # Sites where shear is resolved carry a thin outline; the rest a heavy one,
-    # drawn last so they stay findable.  Both are keyed in the legend.
+    # drawn last so they stay findable.  The convention is given in the caption.
     res = np.asarray(resolved, dtype=bool)
     st_res = np.asarray(stations_resolved, dtype=bool)
     sx, sy = stations_xy
@@ -150,13 +176,18 @@ def main() -> None:
     proj = f"X{WIDTH_CM}c/{height_cm:.3f}c"
     tmp = Path(tempfile.mkdtemp(prefix="fig04_"))
 
-    # Bed: grey relief in N_LEVELS bands on round 100 m edges, under the
-    # coloured symbols (figstyle "relief").
-    bed = load_bed(region)
-    b_lo, b_hi = np.nanpercentile(bed.values, [1, 99])
-    b_lo, b_hi = 100.0 * np.floor(b_lo / 100.0), 100.0 * np.ceil(b_hi / 100.0)
-    bed_cpt = style.gmt_cpt_bands(style.SEQ_RELIEF, np.linspace(b_lo, b_hi, style.N_LEVELS + 1),
-                                  str(tmp / "bed.cpt"))
+    # Bed: a continuous bathymetric ramp over hillshade, as on a conventional
+    # bed map.  The bed lies 800-1600 m below sea level, so a land/sea ramp
+    # hinged at zero would give only its darkest slice; a bathymetry ramp is
+    # stretched over the bed's own range instead, rounded outward so no cell
+    # falls off it.
+    bed = smooth_bed(load_bed(region))
+    shade = pygmt.grdgradient(grid=bed, radiance=[315, 45], normalize="t0.35")
+    b_lo = 100.0 * np.floor(float(np.nanmin(bed.values)) / 100.0)
+    b_hi = 100.0 * np.ceil(float(np.nanmax(bed.values)) / 100.0)
+    bed_cpt = str(tmp / "bed.cpt")
+    pygmt.makecpt(cmap=style.BED_CPT, series=[b_lo, b_hi],
+                  background=True, output=bed_cpt)
 
     # Strain rate in 10^-3 /yr, symmetric about zero at the 99th percentile of
     # |value| to the nearest 5, as in Fig. 2.
@@ -182,17 +213,9 @@ def main() -> None:
     fig = pygmt.Figure()
     cbar_len = 0.88 * height_cm
 
-    # Legend across the top, then the panels below it.
-    legend_entries = [
-        ("symbol", (SITE_STYLE, "white", PEN_RESOLVED), "ApRES station, shear resolved"),
-        ("symbol", (SITE_STYLE, "white", PEN_UNRESOLVED), "shear not resolved"),
-    ]
-    style.gmt_top_legend(fig, legend_entries, width_cm=WIDTH_CM)
-    fig.shift_origin(yshift=f"-{height_cm + 0.25:.3f}c")
-
     # ------------------------------ (a) depth-averaged vertical strain rate
     draw_panel(
-        fig, bed=bed, bed_cpt=bed_cpt, region=region, proj=proj, values=eps,
+        fig, bed=bed, shade=shade, bed_cpt=bed_cpt, region=region, proj=proj, values=eps,
         cpt=eps_cpt, x=x, y=y, resolved=resolved, stations_xy=(sx, sy),
         stations_v=eps_st, stations_resolved=st_resolved, letter="a",
         row_label=f"Depth-averaged {style.GMT_EPS_ZZ}", scale=True,
@@ -204,7 +227,7 @@ def main() -> None:
     # ----------------------------------------- (b) shear share of deformation
     fig.shift_origin(yshift=f"-{height_cm + PANEL_GAP_CM:.3f}c")
     draw_panel(
-        fig, bed=bed, bed_cpt=bed_cpt, region=region, proj=proj, values=ratio,
+        fig, bed=bed, shade=shade, bed_cpt=bed_cpt, region=region, proj=proj, values=ratio,
         cpt=shear_cpt, x=x, y=y, resolved=resolved, stations_xy=(sx, sy),
         stations_v=stations["shear_share"].values, stations_resolved=st_resolved,
         letter="b",
@@ -216,8 +239,9 @@ def main() -> None:
                         " + @%Times-Italic%A@%%@-p@-)"])
 
     # One bed colour bar for both panels, under the lower one.
+    # The ramp spans the bed's full range, so the bar needs no overflow arrows.
     style.gmt_colorbar(fig, cmap=bed_cpt, length_cm=0.45 * WIDTH_CM, anchor="JBC",
-                       offset="0c/0.45c", horizontal=True,
+                       offset="0c/0.45c", horizontal=True, extend=False,
                        frame=["xa200f100+lBed elevation, BedMachine v4 (m)"])
 
     style.gmt_save(fig, paths.FIGURES / "fig04_map.png")
