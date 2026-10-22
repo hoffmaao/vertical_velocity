@@ -671,11 +671,14 @@ def fig_apres(d, tri, area, n):
             z, em = s[m]
             ax.plot(em * 1e3, z, color=COL[m], marker=MARK[m], ms=3.0, markevery=5, zorder=3)
         ax.axvline(0, color=GREY, lw=0.8, zorder=1)
-        ax.set(ylim=(s["H"], -0.13 * s["H"]), xlabel=rf"${EPS}$ ($10^{{-3}}$ yr$^{{-1}}$)")
+        # Depth axis ends at the deepest ApRES sample (to the next 50 m): below it the
+        # models are not tested.
+        bottom = 50.0 * np.ceil(float(s["depth"].max()) / 50.0)
+        ax.set(ylim=(bottom, -0.13 * bottom), xlabel=rf"${EPS}$ ($10^{{-3}}$ yr$^{{-1}}$)")
         if j == 0:
             ax.set_ylabel("Depth (m)")
         ax.set_xlim(-xlim, xlim)
-        ax.set_yticks([t for t in ax.get_yticks() if 0 <= t <= s["H"]])
+        ax.set_yticks([t for t in ax.get_yticks() if 0 <= t <= bottom])
         fs.grid(ax)
         fs.panel_letter(ax, letter, x=0.13, y=0.94)
     fs.top_legend(fig, [Line2D([], [], ls="", marker="d", ms=3.5, color=BLACK,
