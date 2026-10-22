@@ -88,7 +88,7 @@ def main():
     # (c) partition of the power dissipated over the whole domain.
     W = fig.get_figwidth()
     H = fig.get_figheight()
-    ax = fig.add_axes([0.30 / W + 0.085, 0.40 / H, 0.56, 0.80 / H])
+    ax = fig.add_axes([0.30 / W + 0.085, 0.40 / H, 0.50, 0.80 / H])
     numbers = {}
     for i, m in enumerate(pf.MODELS):
         tot = {k: float(part[m][k].sum()) for k in ("bed", "shear", "membrane")}
@@ -118,7 +118,7 @@ def main():
     # (grounding line, stations) are described in the caption, so there is no top legend.
     from matplotlib.patches import Patch
     ax.legend(handles=[Patch(color=col, label=lab) for _, lab, col in PART],
-              loc="center left", bbox_to_anchor=(1.13, 0.5), frameon=False,
+              loc="center left", bbox_to_anchor=(1.24, 0.5), frameon=False,
               handlelength=1.4, borderaxespad=0.0)
     pf.save(fig, "F_dissipation")
     json.dump(numbers, open(pf.OUT / "dissipation_numbers.json", "w"), indent=2)
