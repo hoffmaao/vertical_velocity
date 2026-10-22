@@ -58,6 +58,7 @@ DATA = Path(__file__).resolve().parent.parent
 RUN = "sweep_{model}_rc_bilap_d4e-04_L3km_thwaites_fixed_tau5km"
 TO_W = 1e6 / 3.15576e7          # MPa m^3/yr -> W  (and MPa m/yr -> W/m^2)
 FRONT_IDS = (1,)                # problem.make_solver: ice_front_ids=[1]
+GROUNDED_PHI = 1e-3             # floating cells carry phi at floating-point roundoff
 
 
 def cell_values(form):
@@ -124,7 +125,7 @@ def main():
 
     tot = {k: float(v.sum()) / 1e9 for k, v in out.items()}
     inflow = tot["ice"] + tot["bed"] - tot["gravity"] - terminus / 1e9
-    g = phi > 0
+    g = phi > GROUNDED_PHI
     summary = dict(
         model=args.model, run=name, GW=tot, terminus_GW=terminus / 1e9, inflow_GW=inflow,
         grounded_GW={k: float(v[g].sum()) / 1e9 for k, v in out.items()},

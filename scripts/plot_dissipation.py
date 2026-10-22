@@ -26,6 +26,7 @@ from scipy.spatial import cKDTree
 
 import figstyle as fs
 import paper_figures as pf
+from dissipation_partition import GROUNDED_PHI
 from figstyle import BLACK
 
 NEAR_M = 5e3                     # "near the line": within this of an ApRES station
@@ -65,7 +66,7 @@ def main():
     ex = d["ssa"]["ex"]
     cells, nn = ex["cells"], len(ex["xy"])
     part, centroid = load_partition(ex)
-    grounded = part["ssa"]["phi"] > 0
+    grounded = part["ssa"]["phi"] > GROUNDED_PHI
     st, _, _ = pf.stations(d["hybrid"]["ex"])
     near = grounded & (cKDTree(st).query(centroid)[0] < NEAR_M)
 
