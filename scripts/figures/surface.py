@@ -54,17 +54,19 @@ def surface_profile(x_m, y_m, distance_km):
     px, py, s = _path_along_sites(np.asarray(x_m, float), np.asarray(y_m, float))
     elev = np.full(px.size, np.nan)
     for tile in tiles:
-        da = rxr.open_rasterio(tile, masked=True).squeeze("band", drop=True)
-        x0, y0, x1, y1 = da.rio.bounds()
-        inside = (px >= x0) & (px <= x1) & (py >= y0) & (py <= y1) & ~np.isfinite(elev)
-        if not inside.any():
-            continue
-        sampled = da.interp(
-            x=xr.DataArray(px[inside], dims="p"),
-            y=xr.DataArray(py[inside], dims="p"),
-            method="linear",
-        ).values
-        elev[inside] = sampled
+        # Closed on leaving the block: a tile left open is torn down during
+        # interpreter shutdown, after GDAL, and raises there.
+        with rxr.open_rasterio(tile, masked=True) as raw:
+            da = raw.squeeze("band", drop=True)
+            x0, y0, x1, y1 = da.rio.bounds()
+            inside = (px >= x0) & (px <= x1) & (py >= y0) & (py <= y1) & ~np.isfinite(elev)
+            if not inside.any():
+                continue
+            elev[inside] = da.interp(
+                x=xr.DataArray(px[inside], dims="p"),
+                y=xr.DataArray(py[inside], dims="p"),
+                method="linear",
+            ).values
 
     # Map path distance onto the same along-flow coordinate the sites use, so
     # the profile lines up with the columns drawn beneath it.

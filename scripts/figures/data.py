@@ -144,7 +144,7 @@ def fitting_window(df: pd.DataFrame) -> tuple[float, float]:
 def load_profiles():
     import xarray as xr
 
-    return xr.open_dataset(paths.VV_PROFILES)
+    return xr.load_dataset(paths.VV_PROFILES)
 
 
 def describe(df: pd.DataFrame) -> str:

@@ -84,7 +84,9 @@ output of `manuscript_figures.py`. They come from a separate pipeline that proce
 raw repeat bursts itself, with the `apres/` package, instead of reading
 `data/apres_legendre_fits.h5`. Its Legendre fit (`fit_legendre.py`, `apres/legendre.py`)
 is not the same as the one in `manuscript_prepare.py`, so check which pipeline a number in
-the text comes from until the manuscript switches to one set of figures.
+the text comes from until the manuscript switches to one set of figures. Figure numbers
+below are the scripts'; the paper orders the same five as overview, section, Legendre,
+regression, map, so figure labels avoid numbers and the captions supply them.
 
 ```
 scripts/run_pipeline.sh            all stages below, in order (env: PY_ANALYSIS, PY_FIGURES, JOBS)

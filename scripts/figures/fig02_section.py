@@ -99,7 +99,7 @@ def main() -> None:
     import xarray as xr
 
     pairs = pd.read_csv(paths.PAIR_CATALOG).sort_values("distance_km").reset_index(drop=True)
-    ds = xr.open_dataset(paths.VV_PROFILES)
+    ds = xr.load_dataset(paths.VV_PROFILES)
 
     surface_bm = pairs["bm_surface_m"].values
     bed_bm = pairs["bm_bed_m"].values
@@ -146,7 +146,7 @@ def main() -> None:
     order = [site_index.get(s, -1) for s in pairs["site"]]
     keep = [i for i, o in enumerate(order) if o >= 0]
 
-    strain = xr.open_dataset(paths.VERTICAL_VELOCITY / "strain_profiles.nc")
+    strain = xr.load_dataset(paths.VERTICAL_VELOCITY / "strain_profiles.nc")
     strain_sites = list(strain["site"].values)
     kscale = style.STRAIN_SCALE
     # Symmetric about zero at the 99th percentile of |strain rate|, to the

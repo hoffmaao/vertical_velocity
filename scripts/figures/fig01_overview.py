@@ -345,7 +345,9 @@ def main() -> None:
         ("ramp", (FRONT_RAMP, "1.4p"), "ice front (2022-2024)"),
         *([("line", DOMAIN_PEN, "model domain")] if domain else []),
         ("symbol", ("c0.12c", SITE_COLOR, SITE_PEN), "ApRES stations"),
-        ("symbol", ("s0.28c", None, "1.0p,black"), "extent of Fig. 4"),
+        # No figure number: the paper orders the figures differently from these
+        # scripts, so the caption names the figure the box outlines.
+        ("symbol", ("s0.28c", None, "1.0p,black"), "extent of station maps"),
     ], width_cm=WIDTH_CM, frame=False)
     fig.shift_origin(yshift=f"-{height_cm + 0.25:.3f}c")
 
