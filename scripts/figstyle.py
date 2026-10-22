@@ -104,10 +104,13 @@ def grid(ax):
     ax.set_axisbelow(True)
 
 
-def panel_letter(ax, letter, x=0.075, y=0.91):
-    """Grey-circle panel letter at the top left (plot_paper_figures.panel_letter)."""
+def panel_letter(ax, letter, x=0.075, y=0.91, facecolor=None):
+    """Grey-circle panel letter at the top left (plot_paper_figures.panel_letter).
+
+    ``facecolor`` replaces the grey fill, for letters that also key a mark elsewhere."""
+    box = LETTER_BOX if facecolor is None else dict(LETTER_BOX, facecolor=facecolor)
     ax.text(x, y, letter, transform=ax.transAxes, ha="center", va="center", fontsize=FS,
-            zorder=6, bbox=LETTER_BOX)
+            zorder=6, bbox=box)
 
 
 def row_label(ax, text, x=-0.06):

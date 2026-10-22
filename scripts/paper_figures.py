@@ -565,6 +565,9 @@ def locator(fig, ax, xy, rect=(0.13, 0.66, 0.24, 0.32)):
 
 # ── main text: ApRES profiles ───────────────────────────────────────────────
 WINDOW = (100.0, 800.0)            # assimilated depth range (observations.DEPTH_MIN/MAX)
+# Muted pastel fills for the profile letters (b-e), repeated on their markers in (a) so
+# each profile can be found on the line. Kept clear of the model red and blue.
+PICK_FILL = ("#cadcb9", "#d9cee9", "#efdcb0", "#e8c9d3")   # sage, lavender, sand, mauve
 
 
 def apres_sites():
@@ -654,14 +657,19 @@ def fig_apres(d, tri, area, n):
     # One x range for all four profiles, wide enough for every assimilated sample and its sigma.
     xlim = 5 * np.ceil(1.08e3 * max(np.max(np.abs(sites[k]["used"][1]) + sites[k]["used"][2])
                                     for k in idx) / 5)
+    # Pick circles start right of the panel letter; a pick nearer the left edge gets a
+    # slanted leader instead of a circle on top of the "a".
+    x0, x1 = top.get_xlim()
+    s_min = x0 + 0.075 * (x1 - x0)
     for j, (ax, k) in enumerate(zip(axs, idx)):
         s = sites[k]
         letter = "bcde"[j]
-        top.annotate(letter, (s_km[k], obs[k, 0]), xytext=(s_km[k], 0.9),
+        top.annotate(letter, (s_km[k], obs[k, 0]), xytext=(max(s_km[k], s_min), 0.9),
                      textcoords=("data", "axes fraction"), ha="center", va="center",
                      fontsize=fs.FS_TICK, zorder=1,
+                     bbox=dict(fs.LETTER_BOX, facecolor=PICK_FILL[j]),
                      arrowprops=dict(arrowstyle="-", color="0.5", lw=0.5, ls=":",
-                                     shrinkA=4, shrinkB=4))
+                                     shrinkA=0, shrinkB=4))
         ax.axhspan(*WINDOW, color=GREY, alpha=0.15, lw=0, zorder=0)
         ax.plot(s["eps"] * 1e3, s["depth"], color="0.65", lw=0.4, zorder=1)
         du, eu, su = s["used"]
@@ -671,13 +679,16 @@ def fig_apres(d, tri, area, n):
             z, em = s[m]
             ax.plot(em * 1e3, z, color=COL[m], marker=MARK[m], ms=3.0, markevery=5, zorder=3)
         ax.axvline(0, color=GREY, lw=0.8, zorder=1)
-        ax.set(ylim=(s["H"], -0.13 * s["H"]), xlabel=rf"${EPS}$ ($10^{{-3}}$ yr$^{{-1}}$)")
+        # Depth axis ends at the deepest ApRES sample (to the next 50 m): below it the
+        # models are not tested.
+        bottom = 50.0 * np.ceil(float(s["depth"].max()) / 50.0)
+        ax.set(ylim=(bottom, -0.13 * bottom), xlabel=rf"${EPS}$ ($10^{{-3}}$ yr$^{{-1}}$)")
         if j == 0:
             ax.set_ylabel("Depth (m)")
         ax.set_xlim(-xlim, xlim)
-        ax.set_yticks([t for t in ax.get_yticks() if 0 <= t <= s["H"]])
+        ax.set_yticks([t for t in ax.get_yticks() if 0 <= t <= bottom])
         fs.grid(ax)
-        fs.panel_letter(ax, letter, x=0.13, y=0.94)
+        fs.panel_letter(ax, letter, x=0.13, y=0.94, facecolor=PICK_FILL[j])
     fs.top_legend(fig, [Line2D([], [], ls="", marker="d", ms=3.5, color=BLACK,
                                label=r"ApRES assimilated $\pm\sigma$"),
                         Line2D([], [], color="0.65", lw=0.6, label="ApRES profile")]
