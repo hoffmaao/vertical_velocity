@@ -75,7 +75,7 @@ def main():
 
     print(f"[{name}] building problem", flush=True)
     P = build_problem(args.model, "rc", hybrid)
-    mesh, mesh_2d, Q_2d, Q = P["mesh"], P["mesh_2d"], P["Q_2d"], P["Q"]
+    mesh, Q_2d, Q = P["mesh"], P["Q_2d"], P["Q"]
     with CheckpointFile(str(DATA / "mesh" / f"map_{name}.h5"), "r") as chk:
         mm = chk.load_mesh()
         θ_A_2d = to_2d(chk.load_function(mm, "log_fluidity"), Q_2d)
