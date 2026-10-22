@@ -69,6 +69,10 @@ OVERSAMPLING = 3.0
 
 FITS = paths.VERTICAL_VELOCITY / "legendre_fits.csv"
 
+# Autonomous stations farther than this from the survey line are off it.  LTG
+# sits 1.6 km from the line; Lake1 and Lake2 sit 23 and 18 km north of it.
+ONLINE_KM = 5.0
+
 
 def load_summary(*, screen: bool = True, require_window: bool = True) -> pd.DataFrame:
     """Per-site fits with the quality screen applied.
@@ -120,6 +124,16 @@ def split_by_type(df: pd.DataFrame):
     return point, load_stations()
 
 
+def on_line(stations: pd.DataFrame) -> pd.DataFrame:
+    """The autonomous stations that sit on the survey line.
+
+    The along-flow map is about the strain measured along the transect, so it
+    draws only these; Lake1 and Lake2 are kept on the overview, where their
+    position relative to the line is shown.
+    """
+    return stations[stations["offline_km"] <= ONLINE_KM]
+
+
 def detail_region_km(buffer_km: float = 4.0) -> list[float]:
     """Map extent of the detail figure, in EPSG:3031 kilometres.
 
@@ -129,6 +143,7 @@ def detail_region_km(buffer_km: float = 4.0) -> list[float]:
     """
     df = load_summary()
     point, stations = split_by_type(df)
+    stations = on_line(stations)
     x = np.concatenate([point["x_ps_m"].values, stations["x_ps_m"].values]) / 1000.0
     y = np.concatenate([point["y_ps_m"].values, stations["y_ps_m"].values]) / 1000.0
     return [
