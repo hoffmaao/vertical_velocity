@@ -3,13 +3,13 @@ r"""Where SSA and the hybrid model dissipate their energy: ice or bed.
 Plots results/paper/dissipation_<model>.npz (dissipation_partition.py) in the
 paper's figure grammar (figstyle.py):
 
-  (a, b)  share of the grounded-ice dissipation that happens at the bed,
-          Phi_bed / (Phi_bed + Phi_ice), for SSA and the hybrid model;
-  (c)     share of the hybrid model's ice dissipation carried by vertical
-          shear rather than membrane stretching (zero by construction in SSA);
-  (d)     the partition of the integrated power on all grounded ice and within
-          5 km of an ApRES station: bed, vertical shear and stretching, as a
-          percentage of the total, which is printed at the end of each bar.
+  (a)  share of the hybrid model's dissipation on grounded ice that happens at
+       the bed, Phi_bed / (Phi_bed + Phi_ice);
+  (b)  share of the hybrid model's ice dissipation carried by vertical shear
+       rather than membrane stretching (zero by construction in SSA);
+  (c)  the partition of the power dissipated over the whole model domain, for
+       SSA and the hybrid model: bed, vertical shear and stretching, as a
+       percentage of the total, which is printed at the end of each bar.
 
 Floating ice is left blank on the maps: it has no bed term.
 
@@ -29,7 +29,6 @@ import paper_figures as pf
 from dissipation_partition import GROUNDED_PHI
 from figstyle import BLACK
 
-NEAR_M = 5e3                     # "near the line": within this of an ApRES station
 # Partition categories (validated: lightness, chroma, CVD and normal-vision separation),
 # kept clear of the model red and blue. Every segment also carries a printed share.
 PART = (("bed", "basal friction", "#a0561a"),
@@ -65,40 +64,31 @@ def main():
     d, tri, area = pf.load()
     ex = d["ssa"]["ex"]
     cells, nn = ex["cells"], len(ex["xy"])
-    part, centroid = load_partition(ex)
+    part, _ = load_partition(ex)
     grounded = part["ssa"]["phi"] > GROUNDED_PHI
-    st, _, _ = pf.stations(d["hybrid"]["ex"])
-    near = grounded & (cKDTree(st).query(centroid)[0] < NEAR_M)
 
-    # Nodal power densities (W/m^2) for the maps; floating triangles masked.
+    # Nodal power densities (W/m^2) of the hybrid model for the maps; floating ice masked.
     a_node = to_nodes(part["ssa"]["area"], cells, nn)
-    dens = {m: {k: to_nodes(part[m][k], cells, nn) / a_node for k in ("ice", "bed", "shear")}
-            for m in pf.MODELS}
+    q = {k: to_nodes(part["hybrid"][k], cells, nn) / a_node for k in ("ice", "bed", "shear")}
     tri_g = Triangulation(tri.x, tri.y, tri.triangles, mask=~grounded)
 
     box = pf.full_box(d)
-    fig, axs, caxs = fs.map_grid(1, [2, 1], pf.aspect(box), bottom=1.95)
+    fig, axs, caxs = fs.map_grid(1, [1, 1], pf.aspect(box), bottom=1.45)
     share = Normalize(0, 1)
-    for c, m in enumerate(pf.MODELS):
-        q = dens[m]
-        v = q["bed"] / np.maximum(q["bed"] + q["ice"], 1e-12)
-        mp = fs.tri_field(axs[0][c], tri_g, v, "share", share)
+    mp = fs.tri_field(axs[0][0], tri_g, q["bed"] / np.maximum(q["bed"] + q["ice"], 1e-12),
+                      "share", share)
     fs.colorbar(fig, mp, caxs[0][0], r"Bed share $\Phi_b/(\Phi_b+\Phi_i)$")
-    q = dens["hybrid"]
-    mp = fs.tri_field(axs[0][2], tri_g, q["shear"] / np.maximum(q["ice"], 1e-12), "share", share)
+    mp = fs.tri_field(axs[0][1], tri_g, q["shear"] / np.maximum(q["ice"], 1e-12), "share", share)
     fs.colorbar(fig, mp, caxs[0][1], "Vertical-shear share\nof ice dissipation")
     pf.finish_maps(axs, box, d, tri, stations=True)
 
-    # (d) integrated partition.
+    # (c) partition of the power dissipated over the whole domain.
     W = fig.get_figwidth()
     H = fig.get_figheight()
-    ax = fig.add_axes([0.30 / W + 0.085, 0.40 / H, 0.62, 1.25 / H])
-    rows = [(m, mask, where) for where, mask in (("grounded ice", grounded),
-                                                 (f"within {NEAR_M / 1e3:g} km of ApRES", near))
-            for m in pf.MODELS]
+    ax = fig.add_axes([0.30 / W + 0.085, 0.40 / H, 0.62, 0.80 / H])
     numbers = {}
-    for i, (m, mask, where) in enumerate(rows):
-        tot = {k: float(part[m][k][mask].sum()) for k in ("bed", "shear", "membrane")}
+    for i, m in enumerate(pf.MODELS):
+        tot = {k: float(part[m][k].sum()) for k in ("bed", "shear", "membrane")}
         total = sum(tot.values())
         left = 0.0
         for key, _, col in PART:
@@ -112,16 +102,15 @@ def main():
                         fontsize=fs.FS_TICK - 1, color=BLACK)
             left += f
         ax.text(101.5, i, f"{total / 1e9:.1f} GW", ha="left", va="center", fontsize=fs.FS_TICK)
-        numbers.setdefault(where, {})[m] = dict(total_GW=total / 1e9,
-                                                **{k: 100 * v / total for k, v in tot.items()})
-    ax.set_yticks(range(len(rows)),
-                  [f"{pf.SHORT[m]}, {where}" for m, _, where in rows])
+        numbers[m] = dict(total_GW=total / 1e9, **{k: 100 * v / total for k, v in tot.items()})
+    ax.set_yticks(range(len(pf.MODELS)), [pf.SHORT[m] for m in pf.MODELS])
     ax.invert_yaxis()
+    ax.set_ylim(len(pf.MODELS) - 0.45, -0.75)       # headroom for the narrow-segment labels
     ax.set_xlim(0, 100)
-    ax.set_xlabel("Share of dissipated power (%)")
+    ax.set_xlabel("Share of power dissipated over the model domain (%)")
     for side in ("top", "right"):
         ax.spines[side].set_visible(False)
-    fs.panel_letter(ax, "d", x=-0.33, y=1.0)
+    fs.panel_letter(ax, "c", x=-0.12, y=0.95)
 
     from matplotlib.patches import Patch
     fs.top_legend(fig, [pf.GL_KEY, pf.STATION_KEY]
