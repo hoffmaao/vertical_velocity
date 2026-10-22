@@ -137,6 +137,9 @@ def on_line(stations: pd.DataFrame) -> pd.DataFrame:
 def detail_region_km(buffer_km: float = 4.0) -> list[float]:
     """Map extent of the detail figure, in EPSG:3031 kilometres.
 
+    The extent covers the transect sites and the stations on the line only
+    (``on_line``); the off-line lake stations lie outside it.
+
     Defined here rather than inside the detail figure so the overview can draw
     the same box: a locator that disagreed with the panel it points at would
     be worse than no locator.
