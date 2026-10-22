@@ -5,9 +5,9 @@ the depth-averaged vertical strain rate above, and the share of the
 deformation carried by shear rather than plug flow below.  The bed is shared
 between the panels and carries one colour bar, at the foot of the figure; it
 is drawn as a conventional bed map, a continuous bathymetric ramp with a
-faint hillshade laid over it.  The panels follow the paper's map grammar (figstyle): bare frames
-with a scale bar, discrete colour bands for the measured quantities, panel
-letters and a row label on the left.
+faint hillshade laid over it.  The panels follow the paper's map grammar
+(figstyle): bare frames with a scale bar, discrete colour bands for the
+measured quantities, panel letters and a row label on the left.
 
 Every ApRES measurement is drawn the same way, whether it came from an
 attended transect occupation or from one of the three autonomous stations,
