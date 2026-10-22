@@ -75,8 +75,10 @@ def main():
     box = pf.full_box(d)
     fig, axs, caxs = fs.map_grid(1, [1, 1], pf.aspect(box), bottom=1.45)
     share = Normalize(0, 1)
-    mp = fs.tri_field(axs[0][0], tri_g, q["bed"] / np.maximum(q["bed"] + q["ice"], 1e-12),
-                      "share", share)
+    # Floating cells carry bed power at roundoff (slightly negative); clip so the masked
+    # shelf does not add a spurious extend to the colorbar.
+    bed_share = np.clip(q["bed"] / np.maximum(q["bed"] + q["ice"], 1e-12), 0, 1)
+    mp = fs.tri_field(axs[0][0], tri_g, bed_share, "share", share)
     fs.colorbar(fig, mp, caxs[0][0], r"Bed share $\Phi_b/(\Phi_b+\Phi_i)$")
     mp = fs.tri_field(axs[0][1], tri_g, q["shear"] / np.maximum(q["ice"], 1e-12), "share", share)
     fs.colorbar(fig, mp, caxs[0][1], "Vertical-shear share\nof ice dissipation")
