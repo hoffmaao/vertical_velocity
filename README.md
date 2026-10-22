@@ -105,6 +105,7 @@ al. 2026) through `scripts/figures/style.py`, which also carries it over to PyGM
 module docstring lists the conventions and where these figures depart from them.
 
 External datasets (BedMachine, MEaSUREs, ASE velocity mosaics, REMA, MOA, coastlines,
-IceLines, grounding lines) are located through `scripts/paths.py`, with an environment
-variable override for each. Fig. 1 also outlines the model domain from the mesh extract
-written by `paper_extract.py` (`MODEL_EXTRACT`, default `results/paper/extract_ssa.npz`).
+IceLines, grounding lines, the vibroseismic bed attributes) are located through
+`scripts/paths.py`, with an environment variable override for each. Fig. 1 also outlines
+the model domain from the mesh extract written by `paper_extract.py` (`MODEL_EXTRACT`,
+default `results/paper/extract_ssa.npz`).

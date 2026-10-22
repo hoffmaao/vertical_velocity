@@ -10,7 +10,7 @@ same flowline (Zeising et al., 2026; seismic.py), with its uncertainty, over
 the soft, intermediate and hard bed classes of that paper, so the reader can
 set the deformation above against the bed below.
 
-The lower panel shows the strain rate rather than the vertical velocity it was
+The middle panel shows the strain rate rather than the vertical velocity it was
 differentiated from.  w(z) is referenced to the shallowest tracked segment at
 each site, so its absolute value carries that arbitrary choice and is not
 comparable between sites; its depth gradient is, and it is the gradient that

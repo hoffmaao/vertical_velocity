@@ -73,4 +73,3 @@ def bed_attributes(pairs: pd.DataFrame, max_offline_km: float = MAX_OFFLINE_KM) 
     })
     out = out[out["offline_km"] <= max_offline_km]
     return out.sort_values("distance_km").reset_index(drop=True)
-
