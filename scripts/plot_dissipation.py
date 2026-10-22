@@ -12,7 +12,8 @@ paper's figure grammar (figstyle.py):
        percentage of the total, which is printed at the end of each bar, with
        the colour key beside the bars.
 
-Floating ice is left blank on the maps: it has no bed term.
+Floating ice is left blank on the maps: it has no bed term.  The maps carry the
+2015 grounding line and nothing else; the ApRES line is on the earlier figures.
 
     python scripts/plot_dissipation.py
 
@@ -83,7 +84,7 @@ def main():
     fs.colorbar(fig, mp, caxs[0][0], r"Bed share $\Phi_b/(\Phi_b+\Phi_i)$")
     mp = fs.tri_field(axs[0][1], tri_g, q["shear"] / np.maximum(q["ice"], 1e-12), "share", share)
     fs.colorbar(fig, mp, caxs[0][1], "Vertical-shear share\nof ice dissipation")
-    pf.finish_maps(axs, box, d, tri, stations=True)
+    pf.finish_maps(axs, box, d, tri)
 
     # (c) partition of the power dissipated over the whole domain.
     W = fig.get_figwidth()
