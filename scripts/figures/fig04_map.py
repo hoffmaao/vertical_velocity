@@ -9,11 +9,12 @@ faint hillshade laid over it.  The panels follow the paper's map grammar
 (figstyle): bare frames with a scale bar, discrete colour bands for the
 measured quantities, panel letters and a row label on the left.
 
-Every ApRES measurement is drawn the same way, whether it came from an
-attended transect occupation or from one of the three autonomous stations,
-which are paired from the first and last acquisition of their year-long
-records.  All of them are decomposed on the same degree-4 shifted-Legendre
-basis over the same normalised-depth window.
+The figure is about the strain measured along flow, so it draws only the
+sites on the survey line: the attended transect occupations and LTG, the one
+autonomous station on the line, paired from the first and last acquisition of
+its year-long record.  The two lake stations, 18 and 23 km north of the line,
+are left to Figure 1.  Every site drawn is decomposed on the same degree-4
+shifted-Legendre basis over the same normalised-depth window.
 
 Whether shear is resolved at a site is carried by the marker outline - thin
 where the degree->=2 coefficients are jointly distinguishable from zero, heavy
@@ -22,9 +23,8 @@ carries no legend.
 
 Why a strip and not a square map
 --------------------------------
-The transect is 68 km long and 11 km wide, and the two off-line stations sit
-about 20 km north of it.  Drawn on a square map the whole survey occupies a
-thin band across an otherwise empty page.  The panels are cropped to the data
+The transect is 68 km long and 11 km wide.  Drawn on a square map it occupies
+a thin band across an otherwise empty page.  The panels are cropped to the data
 and given the aspect ratio it actually has.  Figure 1 carries the regional
 context this crop removes.
 
@@ -256,6 +256,7 @@ def main() -> None:
     if df.empty:
         raise SystemExit("no sites survive the quality screen")
     point, stations = data.split_by_type(df)
+    stations = data.on_line(stations)
     lo_w, hi_w = data.fitting_window(df)
     print(data.describe(point))
     print(f"fitting window: zeta in [{lo_w:.2f}, {hi_w:.2f}]")
