@@ -89,6 +89,17 @@ MEASURES_GL = _env_path(
     "MEASURES_GL", "~/data/measures_gl/InSAR_GL_Antarctica_v02.1.gpkg"
 )
 
+# Seismic attributes of the ice base from the 2022/23 along-flow vibroseismic
+# section 20230551 (Zeising et al., 2026, doi:10.1038/s43247-026-03502-2): per
+# 200 m CMP group, the basal reflection coefficient R1 and acoustic impedance Zb
+# with their uncertainties.  PANGAEA doi:10.1594/PANGAEA.987691 (CC-BY-4.0),
+# file DS4_20230551_SeismicAttributes_Bed_v02.csv.  The section follows the
+# ApRES flowline, within about 2 km of the stations over the survey span.
+VIBROSEIS_ATTRIBUTES = _env_path(
+    "VIBROSEIS_ATTRIBUTES",
+    "~/data/vibroseis/DS4_20230551_SeismicAttributes_Bed_v02.csv",
+)
+
 # Model mesh (nodes and triangles) exported by paper_extract.py, read for the
 # model-domain outline on the overview map.  Any of the extracts will do: the
 # SSA and hybrid runs share one mesh.
