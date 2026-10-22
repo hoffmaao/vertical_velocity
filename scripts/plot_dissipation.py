@@ -9,7 +9,8 @@ paper's figure grammar (figstyle.py):
        rather than membrane stretching (zero by construction in SSA);
   (c)  the partition of the power dissipated over the whole model domain, for
        SSA and the hybrid model: bed, vertical shear and stretching, as a
-       percentage of the total, which is printed at the end of each bar.
+       percentage of the total, which is printed at the end of each bar, with
+       the colour key beside the bars.
 
 Floating ice is left blank on the maps: it has no bed term.
 
@@ -87,7 +88,7 @@ def main():
     # (c) partition of the power dissipated over the whole domain.
     W = fig.get_figwidth()
     H = fig.get_figheight()
-    ax = fig.add_axes([0.30 / W + 0.085, 0.40 / H, 0.62, 0.80 / H])
+    ax = fig.add_axes([0.30 / W + 0.085, 0.40 / H, 0.56, 0.80 / H])
     numbers = {}
     for i, m in enumerate(pf.MODELS):
         tot = {k: float(part[m][k].sum()) for k in ("bed", "shear", "membrane")}
@@ -113,10 +114,12 @@ def main():
     for side in ("top", "right"):
         ax.spines[side].set_visible(False)
     fs.panel_letter(ax, "c", x=-0.12, y=0.95)
-
+    # The partition key sits beside the bars, past the printed totals; the map overlays
+    # (grounding line, stations) are described in the caption, so there is no top legend.
     from matplotlib.patches import Patch
-    fs.top_legend(fig, [pf.GL_KEY, pf.STATION_KEY]
-                  + [Patch(color=col, label=lab) for _, lab, col in PART], ncol=5, y=1.0)
+    ax.legend(handles=[Patch(color=col, label=lab) for _, lab, col in PART],
+              loc="center left", bbox_to_anchor=(1.13, 0.5), frameon=False,
+              handlelength=1.4, borderaxespad=0.0)
     pf.save(fig, "F_dissipation")
     json.dump(numbers, open(pf.OUT / "dissipation_numbers.json", "w"), indent=2)
     print(json.dumps(numbers, indent=2))
