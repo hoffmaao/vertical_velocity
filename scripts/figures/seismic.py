@@ -22,7 +22,6 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
 HERE = Path(__file__).resolve().parent
@@ -75,7 +74,3 @@ def bed_attributes(pairs: pd.DataFrame, max_offline_km: float = MAX_OFFLINE_KM) 
     out = out[out["offline_km"] <= max_offline_km]
     return out.sort_values("distance_km").reset_index(drop=True)
 
-
-def bed_class(zb: np.ndarray) -> np.ndarray:
-    """0 soft, 1 intermediate, 2 hard, by the Zeising et al. (2026) bounds."""
-    return np.where(zb < ZB_SOFT_MAX, 0, np.where(zb > ZB_HARD_MIN, 2, 1))

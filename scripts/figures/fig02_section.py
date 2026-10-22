@@ -222,7 +222,9 @@ def main() -> None:
     att = att[(att["distance_km"] >= dist.min() - SPAN_PAD_KM)
               & (att["distance_km"] <= dist.max() + SPAN_PAD_KM)]
     ax = axs[2]
-    bounds = (0.0, seismic.ZB_SOFT_MAX, seismic.ZB_HARD_MIN, ZB_AXIS_MAX)
+    zb_lo = min(1.0, float(np.floor((att["Zb"] - att["Zb_err"]).min())))
+    zb_hi = max(ZB_AXIS_MAX, float(np.ceil((att["Zb"] + att["Zb_err"]).max())))
+    bounds = (0.0, seismic.ZB_SOFT_MAX, seismic.ZB_HARD_MIN, zb_hi)
     for lo, hi, fill, label in zip(bounds[:-1], bounds[1:], BED_CLASS_FILL, BED_CLASS_LABEL):
         ax.axhspan(lo, hi, color=fill, lw=0, zorder=0)
         # Labels sit outside the right spine, in the column the colour bars use
@@ -232,7 +234,7 @@ def main() -> None:
     ax.errorbar(att["distance_km"], att["Zb"], yerr=att["Zb_err"], fmt="o", ms=2.2,
                 color=style.COLOR_SURFACE_LINE, ecolor="0.55", elinewidth=0.5, capsize=0,
                 zorder=3)
-    ax.set_ylim(min(1.0, float(np.floor((att["Zb"] - att["Zb_err"]).min()))), ZB_AXIS_MAX)
+    ax.set_ylim(zb_lo, zb_hi)
     ax.set_ylabel("Bed impedance\n($10^{6}$ kg m$^{-2}$ s$^{-1}$)")
     style.panel_letter(ax, "c", x=0.03, y=0.84)
     axs[0].set_xlim(dist.min() - SPAN_PAD_KM, dist.max() + SPAN_PAD_KM)

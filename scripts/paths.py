@@ -33,7 +33,7 @@ VV_SUMMARY = VERTICAL_VELOCITY / "site_summary.csv"
 
 # ------------------------------------------------------- external reference data
 # Overridable with environment variables so the pipeline is portable.
-def _env_path(var: str, default: str) -> Path:
+def _env_path(var: str, default: str | Path) -> Path:
     return Path(os.environ.get(var, default)).expanduser()
 
 
@@ -97,7 +97,7 @@ MEASURES_GL = _env_path(
 # ApRES flowline, within about 2 km of the stations over the survey span.
 VIBROSEIS_ATTRIBUTES = _env_path(
     "VIBROSEIS_ATTRIBUTES",
-    "~/data/vibroseis/DS4_20230551_SeismicAttributes_Bed_v02.csv",
+    DATA / "vibroseis" / "DS4_20230551_SeismicAttributes_Bed_v02.csv",
 )
 
 # Model mesh (nodes and triangles) exported by paper_extract.py, read for the
