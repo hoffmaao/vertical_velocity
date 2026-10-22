@@ -4,8 +4,8 @@ Two stacked map panels over the same ground, with bed topography beneath:
 the depth-averaged vertical strain rate above, and the share of the
 deformation carried by shear rather than plug flow below.  The bed is shared
 between the panels and carries one colour bar, at the foot of the figure; it
-is drawn as a conventional bed map, a continuous topo/bathy ramp over
-hillshade.  The panels follow the paper's map grammar (figstyle): bare frames
+is drawn as a conventional bed map, a continuous bathymetric ramp with a
+faint hillshade laid over it.  The panels follow the paper's map grammar (figstyle): bare frames
 with a scale bar, discrete colour bands for the measured quantities, panel
 letters and a row label on the left.
 
@@ -69,6 +69,17 @@ PEN_RESOLVED = "0.4p,black"
 PEN_UNRESOLVED = "1.3p,black"
 BED_SPACING_KM = 0.1
 BED_SMOOTH_KM = 1.0
+# The bed ramp: abyss without its near-black deep end, brightened by a gamma
+# stretch so the shallow half of the bed reaches the light blues.
+BED_RAMP_START = 0.125
+BED_GAMMA = 0.6
+# The hillshade is a grey layer over the bed at SHADE_OPACITY: sun from the
+# north-west at 45 degrees, relief exaggerated SHADE_EXAGGERATION times so the
+# gentle, smoothed bed still reads.
+SHADE_AZIMUTH_DEG = 315.0
+SHADE_ALTITUDE_DEG = 45.0
+SHADE_EXAGGERATION = 20.0
+SHADE_OPACITY = 0.35
 
 SHEAR_GAMMA = 0.65
 
@@ -108,6 +119,90 @@ def smooth_bed(bed):
     return smoothed.interp(x=x, y=y, method="cubic")
 
 
+def abyss_table(tmp: Path):
+    """The bed ramp (style.BED_CPT, GMT's abyss) sampled at 64 positions on
+    [0, 1]: (positions, RGB 0-255)."""
+    import pygmt
+
+    path = tmp / "abyss.cpt"
+    pygmt.makecpt(cmap=style.BED_CPT, series=[0.0, 1.0, 1.0 / 64], output=str(path))
+    pos, rgb = [], []
+    for line in path.read_text().splitlines():
+        parts = line.split()
+        # Slices are "z0 rgb z1 rgb [annotation]"; take each at its centre.
+        if len(parts) >= 4 and line[0] not in "#BFN":
+            pos.append(0.5 * (float(parts[0]) + float(parts[2])))
+            rgb.append([float(v) for v in parts[1].split("/")])
+    return np.asarray(pos), np.asarray(rgb)
+
+
+def bed_rgb(z, lo: float, hi: float, table):
+    """Bed colour (RGB 0-255) of elevations ``z`` on the stretched abyss ramp.
+
+    Stretched linearly over the bed's range, abyss puts most of this bed in its
+    darkest navy and leaves the light blues to a few ridges.  Elevation z maps
+    to ramp position BED_RAMP_START + (1 - BED_RAMP_START) * f**BED_GAMMA,
+    f = (z - lo) / (hi - lo), which skips the near-black end and gives the
+    shallower bed more of the light half."""
+    pos, rgb = table
+    f = np.clip((np.asarray(z, dtype=float) - lo) / (hi - lo), 0.0, 1.0)
+    t = BED_RAMP_START + (1.0 - BED_RAMP_START) * f ** BED_GAMMA
+    return np.stack([np.interp(t, pos, rgb[:, k]) for k in range(3)], axis=-1)
+
+
+def bed_cpt(lo: float, hi: float, table, path: str) -> str:
+    """The bed ramp as a continuous CPT, for the colour bar."""
+    z = np.linspace(lo, hi, 65)
+    c = ["/".join(str(round(v)) for v in row) for row in bed_rgb(z, lo, hi, table)]
+    with open(path, "w") as fh:
+        for i in range(z.size - 1):
+            fh.write(f"{z[i]:.6g} {c[i]} {z[i + 1]:.6g} {c[i + 1]}\n")
+        fh.write(f"B {c[0]}\nF {c[-1]}\nN white\n")
+    return path
+
+
+def bed_image(bed, lo: float, hi: float, table):
+    """The bed map as one RGB image: the bed ramp with a grey hillshade laid
+    over it at SHADE_OPACITY.
+
+    Blended here rather than drawn as a second, transparent GMT layer, which
+    rasterises with thin seams where the bed shows through unshaded.  A flat
+    bed (shade = sin(altitude)) gets mid grey, so the layer darkens slopes
+    facing away from the sun and lightens those facing it by the same amount,
+    and nothing is pushed towards white."""
+    import xarray as xr
+
+    colour = bed_rgb(bed.values, lo, hi, table)
+    flat = float(np.sin(np.deg2rad(SHADE_ALTITUDE_DEG)))
+    grey = 255.0 * np.clip(hillshade(bed).values - flat + 0.5, 0.0, 1.0)
+    out = (1.0 - SHADE_OPACITY) * colour + SHADE_OPACITY * grey[..., None]
+    # GMT reads images north-up.
+    out = np.clip(np.rint(out), 0, 255).astype(np.uint8)[::-1]
+    return xr.DataArray(
+        np.moveaxis(out, -1, 0), dims=("band", "y", "x"),
+        coords={"band": [1, 2, 3], "y": bed["y"].values[::-1], "x": bed["x"].values},
+    )
+
+
+def hillshade(bed):
+    """Lambertian hillshade of the bed, 0 (facing away) to 1 (facing the sun).
+
+    Computed directly rather than with grdgradient's normalisation, which on
+    this smooth bed pins a quarter of the grid at its darkest value and leaves
+    the layer blotchy."""
+    dx_m = 1000.0 * float(abs(bed["x"].values[1] - bed["x"].values[0]))
+    dy_m = 1000.0 * float(abs(bed["y"].values[1] - bed["y"].values[0]))
+    z = SHADE_EXAGGERATION * np.asarray(bed.values, dtype=float)
+    dz_dy, dz_dx = np.gradient(z, dy_m, dx_m)
+    az = np.deg2rad(SHADE_AZIMUTH_DEG)
+    alt = np.deg2rad(SHADE_ALTITUDE_DEG)
+    # Unit vector towards the sun (x east, y north, z up) dotted with the normal.
+    sun = np.array([np.sin(az) * np.cos(alt), np.cos(az) * np.cos(alt), np.sin(alt)])
+    norm = np.sqrt(1.0 + dz_dx ** 2 + dz_dy ** 2)
+    shade = (-dz_dx * sun[0] - dz_dy * sun[1] + sun[2]) / norm
+    return bed.copy(data=np.clip(shade, 0.0, 1.0))
+
+
 def shear_edges(cap: float) -> np.ndarray:
     """Band edges for the shear share, spaced as a power law up to ``cap``.
 
@@ -119,12 +214,11 @@ def shear_edges(cap: float) -> np.ndarray:
     return cap * f ** (1.0 / SHEAR_GAMMA)
 
 
-def draw_panel(fig, *, bed, shade, bed_cpt, region, proj, values, cpt, x, y,
+def draw_panel(fig, *, bed, region, proj, values, cpt, x, y,
                resolved, stations_xy, stations_v, stations_resolved, letter,
                row_label, scale=False):
-    """One bare map panel: hillshaded bed underneath, every ApRES site on top."""
-    fig.grdimage(grid=bed, shading=shade, region=region, projection=proj,
-                 cmap=bed_cpt, nan_transparent=True, frame="+n")
+    """One bare map panel: the hillshaded bed image, every ApRES site on top."""
+    fig.grdimage(grid=bed, region=region, projection=proj, frame="+n")
 
     # Sites where shear is resolved carry a thin outline; the rest a heavy one,
     # drawn last so they stay findable.  The convention is given in the caption.
@@ -176,18 +270,19 @@ def main() -> None:
     proj = f"X{WIDTH_CM}c/{height_cm:.3f}c"
     tmp = Path(tempfile.mkdtemp(prefix="fig04_"))
 
-    # Bed: a continuous bathymetric ramp over hillshade, as on a conventional
-    # bed map.  The bed lies 800-1600 m below sea level, so a land/sea ramp
-    # hinged at zero would give only its darkest slice; a bathymetry ramp is
-    # stretched over the bed's own range instead, rounded outward so no cell
-    # falls off it.
+    # Bed: a continuous bathymetric ramp with a hillshade laid over it, as on a
+    # conventional bed map.  The bed lies 800-1600 m below sea level, so a
+    # land/sea ramp hinged at zero would give only its darkest slice; a
+    # bathymetry ramp is stretched over the bed's own range instead, rounded
+    # outward so no cell falls off it.  The hillshade is a faint grey layer
+    # over the colours (bed_image) rather than an intensity that lightens and
+    # darkens them: that read as glossy and washed the shallow bed to white.
     bed = smooth_bed(load_bed(region))
-    shade = pygmt.grdgradient(grid=bed, radiance=[315, 45], normalize="t0.35")
     b_lo = 100.0 * np.floor(float(np.nanmin(bed.values)) / 100.0)
     b_hi = 100.0 * np.ceil(float(np.nanmax(bed.values)) / 100.0)
-    bed_cpt = str(tmp / "bed.cpt")
-    pygmt.makecpt(cmap=style.BED_CPT, series=[b_lo, b_hi],
-                  background=True, output=bed_cpt)
+    table = abyss_table(tmp)
+    image = bed_image(bed, b_lo, b_hi, table)
+    bed_cpt_path = bed_cpt(b_lo, b_hi, table, str(tmp / "bed.cpt"))
 
     # Strain rate in 10^-3 /yr, symmetric about zero at the 99th percentile of
     # |value| to the nearest 5, as in Fig. 2.
@@ -215,7 +310,7 @@ def main() -> None:
 
     # ------------------------------ (a) depth-averaged vertical strain rate
     draw_panel(
-        fig, bed=bed, shade=shade, bed_cpt=bed_cpt, region=region, proj=proj, values=eps,
+        fig, bed=image, region=region, proj=proj, values=eps,
         cpt=eps_cpt, x=x, y=y, resolved=resolved, stations_xy=(sx, sy),
         stations_v=eps_st, stations_resolved=st_resolved, letter="a",
         row_label=f"Depth-averaged {style.GMT_EPS_ZZ}", scale=True,
@@ -227,7 +322,7 @@ def main() -> None:
     # ----------------------------------------- (b) shear share of deformation
     fig.shift_origin(yshift=f"-{height_cm + PANEL_GAP_CM:.3f}c")
     draw_panel(
-        fig, bed=bed, shade=shade, bed_cpt=bed_cpt, region=region, proj=proj, values=ratio,
+        fig, bed=image, region=region, proj=proj, values=ratio,
         cpt=shear_cpt, x=x, y=y, resolved=resolved, stations_xy=(sx, sy),
         stations_v=stations["shear_share"].values, stations_resolved=st_resolved,
         letter="b",
@@ -240,7 +335,7 @@ def main() -> None:
 
     # One bed colour bar for both panels, under the lower one.
     # The ramp spans the bed's full range, so the bar needs no overflow arrows.
-    style.gmt_colorbar(fig, cmap=bed_cpt, length_cm=0.45 * WIDTH_CM, anchor="JBC",
+    style.gmt_colorbar(fig, cmap=bed_cpt_path, length_cm=0.45 * WIDTH_CM, anchor="JBC",
                        offset="0c/0.45c", horizontal=True, extend=False,
                        frame=["xa200f100+lBed elevation, BedMachine v4 (m)"])
 

@@ -43,7 +43,7 @@ N_LEVELS = fs.N_LEVELS
 # --------------------------------------------------------------------- colour
 SEQ_POWER = fs.STYLES["power"][0]        # radar return
 SEQ_SPEED = fs.STYLES["speed"][0]        # surface speed
-# The bed map (Fig. 4) is a hillshaded bathymetric ramp, which is all blue
+# The bed map (Fig. 4) is a bathymetric ramp under a faint hillshade, all blue
 # because the bed lies below sea level, so the quantities drawn over it avoid
 # blue: a purple-orange diverging ramp for strain rate (orange extending,
 # purple thinning, light grey at zero) and yellow-orange-red for shear share.
@@ -260,9 +260,32 @@ def gmt_colorbar(fig, *, cmap: str, length_cm: float, anchor: str = "JMR",
 
 
 def gmt_save(fig, path: Path) -> None:
-    """PNG at 300 dpi and a PDF beside it, as save() does for matplotlib."""
+    """PNG at 300 dpi and a PDF beside it, as save() does for matplotlib.
+
+    Reproducible, like save(): Ghostscript stamps the PDF with the current time
+    unless SOURCE_DATE_EPOCH is set, and derives its trailer /ID from GMT's
+    temporary file name, so that ID is replaced with a hash of the content."""
+    import hashlib
+    import os
+    import re
+
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(path.with_suffix(".png"), dpi=fs.DPI)
-    fig.savefig(path.with_suffix(".pdf"))
+    pdf = path.with_suffix(".pdf")
+    saved = os.environ.get("SOURCE_DATE_EPOCH")
+    os.environ["SOURCE_DATE_EPOCH"] = "0"
+    try:
+        fig.savefig(pdf)
+    finally:
+        if saved is None:
+            del os.environ["SOURCE_DATE_EPOCH"]
+        else:
+            os.environ["SOURCE_DATE_EPOCH"] = saved
+    trailer_id = re.compile(rb"/ID \[<[0-9A-Fa-f]{32}><[0-9A-Fa-f]{32}>\]")
+    raw = pdf.read_bytes()
+    blank = trailer_id.sub(b"/ID [<" + b"0" * 32 + b"><" + b"0" * 32 + b">]", raw)
+    digest = hashlib.md5(blank).hexdigest().upper().encode()
+    # Same length as the original, so the cross-reference offsets stay valid.
+    pdf.write_bytes(trailer_id.sub(b"/ID [<" + digest + b"><" + digest + b">]", raw))
     print(f"Saved {path.with_suffix('')}.{{png,pdf}}", flush=True)
