@@ -113,6 +113,8 @@ def bottom_legend(fig, handles, ncol=None, y=0.0):
     return fig.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, y),
                       ncol=ncol or len(handles), frameon=True, handlelength=1.8,
                       columnspacing=1.4, borderpad=0.4)
+
+
 num = fs.num
 nice = fs.nice
 bands = fs.bands

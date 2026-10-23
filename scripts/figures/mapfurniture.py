@@ -3,6 +3,7 @@
 Keeps the scale bar identical between figures, and identical to the one on
 the paper's matplotlib maps (figstyle.scalebar), so a reader who has learned
 to read one map can read the others without relearning its furniture.
+The graticule labels each kind of line along one chosen frame edge.
 """
 
 from __future__ import annotations
