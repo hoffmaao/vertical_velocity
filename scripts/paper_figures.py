@@ -657,19 +657,15 @@ def fig_apres(d, tri, area, n):
     # One x range for all four profiles, wide enough for every assimilated sample and its sigma.
     xlim = 5 * np.ceil(1.08e3 * max(np.max(np.abs(sites[k]["used"][1]) + sites[k]["used"][2])
                                     for k in idx) / 5)
-    # Pick circles start right of the panel letter; a pick nearer the left edge gets a
-    # slanted leader instead of a circle on top of the "a".
-    x0, x1 = top.get_xlim()
-    s_min = x0 + 0.075 * (x1 - x0)
+    # Each pick is marked just above its own point by a small dotted circle in
+    # the profile panel's colour, smaller than the panel letters.
     for j, (ax, k) in enumerate(zip(axs, idx)):
         s = sites[k]
         letter = "bcde"[j]
-        top.annotate(letter, (s_km[k], obs[k, 0]), xytext=(max(s_km[k], s_min), 0.9),
-                     textcoords=("data", "axes fraction"), ha="center", va="center",
-                     fontsize=fs.FS_TICK, zorder=1,
-                     bbox=dict(fs.LETTER_BOX, facecolor=PICK_FILL[j]),
-                     arrowprops=dict(arrowstyle="-", color="0.5", lw=0.5, ls=":",
-                                     shrinkA=0, shrinkB=4))
+        top.annotate(letter, (s_km[k], obs[k, 0]), xytext=(0, 11), textcoords="offset points",
+                     ha="center", va="center", fontsize=fs.FS_TICK - 1.5, zorder=6,
+                     bbox=dict(boxstyle="circle,pad=0.18", facecolor=PICK_FILL[j],
+                               edgecolor="black", lw=0.5, linestyle=(0, (1, 1.5))))
         ax.axhspan(*WINDOW, color=GREY, alpha=0.15, lw=0, zorder=0)
         ax.plot(s["eps"] * 1e3, s["depth"], color="0.65", lw=0.4, zorder=1)
         du, eu, su = s["used"]
@@ -729,7 +725,9 @@ def fig_retreat(d, tri, area, n):
     for ax, k in zip((a, b), "ab"):
         fs.grid(ax)
         fs.panel_letter(ax, k)
-    fs.top_legend(fig, [model_key(m) for m in MODELS])
+    # Below the panels and unframed; constrained layout reserves the room.
+    fig.legend(handles=[model_key(m) for m in MODELS], loc="outside lower center",
+               ncol=len(MODELS), frameon=False, handlelength=1.8, columnspacing=1.4)
     save(fig, "F_retreat_rates")
     write_rate_table(d)
 
