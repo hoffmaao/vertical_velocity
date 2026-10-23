@@ -77,7 +77,7 @@ def main() -> None:
 
     fig, axs = plt.subplots(
         1, 4, figsize=(style.TWO_COL, 0.40 * style.TWO_COL),
-        gridspec_kw={"wspace": 0.42, "top": 0.82, "bottom": 0.15,
+        gridspec_kw={"wspace": 0.42, "top": 0.96, "bottom": 0.34,
                      "left": 0.07, "right": 0.99},
     )
     for ax in axs:
@@ -177,8 +177,9 @@ def main() -> None:
         a.margins(y=0.02)
         style.panel_letter(a, letter, x=0.13, y=0.92)
 
-    style.top_legend(
-        fig, [h_meas, h_plug, h_full, h_med, h_iqr, *basis_handles], ncol=5, y=0.84,
+    # Below the panels, clear of their x labels.
+    style.bottom_legend(
+        fig, [h_meas, h_plug, h_full, h_med, h_iqr, *basis_handles], ncol=5, y=0.15,
     )
 
     print(f"example site: {site} at {row['distance_km']:.1f} km, "

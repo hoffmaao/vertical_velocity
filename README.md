@@ -60,7 +60,7 @@ scripts/paper_figures.py                      every paper figure + the retreat-r
 `output/launch/launch_bilap_chain.sh` runs the forward, eigendecomposition and UQ stages.
 `paper_figures.py` is plain matplotlib on archived results; `figstyle.py` holds the
 figure style (Morrow et al. 2026). It writes `figures/paper/`, which is copied to the
-paper repository, hoffmaao/paper-thwaites-vertical-velocity.
+GRL manuscript repository, hoffmaao/paper-thwaites-nonlinear-deformation.
 
 ## GRL manuscript figures
 
@@ -73,8 +73,8 @@ scripts/manuscript_prepare.py    raw ApRES bursts, strain profiles, MEaSUREs and
 scripts/manuscript_figures.py    Figs. 1-7 -> figures/manuscript/fig<NN>.{png,pdf}, numbers.json
 ```
 
-Figs. 6 and 7 are `paper_figures.py`'s F_apres and F_retreat. `apres_dat.py` reads the
-ApRES `.dat` bursts for the return-power section.
+`apres_dat.py` reads the ApRES `.dat` bursts for the return-power section. The manuscript
+no longer uses these seven; its figures are listed below.
 
 ### Figures currently in the manuscript (ApRES strain pipeline)
 
@@ -84,9 +84,20 @@ output of `manuscript_figures.py`. They come from a separate pipeline that proce
 raw repeat bursts itself, with the `apres/` package, instead of reading
 `data/apres_legendre_fits.h5`. Its Legendre fit (`fit_legendre.py`, `apres/legendre.py`)
 is not the same as the one in `manuscript_prepare.py`, so check which pipeline a number in
-the text comes from until the manuscript switches to one set of figures. Figure numbers
-below are the scripts'; the paper orders the same five as overview, section, Legendre,
-regression, map, so figure labels avoid numbers and the captions supply them.
+the text comes from until the manuscript switches to one set of figures. The scripts'
+numbers are not the paper's, so figure labels avoid numbers and the captions supply them:
+
+| Paper | Script | Output |
+|---|---|---|
+| Fig. 1 | `scripts/figures/fig01_overview.py` | `figures/strain_pipeline/fig01_overview` |
+| Fig. 2 | `scripts/figures/fig02_section.py` | `figures/strain_pipeline/fig02_section` |
+| Fig. 3 | `scripts/figures/fig05_legendre.py` | `figures/strain_pipeline/fig05_legendre` |
+| Fig. 4 | `scripts/figures/fig04_map.py` | `figures/strain_pipeline/fig04_map` |
+| Fig. 5 | `scripts/paper_figures.py` (F_apres) | `figures/paper/F_apres` |
+| Fig. 6 | `scripts/paper_figures.py` (F_retreat) | `figures/paper/F_retreat_rates` |
+| Fig. 7 | `scripts/plot_dissipation.py` | `figures/paper/F_dissipation` |
+| Figs. S1-S8 | `scripts/paper_figures.py` (S1-S8) | `figures/paper/S*` |
+| Fig. S9 | `scripts/figures/fig03_strain_regression.py` | `figures/strain_pipeline/fig03_strain_regression` |
 
 ```
 scripts/run_pipeline.sh            all stages below, in order (env: PY_ANALYSIS, PY_FIGURES, JOBS)
@@ -105,6 +116,7 @@ al. 2026) through `scripts/figures/style.py`, which also carries it over to PyGM
 module docstring lists the conventions and where these figures depart from them.
 
 External datasets (BedMachine, MEaSUREs, ASE velocity mosaics, REMA, MOA, coastlines,
-IceLines, grounding lines) are located through `scripts/paths.py`, with an environment
-variable override for each. Fig. 1 also outlines the model domain from the mesh extract
-written by `paper_extract.py` (`MODEL_EXTRACT`, default `results/paper/extract_ssa.npz`).
+IceLines, grounding lines, the vibroseismic bed attributes) are located through
+`scripts/paths.py`, with an environment variable override for each. Fig. 1 also outlines
+the model domain from the mesh extract written by `paper_extract.py` (`MODEL_EXTRACT`,
+default `results/paper/extract_ssa.npz`).

@@ -33,7 +33,7 @@ VV_SUMMARY = VERTICAL_VELOCITY / "site_summary.csv"
 
 # ------------------------------------------------------- external reference data
 # Overridable with environment variables so the pipeline is portable.
-def _env_path(var: str, default: str) -> Path:
+def _env_path(var: str, default: str | Path) -> Path:
     return Path(os.environ.get(var, default)).expanduser()
 
 
@@ -87,6 +87,17 @@ ICELINES_DIR = _env_path("ICELINES_DIR", "~/data/icelines")
 # a single undated mask.
 MEASURES_GL = _env_path(
     "MEASURES_GL", "~/data/measures_gl/InSAR_GL_Antarctica_v02.1.gpkg"
+)
+
+# Seismic attributes of the ice base from the 2022/23 along-flow vibroseismic
+# section 20230551 (Zeising et al., 2026, doi:10.1038/s43247-026-03502-2): per
+# 200 m CMP group, the basal reflection coefficient R1 and acoustic impedance Zb
+# with their uncertainties.  PANGAEA doi:10.1594/PANGAEA.987691 (CC-BY-4.0),
+# file DS4_20230551_SeismicAttributes_Bed_v02.csv.  The section follows the
+# ApRES flowline, within about 2 km of the stations over the survey span.
+VIBROSEIS_ATTRIBUTES = _env_path(
+    "VIBROSEIS_ATTRIBUTES",
+    DATA / "vibroseis" / "DS4_20230551_SeismicAttributes_Bed_v02.csv",
 )
 
 # Model mesh (nodes and triangles) exported by paper_extract.py, read for the

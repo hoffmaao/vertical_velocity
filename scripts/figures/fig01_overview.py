@@ -42,9 +42,14 @@ m/yr because the Thwaites trunk runs an order of magnitude faster than the
 fabric_anisotropy study's 400 m/yr ceiling and would otherwise saturate to a
 single colour across the whole grounding zone.
 
-The frame is bare: no axis annotations, only a scale bar.  Every symbol is keyed
-in one unframed legend across the top, and the locator inset sits top left.
-Nothing else is written onto the map.
+The frame carries a graticule and a scale bar.  On this part of the polar
+stereographic plane the meridians run across the map and the parallels down
+it, so meridians are labelled along the left edge and parallels along the
+bottom; a line that reaches neither is drawn unlabelled.  Every symbol is
+keyed in one unframed legend in a single row centred under the map, and the
+locator inset sits top left without a backing box, the continent outlined by
+Greene's coastline.  The map is drawn smaller than the text width so it
+does not fill a page, with the site markers and lines sized up to match.
 
 Usage
 -----
@@ -76,9 +81,20 @@ import style  # noqa: E402
 # when the model mesh extract is not available.
 REGION_KM = [-1633, -1263, -569, -276]
 DOMAIN_MARGIN_KM = 8.0
-# Map width at print size: map + colour bar fill the 17.8 cm text width.
-WIDTH_CM = 16.2
-DOMAIN_PEN = f"1.0p,{style.CATEGORICAL[1]}"
+# Map width at print size: about two thirds of the 17.8 cm text width, so the
+# figure does not fill a page; the paper includes it at that physical size.
+WIDTH_CM = 11.5
+DOMAIN_PEN = f"1.3p,{style.CATEGORICAL[1]}"
+SITE_STYLE = "c0.17c"
+DETAIL_PEN = "1.3p,black"
+# Graticule: parallels every degree, meridians every four degrees of
+# longitude (about 110 km at this latitude).
+GRATICULE_LATS = (-75, -76, -77, -78)
+# Legend: one row centred under the map, at a size that keeps it to one line.
+# It is wider than the map, so it overhangs both sides by up to this much.
+LEGEND_PT = 6.5
+LEGEND_OVERHANG_CM = 1.0
+GRATICULE_LONS = (-100, -104, -108, -112)
 
 # Black with a white rim.  The sites sit on the mid-range of the magma ramp,
 # where a black dot carries furthest, and the white rim separates it from the
@@ -338,19 +354,6 @@ def main() -> None:
     pygmt.config(**style.GMT_CONFIG)
     fig = pygmt.Figure()
 
-    # --------------------------------------------------- legend, then the map
-    # The domain outline is keyed only when the mesh extract supplied one.
-    style.gmt_top_legend(fig, [
-        ("ramp", (GL_RAMP, "1.4p"), "grounding zone (2022-2024)"),
-        ("ramp", (FRONT_RAMP, "1.4p"), "ice front (2022-2024)"),
-        *([("line", DOMAIN_PEN, "model domain")] if domain else []),
-        ("symbol", ("c0.12c", SITE_COLOR, SITE_PEN), "ApRES stations"),
-        # No figure number: the paper orders the figures differently from these
-        # scripts, so the caption names the figure the box outlines.
-        ("symbol", ("s0.28c", None, "1.0p,black"), "extent of station maps"),
-    ], width_cm=WIDTH_CM, frame=False)
-    fig.shift_origin(yshift=f"-{height_cm + 0.25:.3f}c")
-
     # --------------------------------------------- MOA shaded-relief backdrop
     moa = load_moa(region)
     lo, hi = np.nanpercentile(moa.values, [2, 98])
@@ -381,11 +384,11 @@ def main() -> None:
     # Drawn oldest first so the most recent trace sits on top of the bundle.
     for gx, gy, year in sorted(load_grounding_lines(), key=lambda t: (np.isnan(t[2]), t[2])):
         if _in_view(gx, gy):
-            fig.plot(x=gx, y=gy, pen=f"0.3p,{_shade(year, GL_RAMP)}",
+            fig.plot(x=gx, y=gy, pen=f"0.4p,{_shade(year, GL_RAMP)}",
                      region=region, projection=proj)
     for fx, fy, year in sorted(load_icelines(), key=lambda t: (np.isnan(t[2]), t[2])):
         if _in_view(fx, fy):
-            fig.plot(x=fx, y=fy, pen=f"0.35p,{_shade(year, FRONT_RAMP)}",
+            fig.plot(x=fx, y=fy, pen=f"0.45p,{_shade(year, FRONT_RAMP)}",
                      region=region, projection=proj)
 
     # ----------------------------------------------------------- model domain
@@ -397,18 +400,21 @@ def main() -> None:
     # they are the same instrument making the same measurement.
     all_x = np.concatenate([sx, stations["x_ps_m"].values / 1000.0]) if len(stations) else sx
     all_y = np.concatenate([sy, stations["y_ps_m"].values / 1000.0]) if len(stations) else sy
-    fig.plot(x=all_x, y=all_y, style="c0.12c", fill=SITE_COLOR, pen=SITE_PEN,
+    fig.plot(x=all_x, y=all_y, style=SITE_STYLE, fill=SITE_COLOR, pen=SITE_PEN,
              region=region, projection=proj)
 
     # ------------------------------------------------- detail-figure extent
     dx0, dx1, dy0, dy1 = data.detail_region_km()
     fig.plot(x=[dx0, dx1, dx1, dx0, dx0], y=[dy0, dy0, dy1, dy1, dy0],
-             pen="1.0p,black", region=region, projection=proj)
+             pen=DETAIL_PEN, region=region, projection=proj)
 
-    # ------------------------------------------------- frame and scale bar
+    # ------------------------------------ graticule, frame and scale bar
+    mapfurniture.graticule(fig, region=region, projection=proj,
+                           lats=GRATICULE_LATS, lons=GRATICULE_LONS,
+                           lat_edge="bottom", lon_edge="left")
     fig.plot(x=[x0, x1, x1, x0, x0], y=[y0, y0, y1, y1, y0], pen="0.6p,black",
              region=region, projection=proj, no_clip=True)
-    mapfurniture.scalebar(fig, region=region, projection=proj, loc=(0.06, 0.05))
+    mapfurniture.scalebar(fig, region=region, projection=proj, loc=(0.06, 0.05), halo=False)
 
     # ------------------------------------------------------------- colorbar
     # Log-spaced bands, annotated at the decades.
@@ -423,20 +429,19 @@ def main() -> None:
 
     # -------------------------------------------------------- locator inset
     ant_km = [-2800, 2800, -2500, 2300]
-    inset_w = 3.4
+    inset_w = 2.9
     inset_h = inset_w * (ant_km[3] - ant_km[2]) / (ant_km[1] - ant_km[0])
-    with fig.inset(
-        position=f"jTL+w{inset_w}c/{inset_h:.3f}c+o0.15c",
-        box="+gwhite+p0.6p,black",
-    ):
+    # No backing box and no border: the continent sits straight on the map,
+    # with the ocean left transparent.
+    with fig.inset(position=f"jTL+w{inset_w}c/{inset_h:.3f}c+o0.15c"):
         # Drawn in projected kilometres rather than with `coast`, so the
         # BedMachine mask can be imaged directly and the ice shelves are a
         # distinct tone rather than being merged into the coastline.
         inset_proj = f"X{inset_w}c/{inset_h:.3f}c"
         mask = load_mask_full(ant_km)
+        mask = mask.where(mask != 0)            # ocean transparent
         # One flat colour per BedMachine mask class.
         classes = [
-            (0, "white"),      # ocean
             (1, "gray72"),     # ice-free land
             (2, "gray88"),     # grounded ice
             (3, "#9ecae1"),    # floating ice shelf
@@ -448,16 +453,30 @@ def main() -> None:
                 fh.write(f"{value - 0.5} {colour} {value + 0.5} {colour}\n")
         fig.grdimage(grid=mask, region=ant_km, projection=inset_proj,
                      cmap=str(maskcpt), nan_transparent=True, frame=["+n"])
+        # Greene's 2021 coastline, ice-shelf fronts included, gives the
+        # continent a crisp edge against the map behind it.
+        for cx, cy in load_front():
+            fig.plot(x=cx, y=cy, pen="0.25p,gray25", region=ant_km, projection=inset_proj)
         fig.plot(x=[x0, x1, x1, x0, x0], y=[y0, y0, y1, y1, y0],
-                 pen=f"1.0p,{style.CATEGORICAL[0]}",
-                 region=ant_km, projection=inset_proj)
-        # The mask is imaged to the panel edge, so the inset border is redrawn
-        # over it to stay continuous on all four sides.
-        ax0, ax1, ay0, ay1 = ant_km
-        fig.plot(
-            x=[ax0, ax1, ax1, ax0, ax0], y=[ay0, ay0, ay1, ay1, ay0],
-            pen="0.6p,black", region=ant_km, projection=inset_proj,
-        )
+                 pen="1.0p,black", region=ant_km, projection=inset_proj)
+
+    # ------------------------------------------------ legend under the map
+    # One row across the whole figure (map and colour bar), small, below the
+    # meridian labels; the survey dates are in the caption.  The domain
+    # outline is keyed only when the mesh extract supplied one.
+    entries = [
+        ("ramp", (GL_RAMP, "1.4p"), "grounding zone"),
+        ("ramp", (FRONT_RAMP, "1.4p"), "ice front"),
+        *([("line", DOMAIN_PEN, "model domain")] if domain else []),
+        ("symbol", (SITE_STYLE, SITE_COLOR, SITE_PEN), "ApRES stations"),
+        # No figure number: the paper orders the figures differently from these
+        # scripts, so the caption names the figure the box outlines.
+        ("symbol", ("s0.28c", None, "1.0p,black"), "extent of station maps"),
+    ]
+    legend_w = WIDTH_CM + 2 * LEGEND_OVERHANG_CM
+    legend_h = style.gmt_legend_height(entries, width_cm=legend_w, font_pt=LEGEND_PT)
+    fig.shift_origin(xshift=f"-{LEGEND_OVERHANG_CM}c", yshift=f"-{legend_h + 0.55:.3f}c")
+    style.gmt_top_legend(fig, entries, width_cm=legend_w, frame=False, font_pt=LEGEND_PT)
 
     style.gmt_save(fig, paths.FIGURES / "fig01_overview.png")
 

@@ -1,12 +1,16 @@
 """Figure 2 - the along-flow section of the repeat ApRES survey.
 
-Two panels sharing a distance axis.  The upper panel is the return
+Three panels sharing a distance axis.  The upper panel is the return
 signal-to-noise ratio from the 2022-2023 acquisitions, which documents how deep
-the radar sees and therefore how deep layers can be tracked.  The lower panel
+the radar sees and therefore how deep layers can be tracked.  The middle panel
 is the vertical strain rate, dw/dz, on a diverging ramp centred on zero so the
-along-flow sign reversal is the thing the eye lands on.
+along-flow sign reversal is the thing the eye lands on.  The lower panel is the
+acoustic impedance of the bed from the vibroseismic section driven along the
+same flowline (Zeising et al., 2026; seismic.py), with its uncertainty, over
+the soft, intermediate and hard bed classes of that paper, so the reader can
+set the deformation above against the bed below.
 
-The lower panel shows the strain rate rather than the vertical velocity it was
+The middle panel shows the strain rate rather than the vertical velocity it was
 differentiated from.  w(z) is referenced to the shallowest tracked segment at
 each site, so its absolute value carries that arbitrary choice and is not
 comparable between sites; its depth gradient is, and it is the gradient that
@@ -56,8 +60,16 @@ import matplotlib.pyplot as plt  # noqa: E402
 from matplotlib.colors import Normalize  # noqa: E402
 
 import paths  # noqa: E402
+import seismic  # noqa: E402
 import style  # noqa: E402
 import surface  # noqa: E402
+
+# Bed classes under the impedance points: light tints that stay clear of the
+# strain-rate ramp above, labelled in the panel rather than in a legend.
+BED_CLASS_FILL = ("#d8dde5", "#ececec", "#efe4d0")      # soft, intermediate, hard
+BED_CLASS_LABEL = ("soft", "intermediate", "hard")
+ZB_AXIS_MAX = 8.0                                        # 10^6 kg m^-2 s^-1
+SPAN_PAD_KM = 1.0                                        # axis margin past the end stations
 
 COLUMN_WIDTH_KM = 0.55   # drawn half-width of each site column
 DEPTH_STEP_M = 10.0      # vertical resampling of the power profile
@@ -105,11 +117,13 @@ def main() -> None:
     bed_bm = pairs["bm_bed_m"].values
     dist = pairs["distance_km"].values
 
-    fig = plt.figure(figsize=(style.TWO_COL, 0.58 * style.TWO_COL))
-    gs = fig.add_gridspec(2, 2, width_ratios=[1.0, 0.018], wspace=0.03, hspace=0.10,
-                          left=0.08, right=0.92, top=0.90, bottom=0.10)
+    fig = plt.figure(figsize=(style.TWO_COL, 0.78 * style.TWO_COL))
+    gs = fig.add_gridspec(3, 2, width_ratios=[1.0, 0.018], height_ratios=[1.0, 1.0, 0.55],
+                          wspace=0.03, hspace=0.10,
+                          left=0.08, right=0.92, top=0.975, bottom=0.075)
     axs = [fig.add_subplot(gs[0, 0])]
     axs.append(fig.add_subplot(gs[1, 0], sharex=axs[0]))
+    axs.append(fig.add_subplot(gs[2, 0], sharex=axs[0]))
     caxs = [fig.add_subplot(gs[0, 1]), fig.add_subplot(gs[1, 1])]
 
     # ---------------------------------------------------------------- (a) power
@@ -188,7 +202,7 @@ def main() -> None:
         rema_d, rema_z = dist, surface_bm
         surface_label = "ice surface (BedMachine v4)"
 
-    for ax, letter in zip(axs, "ab"):
+    for ax, letter in zip(axs[:2], "ab"):
         (h_surf,) = ax.plot(rema_d, rema_z, color=style.COLOR_SURFACE_LINE, lw=0.9,
                             zorder=5, label=surface_label)
         ax.set_ylabel("Elevation (m)")
@@ -201,9 +215,34 @@ def main() -> None:
     # the measurement rather than an overlay on it.
     (h_bed,) = axs[1].plot(dist, bed_bm, color=style.COLOR_BED_BEDMACHINE, lw=0.9,
                            ls=(0, (3, 2)), zorder=5, label="bed (BedMachine v4)")
-    axs[0].tick_params(labelbottom=False)
-    axs[1].set_xlabel("Distance along flow (km)")
-    style.top_legend(fig, [h_surf, h_bed], y=0.915)
+    # ------------------------------------------------- (c) bed impedance
+    # The seismic section runs on past the last ApRES station; the axis stays
+    # the survey's, so only the groups within it are drawn.
+    att = seismic.bed_attributes(pairs)
+    att = att[(att["distance_km"] >= dist.min() - SPAN_PAD_KM)
+              & (att["distance_km"] <= dist.max() + SPAN_PAD_KM)]
+    ax = axs[2]
+    zb_lo = min(1.0, float(np.floor((att["Zb"] - att["Zb_err"]).min())))
+    zb_hi = max(ZB_AXIS_MAX, float(np.ceil((att["Zb"] + att["Zb_err"]).max())))
+    bounds = (0.0, seismic.ZB_SOFT_MAX, seismic.ZB_HARD_MIN, zb_hi)
+    for lo, hi, fill, label in zip(bounds[:-1], bounds[1:], BED_CLASS_FILL, BED_CLASS_LABEL):
+        ax.axhspan(lo, hi, color=fill, lw=0, zorder=0)
+        # Labels sit outside the right spine, in the column the colour bars use
+        # on the rows above, so they never cover a measurement.
+        ax.text(1.008, 0.5 * (lo + hi), label, transform=ax.get_yaxis_transform(),
+                ha="left", va="center", fontsize=style.FS_TICK, color="0.35", zorder=1)
+    ax.errorbar(att["distance_km"], att["Zb"], yerr=att["Zb_err"], fmt="o", ms=2.2,
+                color=style.COLOR_SURFACE_LINE, ecolor="0.55", elinewidth=0.5, capsize=0,
+                zorder=3)
+    ax.set_ylim(zb_lo, zb_hi)
+    ax.set_ylabel("Bed impedance\n($10^{6}$ kg m$^{-2}$ s$^{-1}$)")
+    style.panel_letter(ax, "c", x=0.03, y=0.84)
+    axs[0].set_xlim(dist.min() - SPAN_PAD_KM, dist.max() + SPAN_PAD_KM)
+
+    for ax in axs[:2]:
+        ax.tick_params(labelbottom=False)
+    axs[2].set_xlabel("Distance along flow (km)")
+    # No legend: the caption names the solid surface and dashed bed lines.
 
     style.save(fig, paths.FIGURES / "fig02_section.png")
 

@@ -114,24 +114,25 @@ def main() -> None:
     ax.axhline(0.0, color=style.INK_MUTED, lw=0.6, zorder=1)
     ax.axvline(0.0, color=style.INK_MUTED, lw=0.6, zorder=1)
     ax.plot([-lim, lim], [-lim, lim], color=style.INK_MUTED, lw=0.9,
-            ls=(0, (4, 3)), zorder=2, label="1:1")
+            ls=(0, (4, 3)), zorder=2)
 
     ax.errorbar(
         k * x[good], k * y[good], yerr=k * yerr[good], xerr=k * xerr[good], fmt="none",
         ecolor="0.6", elinewidth=0.5, zorder=3,
     )
     ax.plot(k * x[good], k * y[good], ls="none", marker="D", ms=3.6, color=style.INK,
-            zorder=5, label=f"ApRES station ($n$ = {int(good.sum())})")
+            zorder=5)
 
     # Ordinary least squares, on the strain rates in 1/yr so the printed
-    # statistics do not depend on the plotting units.  The statistics go in
-    # the legend rather than in a text block.
+    # statistics do not depend on the plotting units.  The statistics are
+    # written inside the panel; the caption names the symbols and lines.
     if good.sum() >= 3:
         slope, intercept = np.polyfit(x[good], y[good], 1)
         r = np.corrcoef(x[good], y[good])[0, 1]
         xs = np.array([-lim, lim])
-        ax.plot(xs, slope * xs + k * intercept, color=style.CATEGORICAL[0], zorder=4,
-                label=f"fit: slope {slope:.2f}, $R^2$ = {r ** 2:.2f}")
+        ax.plot(xs, slope * xs + k * intercept, color=style.CATEGORICAL[0], zorder=4)
+        ax.text(0.04, 0.96, f"slope {slope:.2f}\n$R^2$ = {r ** 2:.2f}\n$n$ = {int(good.sum())}",
+                transform=ax.transAxes, ha="left", va="top", zorder=6)
         print(f"  slope={slope:+.3f} intercept={intercept:+.2e} "
               f"R2={r ** 2:.3f} n={int(good.sum())}")
         print(f"  median sigma_x={np.nanmedian(xerr[good]):.2e} "
@@ -143,14 +144,6 @@ def main() -> None:
     ax.set_xlabel(rf"Surface {style.EPS_ZZ} = $-\nabla\!\cdot\mathbf{{u}}$ ({style.STRAIN_UNIT})")
     ax.set_ylabel(rf"ApRES {style.EPS_ZZ}, {DEPTH_MIN_M:.0f}–{DEPTH_MAX_M:.0f} m mean "
                   rf"({style.STRAIN_UNIT})")
-    # Legend order: data, then the fit, then the reference line.
-    h, l = ax.get_legend_handles_labels()
-    order = [l.index(s) for s in l if s.startswith("ApRES")] + \
-            [l.index(s) for s in l if s.startswith("fit")] + [l.index("1:1")]
-    # Anchored to the top of the axes as drawn, which the equal aspect moves.
-    fig.canvas.draw()
-    style.top_legend(fig, [h[i] for i in order], ncol=1, y=ax.get_position().y1 + 0.015)
-
     style.save(fig, paths.FIGURES / "fig03_strain_regression.png")
 
 
