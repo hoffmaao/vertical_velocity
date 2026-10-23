@@ -625,10 +625,78 @@ def profile_picks(sites):
     return [int(np.flatnonzero(quarter == q)[np.argmax(gap[quarter == q])]) for q in range(4)]
 
 
+PICK_RING = ((0, 11), (0, -11), (8, 8), (-8, 8), (8, -8), (-8, -8), (11, 0), (-11, 0))
+
+
+def _clearance(c, segs, pts, rects):
+    r"""Smallest gap in display pixels between point ``c`` and the marks around it:
+    segments (a, b, half-width), points (p, radius) and rectangles (Bbox)."""
+    gap = np.inf
+    for a, b, hw in segs:
+        ab = b - a
+        t = np.clip(np.dot(c - a, ab) / max(float(np.dot(ab, ab)), 1e-12), 0.0, 1.0)
+        gap = min(gap, float(np.hypot(*(a + t * ab - c))) - hw)
+    for q, r in pts:
+        gap = min(gap, float(np.hypot(*(q - c))) - r)
+    for bb in rects:
+        gap = min(gap, float(np.hypot(max(bb.x0 - c[0], 0.0, c[0] - bb.x1),
+                                      max(bb.y0 - c[1], 0.0, c[1] - bb.y1))))
+    return gap
+
+
+def place_picks(fig, ax, picks, segs, pts):
+    r"""Mark each profile pick in panel (a) with a small dotted circle beside its own point.
+
+    ``picks`` are (letter, (x, y), fill) in data coordinates; ``segs`` (xy0, xy1, half-width
+    in points) and ``pts`` (xy, radius in points) are the marks drawn in ``ax``. Each circle
+    takes the first offset of PICK_RING, then of the same ring 1.3 times wider, that leaves a
+    point of air to every mark, the panel letter, the circles placed before it and the axes
+    edge; failing that, the offset with the most room. A short leader joins circle and point.
+    Returns the offsets chosen, in points."""
+    fig.canvas.draw()
+    px = fig.dpi / 72.0
+    to_px = ax.transData.transform
+    segs = [(to_px(a), to_px(b), hw * px) for a, b, hw in segs]
+    pts = [(to_px(q), r * px) for q, r in pts]
+    rects = [t.get_bbox_patch().get_window_extent() for t in ax.texts if t.get_bbox_patch()]
+    box = ax.get_window_extent()
+    ring = [(f * dx, f * dy) for f in (1.0, 1.3) for dx, dy in PICK_RING]
+    placed, chosen = [], []
+    for letter, xy, fill in picks:
+        ann = ax.annotate(letter, xy, xytext=ring[0], textcoords="offset points",
+                          ha="center", va="center", fontsize=fs.FS_TICK - 1.5, zorder=6,
+                          bbox=dict(boxstyle="circle,pad=0.18", facecolor=fill,
+                                    edgecolor=BLACK, lw=0.5, linestyle=(0, (1, 1.5))),
+                          arrowprops=dict(arrowstyle="-", color="0.3", lw=0.4, shrinkA=0,
+                                          shrinkB=2.5))
+        ann.set_in_layout(False)
+        fig.canvas.draw()
+        radius = 0.5 * ann.get_bbox_patch().get_window_extent().width
+        p = to_px(xy)
+
+        def room(off):
+            c = p + np.asarray(off) * px
+            if not (box.x0 + radius <= c[0] <= box.x1 - radius
+                    and box.y0 + radius <= c[1] <= box.y1 - radius):
+                return -np.inf
+            gaps = [_clearance(c, segs, pts, rects)]
+            gaps += [float(np.hypot(*(c - q))) - rq for q, rq in placed]
+            return min(gaps) - radius
+
+        rooms = [room(off) for off in ring]
+        fits = [off for off, r in zip(ring, rooms) if r >= px]
+        best = fits[0] if fits else ring[int(np.argmax(rooms))]
+        ann.xyann = best
+        placed.append((p + np.asarray(best) * px, radius))
+        chosen.append((letter, best))
+    return chosen
+
+
 def fig_apres(d, tri, area, n):
-    r"""Main-text Fig. 2: what the ApRES strain rates add. (a) Window-mean eps_zz along the
-    line, observed and from both MAPs; (b-e) full profiles at the station in each quarter of
-    the line where the two models differ most."""
+    r"""Main-text figure: what the ApRES strain rates add. (a) Window-mean eps_zz along the
+    line, observed and from both MAPs; (b-e) profiles at the station in each quarter of the
+    line where the two models differ most, each marked in (a) by a small circle beside its
+    point."""
     sites = apres_sites()
     fig = plt.figure(figsize=(fs.FULL, 5.0), layout="constrained")
     gs = fig.add_gridspec(2, 4, height_ratios=(1.0, 1.55))
@@ -647,7 +715,7 @@ def fig_apres(d, tri, area, n):
     top.set(xlabel="Distance along the ApRES line (km)", xlim=(-1.5, s_km.max() + 1.5),
             ylabel=rf"${EPS}$, 100$-$800 m mean" "\n" r"($10^{-3}$ yr$^{-1}$)")
     lo, hi = top.get_ylim()
-    top.set_ylim(lo, hi + 0.35 * (hi - lo))           # headroom for the letter and picks
+    top.set_ylim(lo, hi + 0.12 * (hi - lo))           # headroom for the panel letter
     fs.grid(top)
     fs.panel_letter(top, "a", x=0.022, y=0.86)
 
@@ -657,15 +725,9 @@ def fig_apres(d, tri, area, n):
     # One x range for all four profiles, wide enough for every assimilated sample and its sigma.
     xlim = 5 * np.ceil(1.08e3 * max(np.max(np.abs(sites[k]["used"][1]) + sites[k]["used"][2])
                                     for k in idx) / 5)
-    # Each pick is marked just above its own point by a small dotted circle in
-    # the profile panel's colour, smaller than the panel letters.
     for j, (ax, k) in enumerate(zip(axs, idx)):
         s = sites[k]
         letter = "bcde"[j]
-        top.annotate(letter, (s_km[k], obs[k, 0]), xytext=(0, 11), textcoords="offset points",
-                     ha="center", va="center", fontsize=fs.FS_TICK - 1.5, zorder=6,
-                     bbox=dict(boxstyle="circle,pad=0.18", facecolor=PICK_FILL[j],
-                               edgecolor="black", lw=0.5, linestyle=(0, (1, 1.5))))
         ax.axhspan(*WINDOW, color=GREY, alpha=0.15, lw=0, zorder=0)
         ax.plot(s["eps"] * 1e3, s["depth"], color="0.65", lw=0.4, zorder=1)
         du, eu, su = s["used"]
@@ -690,6 +752,17 @@ def fig_apres(d, tri, area, n):
                         Line2D([], [], color="0.65", lw=0.6, label="ApRES profile")]
                   + [model_key(m) for m in MODELS]
                   + [Patch(color=GREY, alpha=0.15, label="assimilated depths")], ncol=3)
+    # The picks are placed last, on the finished layout, beside their points in (a) and
+    # clear of the drawn marks: model lines and markers, observations and their bars.
+    segs = [((s_km[i], mods[m][i]), (s_km[i + 1], mods[m][i + 1]), 0.5 * fs.LW + 0.2)
+            for m in MODELS for i in range(len(s_km) - 1)]
+    segs += [((x, y - e), (x, y + e), 0.4) for x, (y, e) in zip(s_km, obs)]
+    segs.append(((s_km.min() - 5.0, 0.0), (s_km.max() + 5.0, 0.0), 0.5))
+    pts = [((x, y), 2.0) for x, y in zip(s_km, obs[:, 0])]
+    pts += [((s_km[i], mods[m][i]), 2.0) for m in MODELS for i in range(0, len(s_km), 4)]
+    picks = [("bcde"[j], (s_km[k], obs[k, 0]), PICK_FILL[j]) for j, k in enumerate(idx)]
+    for letter, off in place_picks(fig, top, picks, segs, pts):
+        print(f"  pick {letter}: offset {off[0]:+.1f}, {off[1]:+.1f} pt", flush=True)
     save(fig, "F_apres")
 
 
