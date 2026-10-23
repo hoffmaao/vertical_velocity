@@ -13,8 +13,9 @@ to these figure scripts and to PyGMT, so a value changed there changes here:
     the quantity (``figstyle.STYLES``, except the strain-rate and shear-share
     ramps below, which avoid the blue of Fig. 4's bed); Fig. 4's bed itself is
     a continuous hillshaded ramp under the banded symbols;
-  * panel letters in grey circles, one legend across the top (framed, except
-    in Fig. 1; Fig. 4 has none and keys its markers in the caption);
+  * panel letters in grey circles, and at most one legend: Fig. 1's is an
+    unframed row under the map, Fig. 5's is framed below the panels, and
+    Figs. 2-4 have none, their symbols keyed in the caption;
   * PNG and PDF written without timestamps, so an unchanged figure gives an
     empty git diff.
 """
