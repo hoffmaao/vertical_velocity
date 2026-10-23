@@ -104,6 +104,14 @@ def use_paper_style() -> None:
 grid = fs.grid
 panel_letter = fs.panel_letter
 top_legend = fs.top_legend
+
+
+def bottom_legend(fig, handles, ncol=None, y=0.0):
+    """One framed legend across the bottom of the figure, the counterpart of
+    figstyle.top_legend: its upper edge sits at figure fraction ``y``."""
+    return fig.legend(handles=handles, loc="upper center", bbox_to_anchor=(0.5, y),
+                      ncol=ncol or len(handles), frameon=True, handlelength=1.8,
+                      columnspacing=1.4, borderpad=0.4)
 num = fs.num
 nice = fs.nice
 bands = fs.bands
@@ -170,9 +178,32 @@ def gmt_cpt_bands(cmap: str, edges, path: str) -> str:
     return path
 
 
-def gmt_top_legend(fig, entries, *, width_cm: float, frame: bool = True) -> float:
+def _legend_layout(entries, width_cm: float, font_pt: float):
+    """Column widths and box size of a GMT legend at ``font_pt``; the symbol,
+    gap, padding and row sizes scale with the font."""
+    k = font_pt / FS
+    char_cm = 0.47 * font_pt / 72 * 2.54          # mean Times advance
+    dims = dict(sym=0.7 * k, gap=0.2 * k, pad=0.3 * k, col=0.55 * k, row=0.45 * k)
+    widths = [dims["sym"] + dims["gap"] + char_cm * len(_plain(lab)) for _, _, lab in entries]
+    for ncol in range(len(entries), 0, -1):
+        cols = [max(widths[c::ncol]) for c in range(ncol)]
+        box_w = sum(cols) + dims["col"] * (ncol - 1) + 2 * dims["pad"]
+        if box_w <= width_cm:
+            break
+    nrow = -(-len(entries) // ncol)
+    box_h = nrow * dims["row"] + 0.12
+    return ncol, cols, box_w, box_h, dims
+
+
+def gmt_legend_height(entries, *, width_cm: float, font_pt: float = FS) -> float:
+    """Height in cm that :func:`gmt_top_legend` will draw for ``entries``."""
+    return _legend_layout(entries, width_cm, font_pt)[3]
+
+
+def gmt_top_legend(fig, entries, *, width_cm: float, frame: bool = True,
+                   font_pt: float = FS) -> float:
     """One legend centred across the figure, as figstyle.top_legend; framed
-    unless ``frame`` is False.
+    unless ``frame`` is False, at ``font_pt`` (the paper text size by default).
 
     ``entries`` are (kind, spec, label): kind "symbol" with spec (style, fill,
     pen) (fill None for an open symbol), "line" with spec = pen, or "ramp"
@@ -184,20 +215,9 @@ def gmt_top_legend(fig, entries, *, width_cm: float, frame: bool = True) -> floa
     origin; returns its height in cm.  Draw it first and shift the origin down
     to the panels: PyGMT loses content when the origin is shifted up and back
     down again."""
-    char_cm = 0.47 * FS / 72 * 2.54          # mean Times advance at FS
-    sym_cm, gap_cm, pad_cm, col_cm, row_cm = 0.7, 0.2, 0.3, 0.55, 0.45
-    widths = [sym_cm + gap_cm + char_cm * len(_plain(lab)) for _, _, lab in entries]
-
-    def layout(ncol):
-        cols = [max(widths[c::ncol]) for c in range(ncol)]
-        return cols, sum(cols) + col_cm * (ncol - 1) + 2 * pad_cm
-
-    for ncol in range(len(entries), 0, -1):
-        cols, box_w = layout(ncol)
-        if box_w <= width_cm:
-            break
-    nrow = -(-len(entries) // ncol)
-    box_h = nrow * row_cm + 0.12
+    ncol, cols, box_w, box_h, dims = _legend_layout(entries, width_cm, font_pt)
+    sym_cm, gap_cm, pad_cm, col_cm, row_cm = (dims[k] for k in ("sym", "gap", "pad", "col", "row"))
+    font = f"{font_pt:g}p,{GMT_FONT},black"
     x0 = 0.5 * (width_cm - box_w)
     region = [0, width_cm, 0, box_h]
     proj = f"X{width_cm}c/{box_h}c"
@@ -224,7 +244,7 @@ def gmt_top_legend(fig, entries, *, width_cm: float, frame: bool = True) -> floa
         else:
             fig.plot(x=[x, x + sym_cm], y=[yc, yc], pen=spec, region=region,
                      projection=proj)
-        fig.text(x=[x + sym_cm + gap_cm], y=[yc], text=[label], font=GMT_TEXT,
+        fig.text(x=[x + sym_cm + gap_cm], y=[yc], text=[label], font=font,
                  justify="LM", region=region, projection=proj)
     return box_h
 
