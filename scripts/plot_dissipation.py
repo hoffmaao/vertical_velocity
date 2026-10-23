@@ -19,7 +19,7 @@ Floating ice is left blank on the maps: it has no bed term.  The maps carry the
 
 Writes figures/paper/F_dissipation.{png,pdf} and dissipation_numbers.json, which
 holds the partition in (c) and how concentrated the hybrid model's vertical-shear
-dissipation is on grounded ice (shear_concentration), the numbers the paper quotes.
+dissipation is on grounded ice (hybrid_shear_concentration), the numbers the paper quotes.
 """
 import json
 
