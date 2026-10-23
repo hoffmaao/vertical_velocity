@@ -120,7 +120,7 @@ def main() -> None:
     fig = plt.figure(figsize=(style.TWO_COL, 0.78 * style.TWO_COL))
     gs = fig.add_gridspec(3, 2, width_ratios=[1.0, 0.018], height_ratios=[1.0, 1.0, 0.55],
                           wspace=0.03, hspace=0.10,
-                          left=0.08, right=0.92, top=0.925, bottom=0.075)
+                          left=0.08, right=0.92, top=0.975, bottom=0.075)
     axs = [fig.add_subplot(gs[0, 0])]
     axs.append(fig.add_subplot(gs[1, 0], sharex=axs[0]))
     axs.append(fig.add_subplot(gs[2, 0], sharex=axs[0]))
@@ -242,7 +242,7 @@ def main() -> None:
     for ax in axs[:2]:
         ax.tick_params(labelbottom=False)
     axs[2].set_xlabel("Distance along flow (km)")
-    style.top_legend(fig, [h_surf, h_bed], y=0.935)
+    # No legend: the caption names the solid surface and dashed bed lines.
 
     style.save(fig, paths.FIGURES / "fig02_section.png")
 
