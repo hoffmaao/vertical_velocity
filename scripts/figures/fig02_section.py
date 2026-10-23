@@ -66,7 +66,7 @@ import surface  # noqa: E402
 
 # Bed classes under the impedance points: light tints that stay clear of the
 # strain-rate ramp above, labelled in the panel rather than in a legend.
-BED_CLASS_FILL = ("#efe4d0", "#ececec", "#d8dde5")      # soft, intermediate, hard
+BED_CLASS_FILL = ("#d8dde5", "#ececec", "#efe4d0")      # soft, intermediate, hard
 BED_CLASS_LABEL = ("soft", "intermediate", "hard")
 ZB_AXIS_MAX = 8.0                                        # 10^6 kg m^-2 s^-1
 SPAN_PAD_KM = 1.0                                        # axis margin past the end stations
