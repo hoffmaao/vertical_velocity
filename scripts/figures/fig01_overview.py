@@ -42,10 +42,13 @@ m/yr because the Thwaites trunk runs an order of magnitude faster than the
 fabric_anisotropy study's 400 m/yr ceiling and would otherwise saturate to a
 single colour across the whole grounding zone.
 
-The frame carries a graticule, parallels and meridians labelled where they
-leave the frame, and a scale bar.  Every symbol is keyed in one unframed
-legend in a single row under the map, and the locator inset sits top left
-without a backing box.  The map is drawn smaller than the text width so it
+The frame carries a graticule and a scale bar.  On this part of the polar
+stereographic plane the meridians run across the map and the parallels down
+it, so meridians are labelled along the left edge and parallels along the
+bottom; a line that reaches neither is drawn unlabelled.  Every symbol is
+keyed in one unframed legend in a single row centred under the map, and the
+locator inset sits top left without a backing box, the continent outlined by
+Greene's coastline.  The map is drawn smaller than the text width so it
 does not fill a page, with the site markers and lines sized up to match.
 
 Usage
@@ -87,9 +90,10 @@ DETAIL_PEN = "1.3p,black"
 # Graticule: parallels every degree, meridians every four degrees of
 # longitude (about 110 km at this latitude).
 GRATICULE_LATS = (-75, -76, -77, -78)
-# Legend: one row under map and colour bar, at a size that keeps it to one line.
+# Legend: one row centred under the map, at a size that keeps it to one line.
+# It is wider than the map, so it overhangs both sides by up to this much.
 LEGEND_PT = 6.5
-COLORBAR_BLOCK_CM = 2.6          # parallel labels, colour bar and its annotation
+LEGEND_OVERHANG_CM = 1.0
 GRATICULE_LONS = (-100, -104, -108, -112)
 
 # Black with a white rim.  The sites sit on the mid-range of the magma ramp,
@@ -406,7 +410,8 @@ def main() -> None:
 
     # ------------------------------------ graticule, frame and scale bar
     mapfurniture.graticule(fig, region=region, projection=proj,
-                           lats=GRATICULE_LATS, lons=GRATICULE_LONS)
+                           lats=GRATICULE_LATS, lons=GRATICULE_LONS,
+                           lat_edge="bottom", lon_edge="left")
     fig.plot(x=[x0, x1, x1, x0, x0], y=[y0, y0, y1, y1, y0], pen="0.6p,black",
              region=region, projection=proj, no_clip=True)
     mapfurniture.scalebar(fig, region=region, projection=proj, loc=(0.06, 0.05), halo=False)
@@ -419,8 +424,7 @@ def main() -> None:
             fh.write(f"{t}\ta\t10@+{t}@+\n")
         for e in edges[1:-1]:
             fh.write(f"{e:.6f}\tf\n")
-    # Offset past the parallel labels on the right edge of the frame.
-    style.gmt_colorbar(fig, cmap=speed_cpt, length_cm=0.88 * height_cm, offset="0.95c/0c",
+    style.gmt_colorbar(fig, cmap=speed_cpt, length_cm=0.88 * height_cm,
                        frame=[f"xc{tickfile}+lSurface speed (m yr@+{style.GMT_MINUS}1@+)"])
 
     # -------------------------------------------------------- locator inset
@@ -449,6 +453,10 @@ def main() -> None:
                 fh.write(f"{value - 0.5} {colour} {value + 0.5} {colour}\n")
         fig.grdimage(grid=mask, region=ant_km, projection=inset_proj,
                      cmap=str(maskcpt), nan_transparent=True, frame=["+n"])
+        # Greene's 2021 coastline, ice-shelf fronts included, gives the
+        # continent a crisp edge against the map behind it.
+        for cx, cy in load_front():
+            fig.plot(x=cx, y=cy, pen="0.25p,gray25", region=ant_km, projection=inset_proj)
         fig.plot(x=[x0, x1, x1, x0, x0], y=[y0, y0, y1, y1, y0],
                  pen="1.0p,black", region=ant_km, projection=inset_proj)
 
@@ -465,9 +473,9 @@ def main() -> None:
         # scripts, so the caption names the figure the box outlines.
         ("symbol", ("s0.28c", None, "1.0p,black"), "extent of station maps"),
     ]
-    legend_w = WIDTH_CM + COLORBAR_BLOCK_CM
+    legend_w = WIDTH_CM + 2 * LEGEND_OVERHANG_CM
     legend_h = style.gmt_legend_height(entries, width_cm=legend_w, font_pt=LEGEND_PT)
-    fig.shift_origin(yshift=f"-{legend_h + 0.55:.3f}c")
+    fig.shift_origin(xshift=f"-{LEGEND_OVERHANG_CM}c", yshift=f"-{legend_h + 0.55:.3f}c")
     style.gmt_top_legend(fig, entries, width_cm=legend_w, frame=False, font_pt=LEGEND_PT)
 
     style.gmt_save(fig, paths.FIGURES / "fig01_overview.png")

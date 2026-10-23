@@ -75,14 +75,16 @@ def _edge_crossings(x, y, region, edge):
     return out
 
 
-def graticule(fig, *, region, projection, lats, lons, pen="0.3p,gray45,2_2:0p",
-              epsg="EPSG:3031") -> None:
-    """Parallels and meridians over a map drawn in projected kilometres, each
-    labelled where it leaves the frame: parallels at the left edge, else the
-    right, else the top; meridians at the bottom edge, else the left, else
-    the top.  The bottom edge is kept for meridians so the two kinds of label
-    never collide there.  Labels sit just outside the frame, so leave room
-    for them beside, above and below the map.
+def graticule(fig, *, region, projection, lats, lons, lat_edge="bottom", lon_edge="left",
+              pen="0.3p,gray45,2_2:0p", epsg="EPSG:3031") -> None:
+    """Parallels and meridians over a map drawn in projected kilometres.
+
+    Parallels are labelled where they cross ``lat_edge`` and meridians where
+    they cross ``lon_edge``, just outside the frame, so each kind of label
+    reads along a single edge as on a conventional map; a line that never
+    reaches its edge is drawn but left unlabelled.  Which edges suit depends
+    on where the map sits on the polar stereographic plane, so the caller
+    chooses them and leaves room for the labels beside those edges.
 
     ``region`` is [x0, x1, y0, y1] in km of ``epsg``; ``lats`` and ``lons`` are
     in degrees, negative south and west."""
@@ -103,23 +105,21 @@ def graticule(fig, *, region, projection, lats, lons, pen="0.3p,gray45,2_2:0p",
     justify = {"left": "RM", "right": "LM", "bottom": "TC", "top": "BC"}
     offset = {"left": "-0.1c/0c", "right": "0.1c/0c", "bottom": "0c/-0.1c", "top": "0c/0.1c"}
 
-    def label(X, Y, text, edges):
-        for edge in edges:
-            hits = _edge_crossings(X, Y, region, edge)
-            if hits:
-                px, py = hits[0]
-                fig.text(x=[px], y=[py], text=[text], font=style.GMT_ANNOT,
-                         justify=justify[edge], offset=offset[edge], no_clip=True,
-                         region=region, projection=projection)
-                return
+    def label(X, Y, text, edge):
+        hits = _edge_crossings(X, Y, region, edge)
+        if hits:
+            px, py = hits[0]
+            fig.text(x=[px], y=[py], text=[text], font=style.GMT_ANNOT,
+                     justify=justify[edge], offset=offset[edge], no_clip=True,
+                     region=region, projection=projection)
 
     lon_dense = np.linspace(-180.0, 180.0, 3601)
     for lat in lats:
         X, Y = draw(lon_dense, np.full_like(lon_dense, float(lat)))
         hemi = "S" if lat < 0 else "N"
-        label(X, Y, f"{abs(lat):g}\\260{hemi}", ("left", "right", "top"))
+        label(X, Y, f"{abs(lat):g}\\260{hemi}", lat_edge)
     lat_dense = np.linspace(-90.0, -60.0, 1201)
     for lon in lons:
         X, Y = draw(np.full_like(lat_dense, float(lon)), lat_dense)
         hemi = "W" if lon < 0 else "E"
-        label(X, Y, f"{abs(lon):g}\\260{hemi}", ("bottom", "left", "top"))
+        label(X, Y, f"{abs(lon):g}\\260{hemi}", lon_edge)
