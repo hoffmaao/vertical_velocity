@@ -17,7 +17,9 @@ Floating ice is left blank on the maps: it has no bed term.  The maps carry the
 
     python scripts/plot_dissipation.py
 
-Writes figures/paper/F_dissipation.{png,pdf} and dissipation_numbers.json.
+Writes figures/paper/F_dissipation.{png,pdf} and dissipation_numbers.json, which
+holds the partition in (c) and how concentrated the hybrid model's vertical-shear
+dissipation is on grounded ice (hybrid_shear_concentration), the numbers the paper quotes.
 """
 import json
 
@@ -60,6 +62,22 @@ def to_nodes(tri_vals, cells, n_nodes):
     for j in range(3):
         np.add.at(out, cells[:, j], tri_vals / 3)
     return out
+
+
+def shear_concentration(cells, share=0.5):
+    r"""How concentrated the hybrid model's vertical-shear dissipation is.
+
+    ``cells`` holds per-cell powers (W) and areas (m^2) of grounded ice. Taking the cells in
+    order of vertical-shear power per unit area, returns the percentage of the area that
+    carries ``share`` of the shear power, and the basal frictional power per unit area
+    there and over all of it (W m^-2)."""
+    order = np.argsort(-cells["shear"] / cells["area"])
+    cum = np.cumsum(cells["shear"][order]) / cells["shear"].sum()
+    top = order[: int(np.searchsorted(cum, share)) + 1]
+    return dict(shear_share=share,
+                area_pct=100 * float(cells["area"][top].sum() / cells["area"].sum()),
+                bed_W_m2=float(cells["bed"][top].sum() / cells["area"][top].sum()),
+                bed_W_m2_grounded=float(cells["bed"].sum() / cells["area"].sum()))
 
 
 def main():
@@ -122,6 +140,8 @@ def main():
               loc="center left", bbox_to_anchor=(1.24, 0.5), frameon=False,
               handlelength=1.4, borderaxespad=0.0)
     pf.save(fig, "F_dissipation")
+    numbers["hybrid_shear_concentration"] = shear_concentration(
+        {k: part["hybrid"][k][grounded] for k in ("shear", "bed", "area")})
     json.dump(numbers, open(pf.OUT / "dissipation_numbers.json", "w"), indent=2)
     print(json.dumps(numbers, indent=2))
 
