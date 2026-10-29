@@ -98,6 +98,7 @@ numbers are not the paper's, so figure labels avoid numbers and the captions sup
 | Fig. 7 | `scripts/plot_dissipation.py` | `figures/paper/F_dissipation` |
 | Figs. S1-S8 | `scripts/paper_figures.py` (S1-S8) | `figures/paper/S*` |
 | Fig. S9 | `scripts/figures/fig03_strain_regression.py` | `figures/strain_pipeline/fig03_strain_regression` |
+| Fig. S10 | `scripts/figures/figS10_bed_link.py` | `figures/strain_pipeline/figS10_bed_link`, `results/vertical_velocity/bed_link.json` |
 
 ```
 scripts/run_pipeline.sh            all stages below, in order (env: PY_ANALYSIS, PY_FIGURES, JOBS)

@@ -107,6 +107,13 @@ MODEL_EXTRACT = _env_path(
     "MODEL_EXTRACT", str(ROOT / "results" / "paper" / "extract_ssa.npz")
 )
 
+# Per-cell basal frictional power of the velocity-only SSA inversion, written by
+# dissipation_partition.py; Fig. S10 divides it by the sliding speed for the basal
+# shear stress at each station.
+MODEL_DISSIPATION = _env_path(
+    "MODEL_DISSIPATION", str(ROOT / "results" / "paper" / "dissipation_ssa.npz")
+)
+
 # Period the repeat ApRES survey spans, used to select dated boundary products.
 SURVEY_START = "2022-10-01"
 SURVEY_END = "2024-03-01"

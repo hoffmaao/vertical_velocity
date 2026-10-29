@@ -46,6 +46,7 @@ run "$PY_FIGURES" scripts/figures/fig02_section.py
 run "$PY_FIGURES" scripts/figures/fig03_strain_regression.py
 run "$PY_FIGURES" scripts/figures/fig04_map.py
 run "$PY_FIGURES" scripts/figures/fig05_legendre.py
+run "$PY_FIGURES" scripts/figures/figS10_bed_link.py
 
 echo
 echo "figures written to figures/strain_pipeline/"
