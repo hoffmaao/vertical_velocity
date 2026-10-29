@@ -110,9 +110,10 @@ scripts/compute_strain_rates.py        -> results/vertical_velocity/strain_profi
 scripts/compute_surface_strain.py      ASE annual velocity mosaics -> results/sites/surface_strain.csv
 scripts/fit_legendre.py                -> results/vertical_velocity/legendre_fits.csv
 scripts/figures/fig0{1..5}_*.py        -> figures/strain_pipeline/fig0N_*.{png,pdf} (PyGMT for Figs. 1 and 4)
+scripts/figures/figS10_bed_link.py     -> figures/strain_pipeline/figS10_bed_link.{png,pdf}, results/vertical_velocity/bed_link.json
 ```
 
-The five figures follow the paper's figure style (`scripts/figstyle.py`, after Morrow et
+These figures follow the paper's figure style (`scripts/figstyle.py`, after Morrow et
 al. 2026) through `scripts/figures/style.py`, which also carries it over to PyGMT; its
 module docstring lists the conventions and where these figures depart from them.
 
@@ -120,4 +121,6 @@ External datasets (BedMachine, MEaSUREs, ASE velocity mosaics, REMA, MOA, coastl
 IceLines, grounding lines, the vibroseismic bed attributes) are located through
 `scripts/paths.py`, with an environment variable override for each. Fig. 1 also outlines
 the model domain from the mesh extract written by `paper_extract.py` (`MODEL_EXTRACT`,
-default `results/paper/extract_ssa.npz`).
+default `results/paper/extract_ssa.npz`); Fig. S10 reads it too, with the basal
+frictional power from `dissipation_partition.py` (`MODEL_DISSIPATION`, default
+`results/paper/dissipation_ssa.npz`).
