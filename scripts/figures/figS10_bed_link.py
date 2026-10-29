@@ -4,7 +4,8 @@ For each fitted station on the survey line (the 73 transect stations and LTG)
 this tests three relations the paper's discussion leans on:
 
   (a)  depth-averaged vertical strain rate against the slope of the bed along
-       flow (BedMachine v4.1 along the station path, smoothed over 2 km);
+       flow (BedMachine v4.1 on each station's own profile along the survey
+       direction, smoothed over 2 km, so no sampling path leaves the line);
   (b)  shear share S against the basal shear stress of the velocity-only (SSA)
        inversion, which never saw the ApRES data, so the relation is not built
        into the inversion that assimilates them;
@@ -58,7 +59,8 @@ import paths  # noqa: E402
 import seismic  # noqa: E402
 import style  # noqa: E402
 
-PATH_STEP_KM = 0.1          # sampling of the bed along the station path
+PATH_STEP_KM = 0.1          # sampling of the bed along each station's profile
+PROFILE_HALF_KM = 10.0      # half-length of each station's bed profile
 BED_SMOOTH_KM = 2.0         # Gaussian sigma for the bed before differencing, about H
 IMPEDANCE_RADIUS_KM = 0.5   # vibroseismic groups averaged around each station
 MIN_SHIFT = 5               # smallest circular shift, in stations
@@ -85,24 +87,42 @@ def bed_impedance(df: pd.DataFrame) -> np.ndarray:
     return out
 
 
+def survey_direction(df: pd.DataFrame) -> np.ndarray:
+    """Unit vector of the survey line in polar stereographic x/y, towards increasing distance.
+
+    The principal axis of the transect stations' positions (LTG, off the line, is left out)."""
+    tr = df[df["site_type"] != "continuous"]
+    xy = np.column_stack([tr["x_ps_m"].values, tr["y_ps_m"].values])
+    xy = xy - xy.mean(axis=0)
+    axis = np.linalg.svd(xy, full_matrices=False)[2][0]
+    if np.corrcoef(xy @ axis, tr["distance_km"].values)[0, 1] < 0:
+        axis = -axis
+    return axis
+
+
 def bed_along_line(df: pd.DataFrame):
     """BedMachine bed elevation (m) and its slope along flow (dimensionless) at each station.
 
-    The bed is sampled every PATH_STEP_KM along the path through the stations and
-    smoothed with a Gaussian of BED_SMOOTH_KM before differencing.  Distance grows
-    inland and the ice flows towards smaller distances, so the slope along flow is
-    minus the slope with distance: positive where the bed rises in the direction of
-    flow (a stoss slope)."""
+    Each station, LTG included at its own position, gets its own bed profile along the
+    survey direction, from -PROFILE_HALF_KM to +PROFILE_HALF_KM every PATH_STEP_KM and
+    centred on the station, so no sampling path leaves the line.  The profile is
+    smoothed with a Gaussian of BED_SMOOTH_KM before differencing and read at its
+    centre.  Distance grows inland and the ice flows towards smaller distances, so the
+    slope along flow is minus the slope with distance: positive where the bed rises in
+    the direction of flow (a stoss slope)."""
     import xarray as xr
 
-    s, x, y = (df[k].values for k in ("distance_km", "x_ps_m", "y_ps_m"))
-    sd = np.arange(s.min(), s.max() + 1e-9, PATH_STEP_KM)
+    axis = survey_direction(df)
+    offset = np.arange(-PROFILE_HALF_KM, PROFILE_HALF_KM + 1e-9, PATH_STEP_KM) * 1000.0
+    centre = len(offset) // 2
+    x = df["x_ps_m"].values[:, None] + offset[None, :] * axis[0]
+    y = df["y_ps_m"].values[:, None] + offset[None, :] * axis[1]
     ds = xr.open_dataset(paths.require(paths.BEDMACHINE, "BedMachine Antarctica"))
-    bed = ds["bed"].interp(x=xr.DataArray(np.interp(sd, s, x)),
-                           y=xr.DataArray(np.interp(sd, s, y))).values.astype(float)
-    bed = gaussian_filter1d(bed, BED_SMOOTH_KM / PATH_STEP_KM)
-    slope = -np.gradient(bed, sd * 1000.0)
-    return np.interp(s, sd, bed), np.interp(s, sd, slope)
+    bed = ds["bed"].interp(x=xr.DataArray(x, dims=("station", "offset")),
+                           y=xr.DataArray(y, dims=("station", "offset"))).values.astype(float)
+    bed = gaussian_filter1d(bed, BED_SMOOTH_KM / PATH_STEP_KM, axis=1, mode="nearest")
+    slope = -np.gradient(bed, offset, axis=1)
+    return bed[:, centre], slope[:, centre]
 
 
 def ssa_basal_shear_stress(df: pd.DataFrame) -> np.ndarray:
@@ -116,8 +136,9 @@ def ssa_basal_shear_stress(df: pd.DataFrame) -> np.ndarray:
     centre = ex["xy"][cells].mean(axis=1)
     tree = cKDTree(centre)
     dist, k = tree.query(dz["xy"])
-    if dist.max() > 1.0:
-        raise ValueError("dissipation cells do not match the extract's mesh")
+    if len(dz["xy"]) != len(cells) or np.unique(k).size != len(cells) or dist.max() >= 1.0:
+        raise ValueError(f"dissipation cells in {paths.MODEL_DISSIPATION} do not match "
+                         f"the mesh cells in {paths.MODEL_EXTRACT} one to one")
     power = np.empty(len(cells))
     power[k] = dz["bed"] / dz["area"]                                  # W m^-2
     speed = ex["speed_mod"][cells].mean(axis=1) / SECONDS_PER_YEAR      # m s^-1
