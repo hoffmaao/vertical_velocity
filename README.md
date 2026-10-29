@@ -98,6 +98,7 @@ numbers are not the paper's, so figure labels avoid numbers and the captions sup
 | Fig. 7 | `scripts/plot_dissipation.py` | `figures/paper/F_dissipation` |
 | Figs. S1-S8 | `scripts/paper_figures.py` (S1-S8) | `figures/paper/S*` |
 | Fig. S9 | `scripts/figures/fig03_strain_regression.py` | `figures/strain_pipeline/fig03_strain_regression` |
+| Fig. S10 | `scripts/figures/figS10_bed_link.py` | `figures/strain_pipeline/figS10_bed_link`, `results/vertical_velocity/bed_link.json`; needs `results/paper/extract_ssa.npz` (`paper_extract.py`) and `results/paper/dissipation_ssa.npz` (`dissipation_partition.py`), Firedrake scripts outside `run_pipeline.sh` |
 
 ```
 scripts/run_pipeline.sh            all stages below, in order (env: PY_ANALYSIS, PY_FIGURES, JOBS)
@@ -109,9 +110,10 @@ scripts/compute_strain_rates.py        -> results/vertical_velocity/strain_profi
 scripts/compute_surface_strain.py      ASE annual velocity mosaics -> results/sites/surface_strain.csv
 scripts/fit_legendre.py                -> results/vertical_velocity/legendre_fits.csv
 scripts/figures/fig0{1..5}_*.py        -> figures/strain_pipeline/fig0N_*.{png,pdf} (PyGMT for Figs. 1 and 4)
+scripts/figures/figS10_bed_link.py     -> figures/strain_pipeline/figS10_bed_link.{png,pdf}, results/vertical_velocity/bed_link.json
 ```
 
-The five figures follow the paper's figure style (`scripts/figstyle.py`, after Morrow et
+These figures follow the paper's figure style (`scripts/figstyle.py`, after Morrow et
 al. 2026) through `scripts/figures/style.py`, which also carries it over to PyGMT; its
 module docstring lists the conventions and where these figures depart from them.
 
@@ -119,4 +121,6 @@ External datasets (BedMachine, MEaSUREs, ASE velocity mosaics, REMA, MOA, coastl
 IceLines, grounding lines, the vibroseismic bed attributes) are located through
 `scripts/paths.py`, with an environment variable override for each. Fig. 1 also outlines
 the model domain from the mesh extract written by `paper_extract.py` (`MODEL_EXTRACT`,
-default `results/paper/extract_ssa.npz`).
+default `results/paper/extract_ssa.npz`); Fig. S10 reads it too, with the basal
+frictional power from `dissipation_partition.py` (`MODEL_DISSIPATION`, default
+`results/paper/dissipation_ssa.npz`).
