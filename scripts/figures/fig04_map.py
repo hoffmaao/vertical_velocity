@@ -249,7 +249,10 @@ def draw_panel(fig, *, bed, region, proj, values, cpt, x, y,
         mapfurniture.scalebar(fig, region=region, projection=proj, loc=(0.03, 0.70))
 
 
-def main() -> None:
+def main(letters: str = "ab", out: Path | None = None) -> None:
+    """Draw the two map panels with ``letters`` and save them to ``out`` (PNG path; a PDF
+    is written beside it), by default figures/strain_pipeline/fig04_map.png.  The paper's
+    Fig. 3 (fig_legendre_map.py) draws them again as panels e-f under the Legendre panels."""
     import pygmt
 
     df = data.load_summary()
@@ -313,7 +316,7 @@ def main() -> None:
     draw_panel(
         fig, bed=image, region=region, proj=proj, values=eps,
         cpt=eps_cpt, x=x, y=y, resolved=resolved, stations_xy=(sx, sy),
-        stations_v=eps_st, stations_resolved=st_resolved, letter="a",
+        stations_v=eps_st, stations_resolved=st_resolved, letter=letters[0],
         row_label=f"Depth-averaged {style.GMT_EPS_ZZ}", scale=True,
     )
     style.gmt_colorbar(fig, cmap=eps_cpt, length_cm=cbar_len,
@@ -326,7 +329,7 @@ def main() -> None:
         fig, bed=image, region=region, proj=proj, values=ratio,
         cpt=shear_cpt, x=x, y=y, resolved=resolved, stations_xy=(sx, sy),
         stations_v=stations["shear_share"].values, stations_resolved=st_resolved,
-        letter="b",
+        letter=letters[1],
         row_label="Shear share",
     )
     # The bands span 0 to the rounded-up maximum, so nothing overflows them.
@@ -340,7 +343,7 @@ def main() -> None:
                        offset="0c/0.45c", horizontal=True, extend=False,
                        frame=["xa200f100+lBed elevation, BedMachine v4 (m)"])
 
-    style.gmt_save(fig, paths.FIGURES / "fig04_map.png")
+    style.gmt_save(fig, out or paths.FIGURES / "fig04_map.png")
 
 
 if __name__ == "__main__":
