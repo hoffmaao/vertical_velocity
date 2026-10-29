@@ -78,8 +78,8 @@ no longer uses these seven; its figures are listed below.
 
 ### Figures currently in the manuscript (ApRES strain pipeline)
 
-The manuscript in hoffmaao/paper-thwaites-nonlinear-deformation still uses the five
-figures in `figures/strain_pipeline/` (`fig01_overview` ... `fig05_legendre`), not the
+The manuscript in hoffmaao/paper-thwaites-nonlinear-deformation still uses the
+figures in `figures/strain_pipeline/` (tabled below), not the
 output of `manuscript_figures.py`. They come from a separate pipeline that processes the
 raw repeat bursts itself, with the `apres/` package, instead of reading
 `data/apres_legendre_fits.h5`. Its Legendre fit (`fit_legendre.py`, `apres/legendre.py`)
