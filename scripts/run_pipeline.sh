@@ -46,6 +46,8 @@ run "$PY_FIGURES" scripts/figures/fig02_section.py
 run "$PY_FIGURES" scripts/figures/fig03_strain_regression.py
 run "$PY_FIGURES" scripts/figures/fig04_map.py
 run "$PY_FIGURES" scripts/figures/fig05_legendre.py
+# Paper Fig. 3: the two above, redrawn as panels a-d and e-f and stacked (needs pdftex, pdfinfo, pdftoppm).
+run "$PY_FIGURES" scripts/figures/fig_legendre_map.py
 # Fig. S10 also needs results/paper/extract_ssa.npz (paper_extract.py, MODEL_EXTRACT) and
 # results/paper/dissipation_ssa.npz (dissipation_partition.py, MODEL_DISSIPATION), both
 # Firedrake scripts outside this pipeline.

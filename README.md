@@ -78,8 +78,8 @@ no longer uses these seven; its figures are listed below.
 
 ### Figures currently in the manuscript (ApRES strain pipeline)
 
-The manuscript in hoffmaao/paper-thwaites-nonlinear-deformation still uses the five
-figures in `figures/strain_pipeline/` (`fig01_overview` ... `fig05_legendre`), not the
+The manuscript in hoffmaao/paper-thwaites-nonlinear-deformation still uses the
+figures in `figures/strain_pipeline/` (tabled below), not the
 output of `manuscript_figures.py`. They come from a separate pipeline that processes the
 raw repeat bursts itself, with the `apres/` package, instead of reading
 `data/apres_legendre_fits.h5`. Its Legendre fit (`fit_legendre.py`, `apres/legendre.py`)
@@ -91,11 +91,10 @@ numbers are not the paper's, so figure labels avoid numbers and the captions sup
 |---|---|---|
 | Fig. 1 | `scripts/figures/fig01_overview.py` | `figures/strain_pipeline/fig01_overview` |
 | Fig. 2 | `scripts/figures/fig02_section.py` | `figures/strain_pipeline/fig02_section` |
-| Fig. 3 | `scripts/figures/fig05_legendre.py` | `figures/strain_pipeline/fig05_legendre` |
-| Fig. 4 | `scripts/figures/fig04_map.py` | `figures/strain_pipeline/fig04_map` |
-| Fig. 5 | `scripts/paper_figures.py` (F_apres) | `figures/paper/F_apres` |
-| Fig. 6 | `scripts/paper_figures.py` (F_retreat) | `figures/paper/F_retreat_rates` |
-| Fig. 7 | `scripts/plot_dissipation.py` | `figures/paper/F_dissipation` |
+| Fig. 3 | `scripts/figures/fig_legendre_map.py`: `fig05_legendre.py` as panels a-d over `fig04_map.py` as e-f | `figures/strain_pipeline/fig_legendre_map` |
+| Fig. 4 | `scripts/paper_figures.py` (F_apres) | `figures/paper/F_apres` |
+| Fig. 5 | `scripts/paper_figures.py` (F_retreat) | `figures/paper/F_retreat_rates` |
+| (dissipation, out of the paper for now) | `scripts/plot_dissipation.py` | `figures/paper/F_dissipation` |
 | Figs. S1-S8 | `scripts/paper_figures.py` (S1-S8) | `figures/paper/S*` |
 | Fig. S9 | `scripts/figures/fig03_strain_regression.py` | `figures/strain_pipeline/fig03_strain_regression` |
 | Fig. S10 | `scripts/figures/figS10_bed_link.py` | `figures/strain_pipeline/figS10_bed_link`, `results/vertical_velocity/bed_link.json`; needs `results/paper/extract_ssa.npz` (`paper_extract.py`) and `results/paper/dissipation_ssa.npz` (`dissipation_partition.py`), Firedrake scripts outside `run_pipeline.sh` |
@@ -110,6 +109,7 @@ scripts/compute_strain_rates.py        -> results/vertical_velocity/strain_profi
 scripts/compute_surface_strain.py      ASE annual velocity mosaics -> results/sites/surface_strain.csv
 scripts/fit_legendre.py                -> results/vertical_velocity/legendre_fits.csv
 scripts/figures/fig0{1..5}_*.py        -> figures/strain_pipeline/fig0N_*.{png,pdf} (PyGMT for Figs. 1 and 4)
+scripts/figures/fig_legendre_map.py    -> figures/strain_pipeline/fig_legendre_map.{png,pdf} (paper Fig. 3: fig05 over fig04)
 scripts/figures/figS10_bed_link.py     -> figures/strain_pipeline/figS10_bed_link.{png,pdf}, results/vertical_velocity/bed_link.json
 ```
 

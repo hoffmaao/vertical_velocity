@@ -66,7 +66,10 @@ def choose_example(df):
     return ranked.sort_values(["_gap", "residual_rms_m_yr"], kind="stable").iloc[0]
 
 
-def main() -> None:
+def main(letters: str = "abcd", out: Path | None = None) -> None:
+    """Draw the figure with panel ``letters`` and save it to ``out`` (PNG path; a PDF is
+    written beside it), by default figures/strain_pipeline/fig05_legendre.png.  The
+    paper's Fig. 3 (fig_legendre_map.py) draws it again as panels a-d above the maps."""
     style.use_paper_style()
 
     df = data.load_summary()
@@ -173,7 +176,7 @@ def main() -> None:
     ax.set_xlabel("Polynomial degree $n$")
     ax.set_ylabel(r"$|c_n|$ (m yr$^{-1}$)")
 
-    for a, letter in zip(axs, "abcd"):
+    for a, letter in zip(axs, letters):
         a.margins(y=0.02)
         style.panel_letter(a, letter, x=0.13, y=0.92)
 
@@ -184,7 +187,7 @@ def main() -> None:
 
     print(f"example site: {site} at {row['distance_km']:.1f} km, "
           f"A_s={row['shear_amplitude']:.3f}, A_p={row['plug_amplitude']:.3f} m/yr")
-    style.save(fig, paths.FIGURES / "fig05_legendre.png")
+    style.save(fig, out or paths.FIGURES / "fig05_legendre.png")
 
 
 if __name__ == "__main__":
