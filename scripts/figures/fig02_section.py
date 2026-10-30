@@ -15,8 +15,9 @@ differentiated from.  w(z) is referenced to the shallowest tracked segment at
 each site, so its absolute value carries that arbitrary choice and is not
 comparable between sites; its depth gradient is, and it is the gradient that
 enters the incompressibility condition and therefore the inferred horizontal
-shear.  The velocity profiles themselves appear in Figure 4 and in the
-supplement.
+shear.  A velocity profile and its Legendre fits are drawn by
+fig05_legendre.py, the upper panels of the paper's Legendre figure composed by
+fig_legendre_map.py.
 
 The upper panel shows power referenced to each acquisition's own receiver noise
 floor rather than raw returned power.  Attenuator settings were changed
@@ -30,8 +31,7 @@ tracked below.
 Only the ice surface is drawn over the return-power panel.  A modelled bed laid over a
 measured radargram invites the reader to check one against the other, which is
 not what that panel is for; the bed appears below it, where it provides
-the geometric context for the strain rate, and the comparison between the
-ApRES picks and BedMachine is made directly in Figure 3.
+the geometric context for the strain rate.
 
 Each site is drawn as a column of constant width in distance, which is what
 the data are: independent point occupations, not a continuously sampled line.

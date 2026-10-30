@@ -1,4 +1,5 @@
-"""Figure style for the ApRES pipeline figures (GRL manuscript Figs. 1-5).
+"""Figure style for the ApRES pipeline figures (GRL manuscript Figs. 1-3, S9
+and S10; fig_legendre_map.py composes fig05 over fig04 as Fig. 3).
 
 The paper's figures all follow one grammar, after Morrow, Ghelichkhan &
 Kramer (2026), defined once in ``scripts/figstyle.py``.  This module adapts it
@@ -11,11 +12,11 @@ to these figure scripts and to PyGMT, so a value changed there changes here:
   * series in a fixed colour and marker order, never cycled;
   * fields in ``N_LEVELS`` discrete colour bands, with the colormap chosen by
     the quantity (``figstyle.STYLES``, except the strain-rate and shear-share
-    ramps below, which avoid the blue of Fig. 4's bed); Fig. 4's bed itself is
-    a continuous hillshaded ramp under the banded symbols;
-  * panel letters in grey circles, and at most one legend: Fig. 1's is an
-    unframed row under the map, Fig. 5's is framed below the panels, and
-    Figs. 2-4 have none, their symbols keyed in the caption;
+    ramps below, which avoid the blue of fig04_map's bed); fig04_map's bed
+    itself is a continuous hillshaded ramp under the banded symbols;
+  * panel letters in grey circles, and at most one legend: fig01_overview's is
+    an unframed row under the map, fig05_legendre's is framed below the panels,
+    and fig02-fig04 have none, their symbols keyed in the caption;
   * PNG and PDF written without timestamps, so an unchanged figure gives an
     empty git diff.
 """
@@ -44,11 +45,12 @@ N_LEVELS = fs.N_LEVELS
 # --------------------------------------------------------------------- colour
 SEQ_POWER = fs.STYLES["power"][0]        # radar return
 SEQ_SPEED = fs.STYLES["speed"][0]        # surface speed
-# The bed map (Fig. 4) is a bathymetric ramp under a faint hillshade, all blue
-# because the bed lies below sea level, so the quantities drawn over it avoid
-# blue: a purple-orange diverging ramp for strain rate (orange extending,
+# The bed map (fig04_map) is a bathymetric ramp under a faint hillshade, all
+# blue because the bed lies below sea level, so the quantities drawn over it
+# avoid blue: a purple-orange diverging ramp for strain rate (orange extending,
 # purple thinning, light grey at zero) and yellow-orange-red for shear share.
-# Fig. 2 uses the same strain ramp so the quantity reads the same everywhere.
+# fig02_section uses the same strain ramp so the quantity reads the same
+# everywhere.
 BED_CPT = "abyss"                        # GMT bathymetry ramp, deep navy to light blue
 SEQ_SHARE = "YlOrRd"                     # shear share
 DIV_VELOCITY = "PuOr_r"                  # strain rate, centred on zero
