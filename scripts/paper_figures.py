@@ -563,7 +563,7 @@ def locator(fig, ax, xy, rect=(0.13, 0.66, 0.24, 0.32)):
         sp.set_linewidth(0.6)
 
 
-# ── main text: ApRES profiles ───────────────────────────────────────────────
+# ── supporting information: ApRES profiles ──────────────────────────────────
 WINDOW = (100.0, 800.0)            # assimilated depth range (observations.DEPTH_MIN/MAX)
 # Muted pastel fills for the profile letters (b-e), repeated on their markers in (a) so
 # each profile can be found on the line. Kept clear of the model red and blue.

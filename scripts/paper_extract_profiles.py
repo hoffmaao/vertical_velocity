@@ -1,4 +1,4 @@
-r"""Modelled ApRES eps_zz depth profiles at the MAP, for the main-text profile figure.
+r"""Modelled ApRES eps_zz depth profiles at the MAP, for the supporting profile figure (Fig. S11).
 
 ``paper_extract.py`` keeps the model only at the ~5 assimilated depths per
 station. This evaluates eps_zz = -(eps_xx + eps_yy) on a full zeta grid at every
