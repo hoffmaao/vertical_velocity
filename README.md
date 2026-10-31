@@ -14,7 +14,7 @@ approximation (SSA, plug flow).
 | Path          | Contents                                                                                        |
 |---------------|-------------------------------------------------------------------------------------------------|
 | `scripts/`    | All code: ApRES processing (`apres/`), mesh, inversion, L-curve, eigendecomposition, UQ, MISMIP+ synthetic tests |
-| `figures/`    | Generated figures (`strain_pipeline/`: the GRL manuscript's current Figs. 1-5, see below)          |
+| `figures/`    | Generated figures (`strain_pipeline/` and `paper/`: the GRL manuscript's figures, see below)      |
 | `output/logs/`| Run logs, grouped by stage (`prior`, `inversion`, `lcurve`, `eigendec`, `forward`, `mismip`)    |
 | `manuscript/` | Methods text and bibliography                                                                   |
 | `docs/`       | Geometry-consistency rule (`geometry_consistency.md`); notes on tlm_adjoint / pyadjoint Hessian issues |
@@ -92,12 +92,13 @@ numbers are not the paper's, so figure labels avoid numbers and the captions sup
 | Fig. 1 | `scripts/figures/fig01_overview.py` | `figures/strain_pipeline/fig01_overview` |
 | Fig. 2 | `scripts/figures/fig02_section.py` | `figures/strain_pipeline/fig02_section` |
 | Fig. 3 | `scripts/figures/fig_legendre_map.py`: `fig05_legendre.py` as panels a-d over `fig04_map.py` as e-f | `figures/strain_pipeline/fig_legendre_map` |
-| Fig. 4 | `scripts/paper_figures.py` (F_apres) | `figures/paper/F_apres` |
-| Fig. 5 | `scripts/paper_figures.py` (F_retreat) | `figures/paper/F_retreat_rates` |
+| Fig. 4 | `scripts/paper_figures.py` (F_retreat) | `figures/paper/F_retreat_rates` |
 | (dissipation, out of the paper for now) | `scripts/plot_dissipation.py` | `figures/paper/F_dissipation` |
 | Figs. S1-S8 | `scripts/paper_figures.py` (S1-S8) | `figures/paper/S*` |
 | Fig. S9 | `scripts/figures/fig03_strain_regression.py` | `figures/strain_pipeline/fig03_strain_regression` |
 | Fig. S10 | `scripts/figures/figS10_bed_link.py` | `figures/strain_pipeline/figS10_bed_link`, `results/vertical_velocity/bed_link.json`; needs `results/paper/extract_ssa.npz` (`paper_extract.py`) and `results/paper/dissipation_ssa.npz` (`dissipation_partition.py`), Firedrake scripts outside `run_pipeline.sh` |
+| Fig. S11 | `scripts/paper_figures.py` (F_apres) | `figures/paper/F_apres` |
+| Table S2 rows | `scripts/paper_figures.py` (F_retreat) | `figures/paper/retreat_rates_rows.tex` |
 
 ```
 scripts/run_pipeline.sh            all stages below, in order (env: PY_ANALYSIS, PY_FIGURES, JOBS)

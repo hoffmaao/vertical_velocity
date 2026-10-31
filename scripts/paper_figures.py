@@ -10,7 +10,7 @@ ELL 3 km, ISMIP7 CESM2-WACCM ssp585 from 2015, 50 yr).
 
 Writes figures/paper/<id>_<slug>.{png,pdf}:
   F_setting  setting        model domain, surface speed, bed and the ApRES line (main text)
-  F_apres    apres          ApRES eps_zz profiles against both models (main text)
+  F_apres    apres          ApRES eps_zz profiles against both models (supporting information)
   F_retreat  retreat_rates  5-yr VAF loss rate and sea-level contribution (main text)
   S1  summary        what the SSA / hybrid simulations and their UQ show
   S2  controls       MAP theta_A, theta_C and the hybrid - SSA difference
@@ -20,7 +20,7 @@ Writes figures/paper/<id>_<slug>.{png,pdf}:
   S6  trajectories   loss rate, melt and peak speed over 50 yr
   S7  grounding      speed, grounding line and thickness at 50 yr
   S8  spectrum       GN Hessian spectrum and how many modes the UQ needs
-and figures/paper/retreat_rates_rows.tex, the body of the main-text rate table.
+and figures/paper/retreat_rates_rows.tex, the body of the retreat-rate table (Table S2).
 
 Every visual choice comes from ``figstyle.py``, the Morrow et al. (2026)
 figure grammar the group's papers share; this file only decides what to show.
@@ -563,7 +563,7 @@ def locator(fig, ax, xy, rect=(0.13, 0.66, 0.24, 0.32)):
         sp.set_linewidth(0.6)
 
 
-# ── main text: ApRES profiles ───────────────────────────────────────────────
+# ── supporting information: ApRES profiles ──────────────────────────────────
 WINDOW = (100.0, 800.0)            # assimilated depth range (observations.DEPTH_MIN/MAX)
 # Muted pastel fills for the profile letters (b-e), repeated on their markers in (a) so
 # each profile can be found on the line. Kept clear of the model red and blue.
@@ -812,7 +812,7 @@ def write_rate_table(d):
     rows = []
     for i, t1 in enumerate(p["ssa"]["times"]):
         t0 = 0.0 if i == 0 else p["ssa"]["times"][i - 1]
-        cells = [f"{2015 + int(t0)}--{2015 + int(t1)}"]
+        cells = [f"{2015 + int(t0)}-{2015 + int(t1)}"]
         for m in MODELS:
             loss, s = -p[m]["rate_Gt_per_yr"][i], 2 * p[m]["sigma_post_rate"][i]
             cells.append(f"${loss:.1f} {pm} {s:.1f}$")
@@ -820,7 +820,7 @@ def write_rate_table(d):
             loss, s = -p[m]["rate_Gt_per_yr"][i], 2 * p[m]["sigma_post_rate"][i]
             cells.append(f"${loss / GT_PER_MM_SLE:.3f} {pm} {s / GT_PER_MM_SLE:.3f}$")
         rows.append(" & ".join(cells) + r" \\")
-    tot = ["2015--2065 total"]
+    tot = ["2015-2065 total"]
     for m in MODELS:
         tot.append(f"${-p[m]['dvaf_Gt_t'][-1]:.0f} {pm} {2 * p[m]['sigma_post_Gt']:.0f}$ Gt")
     for m in MODELS:
